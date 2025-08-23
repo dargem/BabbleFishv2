@@ -19,6 +19,7 @@ class TranslationState(TypedDict):
     text: str
     language: str
     translation: str
+    fluent_translation: str
     feedback: str
     feedback_rout_loops: int
 
@@ -85,7 +86,7 @@ def translator_node(state: TranslationState):
     return {"translation": translation}
 
 
-def increment_translate_feedback_node(state: TranslationState) -> TranslationState:
+def inc_translate_feedback_node(state: TranslationState) -> TranslationState:
     if "feedback_rout_loops" not in state:
         state["feedback_rout_loops"] = 0
     state["feedback_rout_loops"] += 1
@@ -121,7 +122,7 @@ def junior_editor_node(state: TranslationState):
 def fluency_editor_node(state: TranslationState):
     """edits the translation text through proofreading"""
     print("aiding fluency")
-    split_text = state["text"].split("/n/n")
+    split_text = state["translation"].split("/n/n")
     keyed_text = {edit_index: text for edit_index, text in enumerate(split_text)}
     tag_formatted_input = ""
     for i, text in keyed_text.items():
@@ -157,8 +158,11 @@ def fluency_editor_node(state: TranslationState):
         {tag_formatted_input}
         """
     )
-    # don't have any reference to states so don't need to create a HumanMessage for now until style is added
-    unparsed_fluency_fixed_text = llm.invoke(prompt)
+    # don't have any reference to states for now
+    message = HumanMessage(
+        content=prompt.format()
+    )
+    unparsed_fluency_fixed_text = llm.invoke([message])
     pattern = r"<index (\d+)>\s*(.*?)\s*</index \1>"
     matches = re.findall(pattern, unparsed_fluency_fixed_text, re.DOTALL)
 
@@ -168,7 +172,7 @@ def fluency_editor_node(state: TranslationState):
     fluency_processed_text = ""
     for key in keyed_text:
         fluency_processed_text += keyed_text[key] + "\n\n"
-    return {"translation": fluency_processed_text}
+    return {"fluent_translation": fluency_processed_text}
 
 
 # conditional logic
@@ -186,16 +190,14 @@ workflow = StateGraph(TranslationState)
 workflow.add_node("language_detector_node", language_detector_node)
 workflow.add_node("translator_node", translator_node)
 workflow.add_node("junior_editor_node", junior_editor_node)
-workflow.add_node(
-    "increment_translate_feedback_node", increment_translate_feedback_node
-)
+workflow.add_node("inc_translate_feedback_node", inc_translate_feedback_node)
 workflow.add_node("fluency_editor_node", fluency_editor_node)
 
 workflow.set_entry_point("language_detector_node")
 workflow.add_edge("language_detector_node", "translator_node")
-workflow.add_edge("translator_node", "increment_translate_feedback_node")
+workflow.add_edge("translator_node", "inc_translate_feedback_node")
 workflow.add_conditional_edges(
-    "increment_translate_feedback_node",
+    "inc_translate_feedback_node",
     rout_increment_exceed,
     path_map={True: "fluency_editor_node", False: "junior_editor_node"},
 )
