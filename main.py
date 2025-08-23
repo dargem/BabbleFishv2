@@ -22,7 +22,7 @@ class TranslationState(TypedDict):
     feedback_rout_loops: int
 
 
-llm = GoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
+llm = GoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.7)
 
 
 def language_detector_node(state: TranslationState):
@@ -67,9 +67,9 @@ def translator_node(state: TranslationState):
                 translation=state["translation"],
             )
         )
-        #print(state["feedback"])
+        # print(state["feedback"])
     else:
-        template+= "\n\n Translation:"
+        template += "\n\n Translation:"
         prompt = PromptTemplate(
             input_variables=["text", "language"],
             template=template,
@@ -82,6 +82,13 @@ def translator_node(state: TranslationState):
         )
     translation = llm.invoke([message]).strip()
     return {"translation": translation}
+
+
+def increment_translate_feedback_node(state: TranslationState) -> TranslationState:
+    if "feedback_rout_loops" not in state:
+        state["feedback_rout_loops"] = 0
+    state["feedback_rout_loops"] += 1
+    return state
 
 
 def junior_editor_node(state: TranslationState):
@@ -109,11 +116,45 @@ def junior_editor_node(state: TranslationState):
     feedback = llm.invoke([message]).strip()
     return {"feedback": feedback}
 
-def increment_translate_feedback_node(state: TranslationState) -> TranslationState:
-    if "feedback_rout_loops" not in state:
-        state["feedback_rout_loops"] = 0
-    state["feedback_rout_loops"]+=1
-    return state
+
+def fluency_editor_node(state: TranslationState):
+    """edits the translation text through proofreading"""
+    print("aiding fluency")
+    split_text = state["text"].split("/n/n")
+    keyed_text = {edit_index: text for edit_index, text in enumerate(split_text)}
+    tag_formatted_input = ""
+    for i, text in keyed_text.items():
+        tag_formatted_input += f"""
+        <index {i}>
+        {text}
+        </index {i}>
+        """
+    # potentially input a created style guide also
+    prompt = PromptTemplate(
+        template=f"""
+        You are a professional proofreader. 
+        Your job is to improve fluency, clarity, and readability without changing meaning, tone, or style. 
+
+        The text is divided into paragraphs inside <index N> ... </index N> tags.  
+        For any index where you see room for improvement, output ONLY the improved version inside the same tags.  
+        Do not output unchanged indices. Do not add explanations or commentary.  
+        It is acceptable to split a long sentence into multiple sentences inside an index if it improves clarity.  
+
+        Example:
+        Input:
+        <index 5>
+        He placed the card upon the desk and once again closed his eyes, silently reciting in his heart a prayer.
+        </index 5>
+
+        Output:
+        <index 5>
+        Placing the card upon the desk, he closed his eyes once again, silently reciting a prayer in his heart.
+        </index 5>
+
+        The input text for proofreading is below:
+        {tag_formatted_input}
+        """
+    )
 
 
 # conditional logic
@@ -123,22 +164,25 @@ def route_junior_pass(state: TranslationState) -> bool:
 
 def rout_increment_exceed(state: TranslationState) -> bool:
     """If its past the max number of feedback loops, skip the junior editor"""
-    return state["feedback_rout_loops"]>=3
+    return state["feedback_rout_loops"] >= 3
+
 
 # creating the graph
 workflow = StateGraph(TranslationState)
 workflow.add_node("language_detector_node", language_detector_node)
 workflow.add_node("translator_node", translator_node)
 workflow.add_node("junior_editor_node", junior_editor_node)
-workflow.add_node("increment_translate_feedback_node", increment_translate_feedback_node)
+workflow.add_node(
+    "increment_translate_feedback_node", increment_translate_feedback_node
+)
 
 workflow.set_entry_point("language_detector_node")
 workflow.add_edge("language_detector_node", "translator_node")
 workflow.add_edge("translator_node", "increment_translate_feedback_node")
 workflow.add_conditional_edges(
-    "increment_translate_feedback_node", 
+    "increment_translate_feedback_node",
     rout_increment_exceed,
-    path_map={True: END, False: "junior_editor_node"}
+    path_map={True: END, False: "junior_editor_node"},
 )
 
 workflow.add_conditional_edges(
@@ -150,13 +194,17 @@ app = workflow.compile()
 
 if __name__ == "__main__":
     sample_text = """
-    道可道，非常道；名可名，非常名。
-    无名，天地之始；有名，万物之母。
-    故常无，欲以观其妙；常有，欲以观其徼。
-    此两者，同出而异名，同谓之玄。
-    玄之又玄，众妙之门。
+    夏日的黄昏，微风吹拂着窗帘，带来一丝丝晚香玉的甜味。我坐在书桌前，摊开一本旧书，但思绪早已飘到了窗外。天边，火烧云如同被打翻的颜料盒，将整个天空染成绚烂的橘红、深紫和金黄。城市的喧嚣在此刻变得遥远而模糊，只剩下蝉鸣声声，仿佛在诉说着一个古老而漫长的故事。
+
+    我抬头望向书架，那本尘封已久的日记本静静地躺在那里。它曾记录着我的青春、梦想和那些早已淡忘的面孔。每一页都像是一扇通往过去的门，门后是阳光明媚的校园、无忧无虑的笑声和那个曾经的自己。我犹豫着，最终还是伸出手，指尖触碰到粗糙的封面，一股冰冷的、熟悉的感觉涌上心头。
+
+    记忆的河流开始缓缓流淌，带着我回到了那个炎热的午后。那时，我们坐在梧桐树下，他用指尖在沙地上勾勒着未来的蓝图。他的眼神里充满了光芒，而我只是静静地听着，感受着那份属于年轻人的热烈与憧憬。一切都如此真实，仿佛昨日重现。我闭上眼睛，试图抓住那份温度，但当再次睁开时，眼前只剩下了书桌上微弱的台灯光芒和窗外渐渐黯淡的夜色。
     """
+    with open("data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
+        sample_text = f.read()
     state_input = {"text": sample_text}
     result = app.invoke(state_input)
-    for key in [string_key for string_key in result if isinstance(result[string_key], str)]:
+    for key in [
+        string_key for string_key in result if isinstance(result[string_key], str)
+    ]:
         print(key + " " + result[key])
