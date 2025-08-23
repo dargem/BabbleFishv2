@@ -35,7 +35,7 @@ def language_detector_node(state: TranslationState):
         Detect the language of the following, outputting one word.
         Text:{text}
         Summary:"
-        """
+        """,
     )
     message = HumanMessage(content=prompt.format(text=state["text"]))
     language = llm.invoke([message]).strip()
@@ -168,9 +168,7 @@ def fluency_editor_node(state: TranslationState):
         """
     )
     # don't have any reference to states for now
-    message = HumanMessage(
-        content=prompt.format()
-    )
+    message = HumanMessage(content=prompt.format())
     unparsed_fluency_fixed_text = llm.invoke([message])
     pattern = r"<index (\d+)>\s*(.*?)\s*</index \1>"
     matches = re.findall(pattern, unparsed_fluency_fixed_text, re.DOTALL)

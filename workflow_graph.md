@@ -1,4 +1,4 @@
-# Workflow Graph
+# Translation Workflow Graph
 
 ```mermaid
 ---
@@ -8,17 +8,20 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	classification_node(classification_node)
-	entity_extraction(entity_extraction)
-	summarization(summarization)
-	sentiment_analysis(sentiment_analysis)
+	language_detector_node(language_detector_node)
+	translator_node(translator_node)
+	junior_editor_node(junior_editor_node)
+	inc_translate_feedback_node(inc_translate_feedback_node)
+	fluency_editor_node(fluency_editor_node)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> classification_node;
-	classification_node -. &nbsp;True&nbsp; .-> entity_extraction;
-	classification_node -. &nbsp;False&nbsp; .-> summarization;
-	entity_extraction --> summarization;
-	summarization --> sentiment_analysis;
-	sentiment_analysis --> __end__;
+	__start__ --> language_detector_node;
+	inc_translate_feedback_node -. &nbsp;True&nbsp; .-> fluency_editor_node;
+	inc_translate_feedback_node -. &nbsp;False&nbsp; .-> junior_editor_node;
+	junior_editor_node -. &nbsp;True&nbsp; .-> fluency_editor_node;
+	junior_editor_node -. &nbsp;False&nbsp; .-> translator_node;
+	language_detector_node --> translator_node;
+	translator_node --> inc_translate_feedback_node;
+	fluency_editor_node --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc
