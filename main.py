@@ -31,7 +31,11 @@ def language_detector_node(state: TranslationState):
     print("detecting language...")
     prompt = PromptTemplate(
         input_variables=["text"],
-        template="Detect the language of the following, outputting one word.\n\nText:{text}\n\nSummary:",
+        template="""
+        Detect the language of the following, outputting one word.
+        Text:{text}
+        Summary:"
+        """
     )
     message = HumanMessage(content=prompt.format(text=state["text"]))
     language = llm.invoke([message]).strip()
@@ -101,7 +105,7 @@ def junior_editor_node(state: TranslationState):
         Evaluate the quality of the following translation for the text.
         Be highly critical in your evaluation, you only want the very best.
         Be harsh but reasonable.
-        If it is of high enough quality return the words \"approved response accepted\", review by the following:
+        If it is of high enough quality return the words /"approved response accepted/", review by the following:
         - readability
         - fluency
         - reading level
@@ -121,8 +125,8 @@ def junior_editor_node(state: TranslationState):
 
 def fluency_editor_node(state: TranslationState):
     """edits the translation text through proofreading"""
-    print("aiding fluency")
-    split_text = state["translation"].split("/n/n")
+    print("aiding fluency...")
+    split_text = state["translation"].split("\n\n")
     keyed_text = {edit_index: text for edit_index, text in enumerate(split_text)}
     tag_formatted_input = ""
     for i, text in keyed_text.items():
@@ -136,13 +140,17 @@ def fluency_editor_node(state: TranslationState):
     prompt = PromptTemplate(
         template=f"""
         You are a professional proofreader. 
-        Your job is to improve fluency, clarity, and readability without changing meaning, tone, or style. 
-
+        Your job is to read for rhythm, voice, and narrative flow.
+        You'll focus on the lyrical quality of the prose, ensuring the story unfolds with a natural, compelling pace.
+        You will refine sentence structure, word choice, and aesthetics of form to enhance the reader's immersion in the world the author has built.
+        You will make sure the author's voice is consistent and strong, and that every word serves the story without disrupting the narrative's pulse.
+        Create as many improvements as you can. 
+        
         The text is divided into paragraphs inside <index N> ... </index N> tags.  
         For any index where you see room for improvement, output ONLY the improved version inside the same tags.  
         Do not output unchanged indices. Do not add explanations or commentary.  
         It is acceptable to split a long sentence into multiple sentences inside an index if it improves clarity.  
-
+        
         Example:
         Input:
         <index 5>
@@ -154,6 +162,7 @@ def fluency_editor_node(state: TranslationState):
         Placing the card upon the desk, he closed his eyes once more, silently reciting a prayer in his heart.
         </index 5>
 
+        
         The input of tagged text for proofreading is below, output in formatting described above:
         {tag_formatted_input}
         """
@@ -165,10 +174,9 @@ def fluency_editor_node(state: TranslationState):
     unparsed_fluency_fixed_text = llm.invoke([message])
     pattern = r"<index (\d+)>\s*(.*?)\s*</index \1>"
     matches = re.findall(pattern, unparsed_fluency_fixed_text, re.DOTALL)
-
     for idx, content in matches:
         # then overwrite using the new parser
-        keyed_text[idx] = content
+        keyed_text[int(idx)] = content
     fluency_processed_text = ""
     for key in keyed_text:
         fluency_processed_text += keyed_text[key] + "\n\n"
