@@ -6,6 +6,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from langchain_core.runnables.graph import MermaidDrawMethod
 from IPython.display import display, Image
+import re
 
 load_dotenv()
 
@@ -130,6 +131,7 @@ def fluency_editor_node(state: TranslationState):
         </index {i}>
         """
     # potentially input a created style guide also
+    # potentially add null output option
     prompt = PromptTemplate(
         template=f"""
         You are a professional proofreader. 
@@ -148,13 +150,25 @@ def fluency_editor_node(state: TranslationState):
 
         Output:
         <index 5>
-        Placing the card upon the desk, he closed his eyes once again, silently reciting a prayer in his heart.
+        Placing the card upon the desk, he closed his eyes once more, silently reciting a prayer in his heart.
         </index 5>
 
-        The input text for proofreading is below:
+        The input of tagged text for proofreading is below, output in formatting described above:
         {tag_formatted_input}
         """
     )
+    # don't have any reference to states so don't need to create a HumanMessage for now until style is added
+    unparsed_fluency_fixed_text = llm.invoke(prompt)
+    pattern = r"<index (\d+)>\s*(.*?)\s*</index \1>"
+    matches = re.findall(pattern, unparsed_fluency_fixed_text, re.DOTALL)
+
+    for idx, content in matches:
+        # then overwrite using the new parser
+        keyed_text[idx] = content
+    fluency_processed_text = ""
+    for key in keyed_text:
+        fluency_processed_text += keyed_text[key] + "\n\n"
+    return {"translation": fluency_processed_text}
 
 
 # conditional logic
@@ -175,6 +189,7 @@ workflow.add_node("junior_editor_node", junior_editor_node)
 workflow.add_node(
     "increment_translate_feedback_node", increment_translate_feedback_node
 )
+workflow.add_node("fluency_editor_node", fluency_editor_node)
 
 workflow.set_entry_point("language_detector_node")
 workflow.add_edge("language_detector_node", "translator_node")
@@ -182,14 +197,16 @@ workflow.add_edge("translator_node", "increment_translate_feedback_node")
 workflow.add_conditional_edges(
     "increment_translate_feedback_node",
     rout_increment_exceed,
-    path_map={True: END, False: "junior_editor_node"},
+    path_map={True: "fluency_editor_node", False: "junior_editor_node"},
 )
 
 workflow.add_conditional_edges(
     "junior_editor_node",
     route_junior_pass,
-    path_map={True: END, False: "translator_node"},
+    path_map={True: "fluency_editor_node", False: "translator_node"},
 )
+
+workflow.add_edge("fluency_editor_node", END)
 app = workflow.compile()
 
 if __name__ == "__main__":
