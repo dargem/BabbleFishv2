@@ -1,73 +1,34 @@
 # # BabbleFish Translation System
 
-A sophisticated Chinese to English translation system using LangGraph and LangChain with iterative feedback loops and fluency optimization.
+Attempted implementation of 
+(Perhaps) Beyond Human Translation: Harnessing Multi-Agent Collaboration for Translating Ultra-Long Literary Texts
+https://arxiv.org/html/2405.11804v1
+Paired with graphiti for some temporal chapter based memory, WIP.
 
-## Project Structure
 
-```
-BabbleFishv2/
-├── src/
-│   ├── __init__.py              # Package initialization
-│   ├── main_refactored.py       # Main application module
-│   ├── models/                  # Data models and state definitions
-│   │   └── __init__.py          # TranslationState model
-│   ├── config/                  # Configuration management
-│   │   └── __init__.py          # Config class and LLM setup
-│   ├── nodes/                   # Workflow nodes
-│   │   ├── __init__.py          # Node exports
-│   │   ├── language_detection.py  # Language detection logic
-│   │   ├── translation.py       # Translation logic
-│   │   ├── editing.py           # Editorial nodes
-│   │   └── routing.py           # State management nodes
-│   ├── workflow/                # Workflow definition
-│   │   └── __init__.py          # Graph creation and routing logic
-│   └── utils/                   # Utility functions
-│       └── __init__.py          # Text processing utilities
-├── run_translation.py           # Main entry point script
-├── main_refactored.py           # Original entry point (kept for compatibility)
-├── main.py                      # Original monolithic file
-└── requirements.txt             # Dependencies
-```
+Translation system using LangGraph and LangChain with iterative feedback loops and fluency optimization.
+Agentic memory through graphRAG using graphiti to build entities + relationship database with neo4j.
+Uses Gemini
 
 ## Features
 
-- **Language Detection**: Automatically detects the source language
-- **Professional Translation**: Specialized for Chinese fiction to English
-- **Quality Assurance**: Junior editor provides feedback on translations
-- **Iterative Improvement**: Up to 3 feedback loops for refinement
-- **Fluency Optimization**: Final pass for narrative flow and readability
+- **Language Detection**: Lingua detection for source
 - **Workflow Visualization**: Generates Mermaid diagrams of the process
 
-## Usage
+Current pipeline
+- **Language detection** Lingua for detection
+- **Translation** Translation with gemini
+- **Junior Editor**: Feedback on translation input, can reject up to 3 times
+- **Fluency Editor**: Base text blind index based editing for fluency
 
-Run the translation system:
-```bash
-# Option 1: Use the main entry point
-python run_translation.py
+## TODO
 
-# Option 2: Use the original file (still works)
-python main_refactored.py
-
-# Option 3: Run from within src directory
-cd src && python -m main_refactored
-```
-
-## Architecture Benefits
-
-1. **Modularity**: Each component has a specific responsibility
-2. **Scalability**: Easy to add new nodes or modify existing ones
-3. **Testability**: Individual components can be tested in isolation
-4. **Maintainability**: Clear separation of concerns
-5. **Extensibility**: Simple to add new language pairs or editing strategies
-
-## Next Steps for Growth
-
-- Add support for multiple language pairs
-- Implement different translation strategies
-- Add caching mechanisms
+- graphiti for memory
+- customise graphiti, addition removal agent etc
+- unit tests, probably langsmith for some evaluations
 - Include batch processing capabilities
 - Add metrics and monitoring
 - Implement different editorial personas
-- Add custom style guides
+- Add novel level style guides
 
 # BabbleFishv2
