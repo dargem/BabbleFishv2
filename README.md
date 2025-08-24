@@ -1,4 +1,4 @@
-# # BabbleFish Translation System
+# BabbleFishv2
 
 Attempted implementation of 
 (Perhaps) Beyond Human Translation: Harnessing Multi-Agent Collaboration for Translating Ultra-Long Literary Texts
@@ -30,5 +30,3 @@ Current pipeline
 - Add metrics and monitoring
 - Implement different editorial personas
 - Add novel level style guides
-
-# BabbleFishv2
