@@ -1,6 +1,12 @@
 """Main application module for BabbleFish Translation System."""
 
-from .workflow import create_translation_workflow
+import sys
+from pathlib import Path
+
+# Add the parent directory to sys.path to enable relative imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.workflow import create_translation_workflow
 
 
 def run_translation():
@@ -17,7 +23,7 @@ def run_translation():
 
     # Try to read from file if it exists
     try:
-        with open("data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
+        with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
             sample_text = f.read()
         print("Loaded text from file")
     except FileNotFoundError:
@@ -48,7 +54,7 @@ def run_translation():
         md_content = (
             f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
         )
-        with open("workflow_graph.md", "w") as f:
+        with open("../workflow_graph.md", "w") as f:
             f.write(md_content)
         print("\nWorkflow diagram saved to workflow_graph.md")
     except Exception as e:

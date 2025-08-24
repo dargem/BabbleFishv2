@@ -8,7 +8,7 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from src.main_refactored import run_translation
+from src.main import run_translation
 
 if __name__ == "__main__":
     run_translation()
