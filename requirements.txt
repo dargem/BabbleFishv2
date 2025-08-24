@@ -4,3 +4,5 @@ langchain-google-genai >= 2.1.9
 python-dotenv >= 1.1.1
 IPython >=  9.4.0
 lingua-language-detector >= 2.1.1
+graphiti-core >= 0.18.9
+graphiti-core[google-genai]>=0.18.9
