@@ -1,5 +1,5 @@
 """Language detection node for the translation workflow."""
-
+# add lingua for quick & efficient detection
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
