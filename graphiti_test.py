@@ -10,7 +10,7 @@ neo4j_password = os.getenv("NEO4J_PASS")
 
 import asyncio
 import json
-from datetime import datetime,timezone
+from datetime import datetime, timezone
 
 from graphiti_core import Graphiti
 from graphiti_core.llm_client.gemini_client import GeminiClient, LLMConfig
@@ -27,47 +27,44 @@ episodes = [
         "name": "The Premiere",
         "content": "A new hero rises, but a shadow looms over the city.",
         "type": EpisodeType.text,
-        "description": "The first episode of our epic tale."
+        "description": "The first episode of our epic tale.",
     }
 ]
 
+
 async def add_data(episodes, graphiti):
-    ''' Adding episodes to the graph '''
+    """Adding episodes to the graph"""
     for episode in episodes:
         if episode["type"] == EpisodeType.json:
             episode["content"] = json.dumps(episode["content"])
         await graphiti.add_episode(
-            name = episode["name"],
-            episode_body = episode["content"],
-            source = episode["type"],
-            source_description = episode["description"],
-            reference_time = datetime.now(timezone.utc)
+            name=episode["name"],
+            episode_body=episode["content"],
+            source=episode["type"],
+            source_description=episode["description"],
+            reference_time=datetime.now(timezone.utc),
         )
-        print(f"Added {episode["name"]}")
+        print(f"Added {episode['name']}")
+
 
 async def workflow():
     graphiti = Graphiti(
-        neo4j_uri, 
-        neo4j_user, 
+        neo4j_uri,
+        neo4j_user,
         neo4j_password,
         llm_client=GeminiClient(
-            config=LLMConfig(
-                api_key=api_key,
-                model="gemini-2.5-flash-lite"
-            )
+            config=LLMConfig(api_key=api_key, model="gemini-2.5-flash-lite")
         ),
         embedder=GeminiEmbedder(
             config=GeminiEmbedderConfig(
-                api_key=api_key,
-                embedding_model="embedding-001"
+                api_key=api_key, embedding_model="embedding-001"
             )
         ),
         cross_encoder=GeminiRerankerClient(
             config=LLMConfig(
-                api_key=api_key,
-                model="gemini-2.5-flash-lite-preview-06-17"
+                api_key=api_key, model="gemini-2.5-flash-lite-preview-06-17"
             )
-        )
+        ),
     )
 
     await clear_data(graphiti.driver)

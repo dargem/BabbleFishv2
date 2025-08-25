@@ -5,6 +5,7 @@ from ..models import TranslationState
 
 from lingua import LanguageDetectorBuilder, Language
 
+
 def language_detector_node(state: TranslationState) -> dict:
     """Detect the language of the input text.
 
@@ -16,12 +17,12 @@ def language_detector_node(state: TranslationState) -> dict:
     """
 
     languages_mapped = {
-        Language.ENGLISH: "English", 
-        Language.CHINESE: "Chinese", 
-        Language.JAPANESE: "Japanese", 
-        Language.KOREAN: "Korean", 
-        Language.SPANISH: "Spanish", 
-        Language.FRENCH: "French"
+        Language.ENGLISH: "English",
+        Language.CHINESE: "Chinese",
+        Language.JAPANESE: "Japanese",
+        Language.KOREAN: "Korean",
+        Language.SPANISH: "Spanish",
+        Language.FRENCH: "French",
     }
 
     detector = LanguageDetectorBuilder.from_languages(*languages_mapped.keys()).build()

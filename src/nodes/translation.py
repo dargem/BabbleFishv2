@@ -22,7 +22,7 @@ def translator_node(state: TranslationState) -> dict:
 
     base_template = """
     You are a professional translator specialising in fiction. 
-    You work with Chinese to English translations and are highly proficient in localisation.
+    You work with {language} to English translations and are highly proficient in localisation.
     Prioritise fluency while maintaining semantic meaning.
     Translate the following {language} text to English.
     Text: {text}

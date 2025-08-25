@@ -12,7 +12,7 @@ Uses Gemini
 
 ## Features
 
-- **Language Detection**: Lingua detection for source
+- **Feedback Loops**: LLM based feedback loops for reviewing
 - **Workflow Visualization**: Generates Mermaid diagrams of the process
 
 Current pipeline
@@ -23,6 +23,7 @@ Current pipeline
 
 ## TODO
 
+- agent profiles 
 - graphiti for memory
 - customise graphiti, addition removal agent etc
 - unit tests, probably langsmith for some evaluations
