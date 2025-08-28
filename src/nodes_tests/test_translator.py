@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Add the project root to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.nodes.translation import translator_node
@@ -13,5 +12,7 @@ sample_text = """
 
 记忆的河流开始缓缓流淌，带着我回到了那个炎热的午后。那时，我们坐在梧桐树下，他用指尖在沙地上勾勒着未来的蓝图。他的眼神里充满了光芒，而我只是静静地听着，感受着那份属于年轻人的热烈与憧憬。一切都如此真实，仿佛昨日重现。我闭上眼睛，试图抓住那份温度，但当再次睁开时，眼前只剩下了书桌上微弱的台灯光芒和窗外渐渐黯淡的夜色。
 """
-state_input = {"text": sample_text, "language": "Chinese"}
-print(translator_node(state_input))
+
+if __name__ == "__main__":
+    state_input = {"text": sample_text, "language": "Chinese"}
+    print(translator_node(state_input))
