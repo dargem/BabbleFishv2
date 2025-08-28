@@ -31,7 +31,7 @@ def language_detector_node(state: TranslationState) -> dict:
 
     return {"language": languages_mapped[detected]}
 
-    
+
 '''
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage

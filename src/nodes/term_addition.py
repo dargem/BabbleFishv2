@@ -35,16 +35,9 @@ def term_addition_node(state: TranslationState) -> dict:
     Text: {text}
     """
 
-    prompt = PromptTemplate(
-        input_variables=["text"],
-        template=template
-    )
+    prompt = PromptTemplate(input_variables=["text"], template=template)
 
-    message = HumanMessage(
-        content=prompt.format(
-            text=state["text"]
-        )
-    )
+    message = HumanMessage(content=prompt.format(text=state["text"]))
 
     entities = llm.invoke([message]).strip()
     return {"entities": entities}

@@ -59,7 +59,7 @@ def run_translation():
         print("\nWorkflow diagram saved to workflow_graph.md")
     except Exception as e:
         print(f"Error generating workflow diagram: {e}")
-    
+
 
 if __name__ == "__main__":
     run_translation()

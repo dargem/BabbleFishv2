@@ -12,5 +12,5 @@ __all__ = [
     "junior_editor_node",
     "fluency_editor_node",
     "inc_translate_feedback_node",
-    "style_node"
+    "style_node",
 ]

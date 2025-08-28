@@ -18,6 +18,7 @@ STYLE_GUIDE_NEEDED = "style_guide needed"
 LANGUAGE_NEEDED = "language needed"
 CONTINUE = "continue"
 
+
 def route_preloads(state: TranslationState) -> object:
     """Runs nodes to preload if they don't exist
     Args:
@@ -30,8 +31,9 @@ def route_preloads(state: TranslationState) -> object:
         return STYLE_GUIDE_NEEDED
     elif "language" not in state.keys():
         return LANGUAGE_NEEDED
-    else: 
+    else:
         return CONTINUE
+
 
 def route_junior_pass(state: TranslationState) -> bool:
     """Check if junior editor approved the translation.
@@ -56,8 +58,10 @@ def route_increment_exceed(state: TranslationState) -> bool:
     """
     return state["feedback_rout_loops"] >= config.max_feedback_loops
 
-def holder(state: TranslationState):
-    print("holder")
+
+def entry_dispatcher(state: TranslationState):
+    print("Dispatching...")
+
 
 def create_translation_workflow():
     """Create and compile the translation workflow.
@@ -68,7 +72,7 @@ def create_translation_workflow():
     workflow = StateGraph(TranslationState)
 
     # Add nodes
-    workflow.add_node("entry_node", holder)
+    workflow.add_node("entry_node", entry_dispatcher)
     workflow.add_node("style_node", style_node)
     workflow.add_node("language_detector_node", language_detector_node)
     workflow.add_node("translator_node", translator_node)
@@ -82,10 +86,10 @@ def create_translation_workflow():
         "entry_node",
         route_preloads,
         path_map={
-            STYLE_GUIDE_NEEDED:"style_node",
-            LANGUAGE_NEEDED:"language_detector_node",
-            CONTINUE: "translator_node"
-        }
+            STYLE_GUIDE_NEEDED: "style_node",
+            LANGUAGE_NEEDED: "language_detector_node",
+            CONTINUE: "translator_node",
+        },
     )
 
     # Add edges

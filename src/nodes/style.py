@@ -6,6 +6,7 @@ from langchain.schema import HumanMessage
 from ..models import TranslationState
 from ..config import config
 
+
 def style_node(state: TranslationState) -> dict:
     """
     Creates a description of the novels style, genre etc for aiding in translation style.
@@ -57,16 +58,9 @@ def style_node(state: TranslationState) -> dict:
     {text}
     """
 
-    prompt = PromptTemplate(
-        input_variables=["text"],
-        template=template
-    )
+    prompt = PromptTemplate(input_variables=["text"], template=template)
 
-    message = HumanMessage(
-        content=prompt.format(
-            text=state["text"]
-        )
-    )
+    message = HumanMessage(content=prompt.format(text=state["text"]))
 
     style_guide = llm.invoke([message]).strip()
     return {"style_guide": style_guide}
