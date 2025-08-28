@@ -24,9 +24,8 @@ Current pipeline
 ## TODO
 
 - agent profiles 
-- graphiti for memory
-- customise graphiti, addition removal agent etc
-- unit tests, probably langsmith for some evaluations
+- temporal knowledge graphs for memory
+- langsmith for some evaluations on unit tests
 - Include batch processing capabilities
 - Add metrics and monitoring
 - Implement different editorial personas
