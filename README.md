@@ -16,6 +16,7 @@ Uses Gemini
 - **Workflow Visualization**: Generates Mermaid diagrams of the process
 
 Current pipeline
+- **Styleguide Creation** Creates a styleguide for future translation
 - **Language detection** Lingua for detection
 - **Translation** Translation with gemini
 - **Junior Editor**: Feedback on translation input, can reject up to 3 times
@@ -29,4 +30,3 @@ Current pipeline
 - Include batch processing capabilities
 - Add metrics and monitoring
 - Implement different editorial personas
-- Add novel level style guides

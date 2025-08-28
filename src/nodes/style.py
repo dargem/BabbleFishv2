@@ -23,7 +23,13 @@ def style_node(state: TranslationState) -> dict:
     template = """
     You are a highly experienced literary analyst and editor. Your task is to provide a detailed style guide for a fiction text, which will be used to ensure consistency and fidelity during translation.
 
-    Analyze the following text and provide a comprehensive breakdown of its key literary elements. Structure your response in the following sections:
+    Following is a sample of the text, from it you are tasked to build the style guide. 
+    
+    Ensure your style guide functions as a generalised guide for aesthetics of language and form, not specifically referencing the chapter as it is just one among many.
+    
+    Analyze the following text and provide a comprehensive breakdown of its key literary elements. 
+    
+    Structure your response in the following sections:
 
     ## **1. Genre and Subgenre**
     Identify the primary and, if applicable, secondary genres (e.g., science fiction, historical fiction, fantasy, thriller, romance). Specify any subgenres (e.g., cyberpunk, cozy mystery, epic fantasy, psychological thriller) that define the text's specific conventions.
@@ -34,20 +40,14 @@ def style_node(state: TranslationState) -> dict:
     - **Pacing:** Is the narrative fast-paced and action-driven, or slow and reflective?
     - **Prose Style:** Is the language poetic, academic, minimalist, or conversational? Note any distinctive uses of metaphor, simile, or symbolism.
     - **Narrative Voice:** Is the text written in the first person (I), third person (he/she), or a more unique perspective? Is the narrator reliable or unreliable?
-    - **Dialogue:** Is the dialogue realistic and naturalistic, or stylized and formal? Does it reveal character, advance the plot, or both?
+    - **Dialogue:** Is the dialogue realistic and naturalistic, or stylized and formal?
 
     ## **3. Tone and Mood**
     Characterize the overall tone and mood of the text.
     - **Tone:** Is the author's attitude humorous, serious, satirical, suspenseful, or melancholic?
-    - **Mood:** What atmosphere does the text evoke for the reader? Is it tense, mysterious, romantic, or nostalgic?
+    - **Mood:** What atmosphere does the text evoke for the reader? Is it tense, mysterious, romantic, nostalgic or another?
 
-    ## **4. Themes and Motifs**
-    Identify the major themes explored in the text (e.g., love and loss, justice and revenge, human connection vs. technology, coming of age). Note any recurring motifs (e.g., a specific color, object, or phrase) that reinforce these themes.
-
-    ## **5. Target Audience**
-    Who is the likely target audience for this text (e.g., young adults, general adult fiction readers, fans of a specific genre)?
-
-    ## **6. Style Recommendations for Translation**
+    ## **4. Style Recommendations for Translation**
     Based on your analysis, provide specific instructions for a translator. For example:
     - **Formal vs. Informal Language:** Should the translation favor a formal or informal register?
     - **Slang and Idioms:** Should regional slang or idiomatic expressions be preserved, adapted, or omitted?
