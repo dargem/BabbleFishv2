@@ -16,6 +16,7 @@ class TranslationState(TypedDict):
     """
 
     text: str
+    style_guide: str
     language: str
     translation: str
     fluent_translation: str
