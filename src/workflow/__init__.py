@@ -13,7 +13,12 @@ from ..nodes import (
 )
 from ..config import config
 
-def route_preloads(state: TranslationState) -> str:
+APPROVED_RESPONSE_MARKER = "approved response accepted"
+STYLE_GUIDE_NEEDED = "style_guide needed"
+LANGUAGE_NEEDED = "language needed"
+CONTINUE = "continue"
+
+def route_preloads(state: TranslationState) -> object:
     """Runs nodes to preload if they don't exist
     Args:
         state: Current translation state
@@ -22,11 +27,11 @@ def route_preloads(state: TranslationState) -> str:
         name of the next node
     """
     if "style_guide" not in state.keys():
-        return "style_guide needed"
+        return STYLE_GUIDE_NEEDED
     elif "language" not in state.keys():
-        return "language needed"
+        return LANGUAGE_NEEDED
     else: 
-        return "continue"
+        return CONTINUE
 
 def route_junior_pass(state: TranslationState) -> bool:
     """Check if junior editor approved the translation.
@@ -77,9 +82,9 @@ def create_translation_workflow():
         "entry_node",
         route_preloads,
         path_map={
-            "style_guide needed":"style_node",
-            "language needed":"language_detector_node",
-            "continue": "translator_node"
+            STYLE_GUIDE_NEEDED:"style_node",
+            LANGUAGE_NEEDED:"language_detector_node",
+            CONTINUE: "translator_node"
         }
     )
 
