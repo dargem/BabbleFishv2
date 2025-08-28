@@ -29,10 +29,23 @@ def run_translation():
     except FileNotFoundError:
         print("Using default sample text")
 
-    # Create and run workflow
+    # Create workflow
     print("Creating translation workflow...")
     app = create_translation_workflow()
 
+    # Generate workflow visualization
+    try:
+        mermaid_code = app.get_graph().draw_mermaid()
+        md_content = (
+            f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
+        )
+        with open("../workflow_graph.md", "w") as f:
+            f.write(md_content)
+        print("\nWorkflow diagram saved to workflow_graph.md")
+    except Exception as e:
+        print(f"Error generating workflow diagram: {e}")
+    
+    # run workflow
     print("Starting translation process...")
     state_input = {"text": sample_text}
     result = app.invoke(state_input)
@@ -47,18 +60,6 @@ def run_translation():
             print(f"\n{key.upper()}:")
             print("-" * len(key))
             print(result[key])
-
-    # Generate workflow visualization
-    try:
-        mermaid_code = app.get_graph().draw_mermaid()
-        md_content = (
-            f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
-        )
-        with open("../workflow_graph.md", "w") as f:
-            f.write(md_content)
-        print("\nWorkflow diagram saved to workflow_graph.md")
-    except Exception as e:
-        print(f"Error generating workflow diagram: {e}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from langgraph.graph import StateGraph, END
 
 from ..models import TranslationState
 from ..nodes import (
+    style_node,
     language_detector_node,
     translator_node,
     junior_editor_node,
@@ -12,6 +13,20 @@ from ..nodes import (
 )
 from ..config import config
 
+def route_preloads(state: TranslationState) -> str:
+    """Runs nodes to preload if they don't exist
+    Args:
+        state: Current translation state
+
+    Returns:
+        name of the next node
+    """
+    if "style_guide" not in state.keys():
+        return "style_guide needed"
+    elif "language" not in state.keys():
+        return "language needed"
+    else: 
+        return "continue"
 
 def route_junior_pass(state: TranslationState) -> bool:
     """Check if junior editor approved the translation.
@@ -36,6 +51,8 @@ def route_increment_exceed(state: TranslationState) -> bool:
     """
     return state["feedback_rout_loops"] >= config.max_feedback_loops
 
+def holder(state: TranslationState):
+    print("holder")
 
 def create_translation_workflow():
     """Create and compile the translation workflow.
@@ -46,6 +63,8 @@ def create_translation_workflow():
     workflow = StateGraph(TranslationState)
 
     # Add nodes
+    workflow.add_node("entry_node", holder)
+    workflow.add_node("style_node", style_node)
     workflow.add_node("language_detector_node", language_detector_node)
     workflow.add_node("translator_node", translator_node)
     workflow.add_node("junior_editor_node", junior_editor_node)
@@ -53,10 +72,20 @@ def create_translation_workflow():
     workflow.add_node("fluency_editor_node", fluency_editor_node)
 
     # Set entry point
-    workflow.set_entry_point("language_detector_node")
+    workflow.set_entry_point("entry_node")
+    workflow.add_conditional_edges(
+        "entry_node",
+        route_preloads,
+        path_map={
+            "style_guide needed":"style_node",
+            "language needed":"language_detector_node",
+            "continue": "translator_node"
+        }
+    )
 
     # Add edges
-    workflow.add_edge("language_detector_node", "translator_node")
+    workflow.add_edge("style_node", "entry_node")
+    workflow.add_edge("language_detector_node", "entry_node")
     workflow.add_edge("translator_node", "inc_translate_feedback_node")
 
     # Conditional routing from feedback increment
