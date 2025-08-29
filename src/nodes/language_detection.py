@@ -15,7 +15,7 @@ def language_detector_node(state: TranslationState) -> dict:
     Returns:
         Dictionary with detected language
     """
-
+    print("Detecting language...")
     languages_mapped = {
         Language.ENGLISH: "English",
         Language.CHINESE: "Chinese",
