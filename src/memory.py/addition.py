@@ -5,8 +5,6 @@ Responsible for managing additions into the database, both for entities and rela
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-import time
-import enum
 from entity import Entity, EntityType
 
 load_dotenv()
@@ -17,6 +15,7 @@ neo4j_user = "neo4j"
 neo4j_password = os.getenv("NEO4J_PASS")
 
 driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+
 
 # some sample query/writes
 def add_entity(tx, entity: Entity):
@@ -34,15 +33,18 @@ def add_entity(tx, entity: Entity):
         translation=entity.translation,
         description=entity.description,
         type=entity.type.name,
-        chapter_idx=entity.chapter_idx
+        chapter_idx=entity.chapter_idx,
     )
+
 
 def get_entities(tx):
     result = tx.run("MATCH (e:Entity) RETURN e.names AS names")
     return [record["names"] for record in result]
 
+
 def delete_all(tx):
     tx.run("MATCH (n) DETACH DELETE n")
+
 
 # Using sessions to execute queries
 with driver.session() as session:
@@ -52,7 +54,7 @@ with driver.session() as session:
         translation="Αλίκη",
         description="A curious adventurer",
         type_=EntityType.PERSON,
-        chapter_idx=1
+        chapter_idx=1,
     )
     session.execute_write(add_entity, e)
     print(session.execute_read(get_entities))
