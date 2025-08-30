@@ -16,16 +16,18 @@ triplet extraction
         - May have difficulties as can't resolve to a date
         - Probably filter to exclude by llm?
 """
-from...models import TranslationState
+
+from ...models import TranslationState
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ...config import config
 
-def entity_extractor(state: TranslationState):
+
+def entity_extractor_node(state: TranslationState):
     llm = config.get_llm()
 
     prompt = PromptTemplate(
-        input_variables=["text","language"],
+        input_variables=["text", "language"],
         template="""
         {% macro tidy(name) -%}
         {{ name.replace('_', ' ')}}
@@ -206,8 +208,7 @@ def entity_extractor(state: TranslationState):
         **Output format**
         Return only a list of extracted labelled statements in the JSON ARRAY of objects that match the schema below:
         {{ json_schema }}
-        """
+        """,
     )
-
 
     pass
