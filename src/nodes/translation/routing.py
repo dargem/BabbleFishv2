@@ -1,6 +1,6 @@
 """Routing and state management nodes for the translation workflow."""
 
-from ..models import TranslationState
+from ...models import TranslationState
 
 
 def inc_translate_feedback_node(state: TranslationState) -> TranslationState:

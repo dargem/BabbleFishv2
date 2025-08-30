@@ -3,9 +3,9 @@
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from ..models import TranslationState
-from ..config import config
-from ..utils import parse_tagged_content, format_text_with_tags, reconstruct_text
+from ...models import TranslationState
+from ...config import config
+from ...utils import parse_tagged_content, format_text_with_tags, reconstruct_text
 
 
 def junior_editor_node(state: TranslationState) -> dict:

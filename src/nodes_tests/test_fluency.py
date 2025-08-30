@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.nodes.editing import fluency_editor_node
+from src.nodes.translation.editing import fluency_editor_node
 
 sample_translation = """
 As the summer dusk settled, a gentle breeze stirred the curtains, carrying with it the sweet scent of tuberose. I sat at my desk, an old book open before me, but my thoughts had long since drifted out the window. The horizon was ablaze with sunset clouds, like an overturned paint palette, staining the entire sky with brilliant hues of fiery orange, deep violet, and shimmering gold. The city's clamor faded into a distant, hazy hum, leaving only the persistent chirping of cicadas, as if they were recounting an ancient, timeless tale.

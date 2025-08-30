@@ -1,7 +1,7 @@
 """Language detection node for the translation workflow."""
 # add lingua for quick & efficient detection
 
-from ..models import TranslationState
+from ...models import TranslationState
 
 from lingua import LanguageDetectorBuilder, Language
 

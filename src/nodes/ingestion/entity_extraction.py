@@ -16,10 +16,10 @@ triplet extraction
         - May have difficulties as can't resolve to a date
         - Probably filter to exclude by llm?
 """
-from..models import TranslationState
+from...models import TranslationState
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from ..config import config
+from ...config import config
 
 def entity_extractor(state: TranslationState):
     llm = config.get_llm()
