@@ -1,4 +1,4 @@
-"""Workflow definition and routing logic."""
+""" Stateful orchestration workflow for translation """
 
 from langgraph.graph import StateGraph, END
 

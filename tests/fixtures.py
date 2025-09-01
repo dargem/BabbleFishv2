@@ -9,6 +9,12 @@ CHINESE_SAMPLE_TEXT = """
 记忆的河流开始缓缓流淌，带着我回到了那个炎热的午后。那时，我们坐在梧桐树下，他用指尖在沙地上勾勒着未来的蓝图。他的眼神里充满了光芒，而我只是静静地听着，感受着那份属于年轻人的热烈与憧憬。一切都如此真实，仿佛昨日重现。我闭上眼睛，试图抓住那份温度，但当再次睁开时，眼前只剩下了书桌上微弱的台灯光芒和窗外渐渐黯淡的夜色。
 """
 
+ENGLISH_SAMPLE_TEXT = """
+In October 1998, Clara Mendoza moved from Seville, Spain, to Brighton, England, to begin her studies at the University of Sussex. She had received a scholarship from the British Council to pursue a degree in History of Art.
+
+Her first professor, Dr. Martin Holloway, introduced her to archival work at the Victoria and Albert Museum in London. There, Clara uncovered letters written in 1872 by Eleanor Whitcombe, a painter who exhibited in the Royal Academy of Arts.
+"""
+
 # Sample English translation for testing
 ENGLISH_SAMPLE_TRANSLATION = """
 As the summer dusk settled, a gentle breeze stirred the curtains, carrying with it the sweet scent of tuberose. I sat at my desk, an old book open before me, but my thoughts had long since drifted out the window. The horizon was ablaze with sunset clouds, like an overturned paint palette, staining the entire sky with brilliant hues of fiery orange, deep violet, and shimmering gold. The city's clamor faded into a distant, hazy hum, leaving only the persistent chirping of cicadas, as if they were recounting an ancient, timeless tale.
@@ -45,3 +51,7 @@ Literary fiction with introspective and nostalgic elements.
 MOCK_FEEDBACK_APPROVED = "approved response accepted - The translation maintains the poetic quality and emotional depth of the original text."
 
 MOCK_FEEDBACK_REJECTED = "The translation lacks the lyrical quality of the original. Please improve the flow and maintain the poetic atmosphere."
+
+ENGLISH_SAMPLE_TEXT_ENTITIES = """
+New Avalon, Crystal Spire, Captain Lyra Vey, Lyra Vey, Interstellar Fleet, Codex of Thalos
+"""

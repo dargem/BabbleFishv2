@@ -23,7 +23,7 @@ from langchain.schema import HumanMessage
 from ...config import config
 
 
-def entity_extractor_node(state: TranslationState):
+def triplet_extractor_node(state: TranslationState):
     llm = config.get_llm()
 
     prompt = PromptTemplate(

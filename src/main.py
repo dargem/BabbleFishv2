@@ -7,18 +7,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.workflow import create_translation_workflow
-
+from src.memory import memo
 
 def run_translation():
     """Main function to run the translation workflow."""
 
-    # Try to read from file if it exists
-    try:
-        with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
-            sample_text = f.read()
-        print("Loaded text from file")
-    except FileNotFoundError:
-        print("Using default sample text")
+    with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
+        sample_text = f.read()
+    print("Loaded text from file")
+
+    # Database Ingestion
+    print("Ingesting new entries")
+
 
     # Create workflow
     print("Creating translation workflow...")

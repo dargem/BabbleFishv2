@@ -8,7 +8,6 @@ temporal chapter based memory, WIP.
 
 Translation system using LangGraph with iterative feedback loops and fluency optimization.
 Agentic memory through graphRAG using graphiti to build entities + relationship database with neo4j.
-Uses Gemini
 
 ## Features
 
@@ -34,3 +33,4 @@ Current pipeline
 - Include batch processing capabilities
 - Add metrics and monitoring
 - Implement different editorial personas
+- Fix github workflow
