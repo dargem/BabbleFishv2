@@ -35,7 +35,9 @@ class Config:
 
         # Set environment variable for Google API
         self.key_usage_dic = {
-            value: 0 for (key, value) in os.environ.items() if "GOOGLE_API_KEY" in key and self._health_check(value)
+            value: 0
+            for (key, value) in os.environ.items()
+            if "GOOGLE_API_KEY" in key and self._health_check(value)
         }
 
         if not self.key_usage_dic:
@@ -51,22 +53,25 @@ class Config:
             e = str(e)
             match = re.search(r'message:\s*"([^"]+)"', e)
             if match:
-                raise Exception(textwrap.dedent(f"""
+                raise Exception(
+                    textwrap.dedent(f"""
                 Error Message:
                 {match.group(1)}
                 With API KEY:
                 {api_key}
-                """))
+                """)
+                )
             else:
-                raise Exception(textwrap.dedent(f"""
+                raise Exception(
+                    textwrap.dedent(f"""
                 {e}
                 Error with API key:
                 {api_key}
                 Additionally the parser failed
-                """))
+                """)
+                )
         print("key healthy")
         return True
-
 
     def _next_api_key(self):
         lowest_entry = None

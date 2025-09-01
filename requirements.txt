@@ -5,3 +5,24 @@ python-dotenv >= 1.1.1
 IPython >=  9.4.0
 lingua-language-detector >= 2.1.1
 neo4j >= 5.28.2
+
+# Core testing framework
+pytest>=7.0.0
+pytest-mock>=3.10.0
+pytest-asyncio>=0.21.0
+
+# Coverage reporting
+coverage>=7.0.0
+pytest-cov>=4.0.0
+
+# Test utilities
+responses>=0.23.0  # For mocking HTTP requests if needed
+factory-boy>=3.2.0  # For test data factories if needed
+
+# Linting and formatting (for CI/CD)
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Documentation testing
+doctest

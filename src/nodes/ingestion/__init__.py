@@ -1,4 +1,4 @@
-""" Ingestion workflow nodes """
+"""Ingestion workflow nodes"""
 
 """
 Test on creating temporal knowledge graphs cooked up from this

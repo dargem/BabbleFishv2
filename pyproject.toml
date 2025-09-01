@@ -1,0 +1,20 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--disable-warnings",
+]
+markers = [
+    "unit: Unit tests with mocked dependencies",
+    "integration: Integration tests with real API calls", 
+    "slow: Slow running tests",
+    "expensive: Tests that make costly API calls",
+]
+
+# Test discovery
+minversion = "7.0"
