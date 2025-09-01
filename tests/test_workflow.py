@@ -146,7 +146,9 @@ class TestWorkflowNodes(BaseTranslationTest):
             for node in expected_nodes:
                 self.assertIn(node, nodes, f"Workflow should contain {node}")
 
-    @unittest.skipUnless(os.getenv("RUN_INTEGRATION_TESTS"), "Integration tests skipped by default")
+    @unittest.skipUnless(
+        os.getenv("RUN_INTEGRATION_TESTS"), "Integration tests skipped by default"
+    )
     def test_full_workflow_integration(self):
         """Full integration test with real LLM (expensive - skipped by default)."""
         workflow = create_translation_workflow()
@@ -164,17 +166,17 @@ class TestWorkflowNodes(BaseTranslationTest):
         self.assertEqual(result["language"], "Chinese")
         self.assertIsInstance(result["translation"], str)
         self.assertGreater(len(result["translation"]), 0)
-        
+
         # Print results for verification
-        print(f"\n{'='*50}")
+        print(f"\n{'=' * 50}")
         print("INTEGRATION TEST RESULTS")
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
         print(f"Original text: {initial_state['text']}")
         print(f"Detected language: {result['language']}")
         print(f"Translation: {result['translation']}")
         print(f"Fluent translation: {result['fluent_translation']}")
         print(f"Style guide length: {len(result['style_guide'])} characters")
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
 
 
 if __name__ == "__main__":

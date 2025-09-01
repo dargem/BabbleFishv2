@@ -91,7 +91,9 @@ class TestFluencyEditorNode(MockLLMTestCase):
 
     def test_fluency_editor_returns_fluent_translation_key(self):
         """Test that fluency editor returns fluent_translation key."""
-        self.mock_llm.invoke.return_value = "<index 0>\nImproved fluent text\n</index 0>"
+        self.mock_llm.invoke.return_value = (
+            "<index 0>\nImproved fluent text\n</index 0>"
+        )
 
         state = {"translation": "Original translation text"}
         result = fluency_editor_node(state)

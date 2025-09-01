@@ -11,7 +11,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test parsing single tagged content."""
         text = "<index 0>\nHello world\n</index 0>"
         result = parse_tagged_content(text)
-        
+
         expected = {0: "Hello world"}
         self.assertEqual(result, expected)
 
@@ -26,7 +26,7 @@ class TestUtilityFunctions(unittest.TestCase):
         </index 2>
         """
         result = parse_tagged_content(text)
-        
+
         expected = {0: "First paragraph", 2: "Third paragraph"}
         self.assertEqual(result, expected)
 
@@ -38,7 +38,7 @@ class TestUtilityFunctions(unittest.TestCase):
         and should be preserved.
         </index 1>"""
         result = parse_tagged_content(text)
-        
+
         expected_content = "This is a longer text\n        that spans multiple lines\n        and should be preserved."
         self.assertEqual(result[1], expected_content)
 
@@ -46,7 +46,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test parsing empty or invalid tagged content."""
         result = parse_tagged_content("")
         self.assertEqual(result, {})
-        
+
         result = parse_tagged_content("No tags here")
         self.assertEqual(result, {})
 
@@ -54,7 +54,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test formatting single text item with tags."""
         text_dict = {0: "Hello world"}
         result = format_text_with_tags(text_dict)
-        
+
         self.assertIn("<index 0>", result)
         self.assertIn("Hello world", result)
         self.assertIn("</index 0>", result)
@@ -63,7 +63,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test formatting multiple text items with tags."""
         text_dict = {0: "First paragraph", 2: "Third paragraph"}
         result = format_text_with_tags(text_dict)
-        
+
         self.assertIn("<index 0>", result)
         self.assertIn("First paragraph", result)
         self.assertIn("</index 0>", result)
@@ -80,14 +80,14 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test reconstructing text from single paragraph."""
         text_dict = {0: "Hello world"}
         result = reconstruct_text(text_dict)
-        
+
         self.assertEqual(result, "Hello world")
 
     def test_reconstruct_text_multiple_paragraphs(self):
         """Test reconstructing text from multiple paragraphs."""
         text_dict = {0: "First paragraph", 1: "Second paragraph", 2: "Third paragraph"}
         result = reconstruct_text(text_dict)
-        
+
         expected = "First paragraph\n\nSecond paragraph\n\nThird paragraph"
         self.assertEqual(result, expected)
 
@@ -95,7 +95,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test reconstructing text with unordered indices."""
         text_dict = {2: "Third paragraph", 0: "First paragraph", 1: "Second paragraph"}
         result = reconstruct_text(text_dict)
-        
+
         expected = "First paragraph\n\nSecond paragraph\n\nThird paragraph"
         self.assertEqual(result, expected)
 
@@ -107,17 +107,17 @@ class TestUtilityFunctions(unittest.TestCase):
     def test_round_trip_processing(self):
         """Test that format -> parse -> reconstruct preserves content."""
         original_dict = {0: "First paragraph", 1: "Second paragraph"}
-        
+
         # Format to tagged text
         tagged_text = format_text_with_tags(original_dict)
-        
+
         # Parse back to dictionary
         parsed_dict = parse_tagged_content(tagged_text)
-        
+
         # Reconstruct to final text
         final_text = reconstruct_text(parsed_dict)
         expected_text = reconstruct_text(original_dict)
-        
+
         # Should match original structure
         self.assertEqual(final_text, expected_text)
 
@@ -125,7 +125,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test parsing tagged content with special characters."""
         text = '<index 0>\n"Hello," he said. "How are you?"\n</index 0>'
         result = parse_tagged_content(text)
-        
+
         expected = {0: '"Hello," he said. "How are you?"'}
         self.assertEqual(result, expected)
 
@@ -133,7 +133,7 @@ class TestUtilityFunctions(unittest.TestCase):
         """Test that formatting preserves internal whitespace."""
         text_dict = {0: "Hello    world\n  with   spacing"}
         result = format_text_with_tags(text_dict)
-        
+
         self.assertIn("Hello    world\n  with   spacing", result)
 
 

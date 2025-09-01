@@ -56,18 +56,21 @@ def run_integration_tests():
         # Import pytest to run integration tests without skip
         import pytest
         import os
-        
+
         # Set environment variable to enable integration tests
         os.environ["RUN_INTEGRATION_TESTS"] = "true"
-        
+
         # Run pytest with integration marker
-        exit_code = pytest.main([
-            "tests/", 
-            "-v", 
-            "-m", "integration or not integration",  # Run all tests including integration
-            "--tb=short"
-        ])
-        
+        exit_code = pytest.main(
+            [
+                "tests/",
+                "-v",
+                "-m",
+                "integration or not integration",  # Run all tests including integration
+                "--tb=short",
+            ]
+        )
+
         return exit_code == 0
     finally:
         teardown_test_environment()

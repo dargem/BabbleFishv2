@@ -82,7 +82,9 @@ class TestStyleNode(MockLLMTestCase):
 class TestStyleIntegration(unittest.TestCase):
     """Integration tests for style node."""
 
-    @unittest.skipUnless(os.getenv("RUN_INTEGRATION_TESTS"), "Integration tests skipped by default")
+    @unittest.skipUnless(
+        os.getenv("RUN_INTEGRATION_TESTS"), "Integration tests skipped by default"
+    )
     def test_style_node_real_analysis(self):
         """Integration test with real LLM analysis."""
         state = {"text": CHINESE_SAMPLE_TEXT}
