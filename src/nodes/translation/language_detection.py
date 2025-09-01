@@ -35,7 +35,7 @@ def language_detector_node(state: TranslationState) -> dict:
 '''
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from ..config import config
+from ...config import config
 
 # LLM variation, shouldn't be needed though
 print("Detecting language...")

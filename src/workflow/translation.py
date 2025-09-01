@@ -3,7 +3,8 @@
 from langgraph.graph import StateGraph, END
 
 from ..models import TranslationState
-from ..nodes import (
+
+from ..nodes.translation import (
     style_node,
     language_detector_node,
     translator_node,
