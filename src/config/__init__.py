@@ -7,7 +7,7 @@ import enum
 import re
 import textwrap
 
-load_dotenv()
+load_dotenv(override=True)  # Force override system environment variables
 
 """
 model list
