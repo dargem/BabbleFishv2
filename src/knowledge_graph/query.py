@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any, Optional, Set
 from .graph_manager import KnowledgeGraphManager
-from .models import EntityType
+from src.models.graph_data import EntityType
 
 
 class KnowledgeGraphQuery:
@@ -152,7 +152,7 @@ class KnowledgeGraphQuery:
         """Transaction to find entities by chapter"""
         query = """
         MATCH (e:Entity)
-        WHERE e.chapter_idx = $chapter_idx
+        WHERE $chapter_idx IN e.chapter_idx
         RETURN properties(e) AS entity
         UNION
         MATCH (e:Entity)-[r]-()
@@ -169,7 +169,7 @@ class KnowledgeGraphQuery:
         """Transaction to find connected entities"""
         query = """
         MATCH (start:Entity)
-        WHERE $entity_name IN start.names
+        WHERE $entity_name IN start.all_names
         MATCH path = (start)-[*1..$max_depth]-(connected:Entity)
         RETURN 
             properties(connected) AS entity,
@@ -184,7 +184,7 @@ class KnowledgeGraphQuery:
         """Transaction to find entity mentions across chapters"""
         query = """
         MATCH (e:Entity)-[r]-()
-        WHERE $entity_name IN e.names AND r.chapter_idx IS NOT NULL
+        WHERE $entity_name IN e.all_names AND r.chapter_idx IS NOT NULL
         RETURN DISTINCT r.chapter_idx AS chapter, COUNT(r) AS mention_count
         ORDER BY chapter
         """

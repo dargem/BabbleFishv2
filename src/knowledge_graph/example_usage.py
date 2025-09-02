@@ -1,13 +1,17 @@
 """Example usage of the knowledge graph system"""
 
-from . import (
-    KnowledgeGraphManager,
-    KnowledgeGraphQuery,
-    get_entity_summary,
-    get_triplet_summary,
-)
+from .graph_manager import KnowledgeGraphManager
+from .query import KnowledgeGraphQuery
+from .utils import get_entity_summary, get_triplet_summary
 
-from ..models import Entity, EntityType, Triplet, TripletMetadata
+
+from src.models.graph_data import (
+    Entity,
+    EntityType,
+    Triplet,
+    TripletMetadata,
+    NameEntry,
+)
 
 
 def example_usage():
@@ -18,32 +22,63 @@ def example_usage():
         # Create some example entities
         entities = [
             Entity(
-                names=["Harry Potter", "Harry", "The Boy Who Lived"],
+                names=[
+                    NameEntry(
+                        name="Harry Potter", translation="Гарри Поттер", is_weak=False
+                    ),
+                    NameEntry(name="Harry", translation="Гарри", is_weak=False),
+                    NameEntry(
+                        name="The Boy Who Lived",
+                        translation="Мальчик, который выжил",
+                        is_weak=False,
+                    ),
+                ],
                 entity_type=EntityType.CHARACTER,
-                translation="Гарри Поттер",
                 description="A young wizard",
-                chapter_idx=1,
+                chapter_idx=[1],
                 properties={"age": 11, "house": "Gryffindor"},
             ),
             Entity(
-                names=["Hermione Granger", "Hermione"],
+                names=[
+                    NameEntry(
+                        name="Hermione Granger",
+                        translation="Гермиона Грейнджер",
+                        is_weak=False,
+                    ),
+                    NameEntry(name="Hermione", translation="Гермиона", is_weak=False),
+                ],
                 entity_type=EntityType.CHARACTER,
-                translation="Гермиона Грейнджер",
                 description="A brilliant witch",
-                chapter_idx=1,
+                chapter_idx=[1],
                 properties={"age": 11, "house": "Gryffindor"},
             ),
             Entity(
-                names=["Hogwarts", "Hogwarts School"],
-                entity_type=EntityType.CHARACTER,
+                names=[
+                    NameEntry(name="Hogwarts", translation="Хогвартс", is_weak=False),
+                    NameEntry(
+                        name="Hogwarts School",
+                        translation="Школа Хогвартс",
+                        is_weak=False,
+                    ),
+                ],
+                entity_type=EntityType.PLACE,
                 description="School of Witchcraft and Wizardry",
-                chapter_idx=1,
+                chapter_idx=[1],
             ),
             Entity(
-                names=["Elder Wand", "The Elder Wand"],
+                names=[
+                    NameEntry(
+                        name="Elder Wand", translation="Бузинная палочка", is_weak=False
+                    ),
+                    NameEntry(
+                        name="The Elder Wand",
+                        translation="Бузинная палочка",
+                        is_weak=False,
+                    ),
+                ],
                 entity_type=EntityType.ITEM,
                 description="One of the Deathly Hallows",
-                chapter_idx=5,
+                chapter_idx=[5],
             ),
         ]
 
@@ -105,6 +140,40 @@ def example_usage():
         if harry:
             print(f"Found: {harry}")
 
+        # Demonstrate name-to-translation linking
+        print("\n" + "="*50)
+        print("NAME-TO-TRANSLATION LINKING DEMONSTRATION")
+        print("="*50)
+        
+        # Get Harry Potter entity from the created entities
+        harry_entity = entities[0]  # The first entity we created
+        
+        print(f"\nEntity: {harry_entity.entity_type.value}")
+        print("Name entries with their translations:")
+        for name_entry in harry_entity.names:
+            weakness = " (weak)" if name_entry.is_weak else " (strong)"
+            print(f"  '{name_entry.name}' → '{name_entry.translation}'{weakness}")
+        
+        print(f"\nAll translations mapping: {harry_entity.translations}")
+        
+        # Test specific name lookups
+        print(f"\nTranslation lookup examples:")
+        print(f"  'Harry' → '{harry_entity.get_translation_for_name('Harry')}'")
+        print(f"  'The Boy Who Lived' → '{harry_entity.get_translation_for_name('The Boy Who Lived')}'")
+        
+        # Test case-insensitive lookup
+        print(f"  'harry potter' (lowercase) → '{harry_entity.get_translation_for_name('harry potter')}'")
+        
+        # Get full name entry
+        name_entry = harry_entity.get_name_entry("Harry Potter")
+        if name_entry:
+            print(f"\nFull NameEntry for 'Harry Potter':")
+            print(f"  Name: {name_entry.name}")
+            print(f"  Translation: {name_entry.translation}")
+            print(f"  Is Weak: {name_entry.is_weak}")
+
+        print("\n" + "="*50)
+
         # Get all relationships for Harry Potter
         print("\nHarry's relationships:")
         relationships = kg.get_entity_relationships("Harry Potter")
@@ -113,12 +182,18 @@ def example_usage():
 
         # Get entities by type
         print("\nAll Person entities:")
-        people = kg.get_entities_by_type(EntityType.PERSON)
+        people = kg.get_entities_by_type(EntityType.CHARACTER)
         for person in people:
+            name_entry_list = []
+            for i in range(len(person["names_list"])):
+                name = person["names_list"][i]
+                translation = person["translations_list"][i]
+                is_weak = person["is_weak_list"][i]
+                name_entry_list.append(NameEntry(name, translation, is_weak))
+
             entity = Entity(
-                names=person["names"],
+                names=name_entry_list,
                 entity_type=EntityType(person["entity_type"]),
-                translation=person.get("translation"),
                 description=person.get("description"),
                 chapter_idx=person.get("chapter_idx"),
             )
@@ -160,5 +235,3 @@ def example_usage():
         stats = kg.get_stats()
         print(f"  Total entities: {stats['entities']}")
         print(f"  Total relationships: {stats['relationships']}")
-
-    example_usage()

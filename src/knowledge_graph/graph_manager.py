@@ -4,7 +4,7 @@ import os
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
 from neo4j import GraphDatabase, Driver, Session
-from .models import Entity, Triplet, EntityType, TripletMetadata
+from src.models.graph_data import Entity, Triplet, EntityType, TripletMetadata
 
 load_dotenv(override=True)
 
@@ -176,12 +176,12 @@ class KnowledgeGraphManager:
     def _add_entity_tx(tx, entity: Entity) -> bool:
         """Transaction to add a single entity"""
         query = """
-        MERGE (e:Entity {names: $names})
+        MERGE (e:Entity {all_names: $all_names})
         ON CREATE SET e += $props
         RETURN COUNT(e) > 0 AS created
         """
         props = entity.to_neo4j_props()
-        result = tx.run(query, names=entity.names, props=props)
+        result = tx.run(query, all_names=entity.all_names, props=props)
         return result.single()["created"]
 
     @staticmethod
@@ -189,12 +189,12 @@ class KnowledgeGraphManager:
         """Transaction to add multiple entities"""
         query = """
         UNWIND $entities AS entity_data
-        MERGE (e:Entity {names: entity_data.names})
+        MERGE (e:Entity {all_names: entity_data.all_names})
         ON CREATE SET e += entity_data.props
         RETURN COUNT(e) AS created
         """
         entity_data = [
-            {"names": entity.names, "props": entity.to_neo4j_props()}
+            {"all_names": entity.all_names, "props": entity.to_neo4j_props()}
             for entity in entities
         ]
         result = tx.run(query, entities=entity_data)
@@ -205,7 +205,7 @@ class KnowledgeGraphManager:
         """Transaction to find entity by name"""
         query = """
         MATCH (e:Entity)
-        WHERE $name IN e.names
+        WHERE $name IN e.all_names
         RETURN properties(e) AS entity
         LIMIT 1
         """
@@ -236,7 +236,7 @@ class KnowledgeGraphManager:
         """Transaction to add a triplet"""
         query = """
         MATCH (subject:Entity), (object:Entity)
-        WHERE $subject_name IN subject.names AND $object_name IN object.names
+        WHERE $subject_name IN subject.all_names AND $object_name IN object.all_names
         MERGE (subject)-[r:RELATES {predicate: $predicate}]->(object)
         ON CREATE SET r += $metadata
         RETURN COUNT(r) > 0 AS created
@@ -256,8 +256,8 @@ class KnowledgeGraphManager:
         query = """
         UNWIND $triplets AS triplet_data
         MATCH (subject:Entity), (object:Entity)
-        WHERE triplet_data.subject_name IN subject.names 
-        AND triplet_data.object_name IN object.names
+        WHERE triplet_data.subject_name IN subject.all_names 
+        AND triplet_data.object_name IN object.all_names
         MERGE (subject)-[r:RELATES {predicate: triplet_data.predicate}]->(object)
         ON CREATE SET r += triplet_data.metadata
         RETURN COUNT(r) AS created
@@ -279,7 +279,7 @@ class KnowledgeGraphManager:
         """Transaction to get entity relationships"""
         query = """
         MATCH (e:Entity)-[r]-(other:Entity)
-        WHERE $entity_name IN e.names
+        WHERE $entity_name IN e.all_names
         RETURN 
             properties(e) AS entity,
             type(r) AS relationship_type,
@@ -297,9 +297,9 @@ class KnowledgeGraphManager:
         MATCH (subject:Entity)-[r:RELATES]->(object:Entity)
         WHERE r.chapter_idx = $chapter_idx
         RETURN 
-            subject.names AS subject_names,
+            subject.all_names AS subject_names,
             r.predicate AS predicate,
-            object.names AS object_names,
+            object.all_names AS object_names,
             properties(r) AS metadata
         """
         result = tx.run(query, chapter_idx=chapter_idx)

@@ -7,11 +7,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.workflow import create_translation_workflow
-from src.knowledge_graph import memo
+from knowledge_graph import KnowledgeGraphManager
+from knowledge_graph import example_usage
 
 
 def run_translation():
     """Main function to run the translation workflow."""
+    example_usage()
+    exit()
 
     with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
         sample_text = f.read()
