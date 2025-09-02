@@ -1,6 +1,5 @@
 """Interface for accessing the knowledge graph"""
 
-from .models import Entity, Triplet, EntityType, TripletMetadata
 from .graph_manager import KnowledgeGraphManager
 from .query import KnowledgeGraphQuery
 from .utils import (
@@ -14,15 +13,10 @@ from .utils import (
     filter_triplets_by_confidence,
     get_entity_summary,
     get_triplet_summary,
-    detect_potential_duplicates
+    detect_potential_duplicates,
 )
 
 __all__ = [
-    # Models
-    "Entity",
-    "Triplet", 
-    "EntityType",
-    "TripletMetadata",
     # Core classes
     "KnowledgeGraphManager",
     "KnowledgeGraphQuery",
@@ -37,5 +31,5 @@ __all__ = [
     "filter_triplets_by_confidence",
     "get_entity_summary",
     "get_triplet_summary",
-    "detect_potential_duplicates"
+    "detect_potential_duplicates",
 ]

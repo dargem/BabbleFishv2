@@ -1,7 +1,7 @@
 """State for the ingestion workflow"""
 
 from typing import TypedDict, List, Tuple
-from . import Entity
+from . import Entity, Triplet
 
 
 class IngestionState(TypedDict):
@@ -17,5 +17,4 @@ class IngestionState(TypedDict):
     text: str
     entities: List[Entity]
     new_entities: List[Entity]
-    triplets: List[Tuple[str, str, str]]
-
+    triplets: List[Triplet]
