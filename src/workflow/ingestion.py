@@ -2,7 +2,7 @@
 
 from langgraph.graph import StateGraph, END
 
-from ..models import TranslationState
+from ..models import IngestionState
 
 
 from ..nodes.ingestion import (

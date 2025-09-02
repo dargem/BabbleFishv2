@@ -1,6 +1,7 @@
 """Contains state models for workflow."""
 
-from translation_state import TranslationState
-from ingestion_state import IngestionState, Entity
+from src.models.translation import TranslationState
+from src.models.ingestion import IngestionState
+from src.models.memory import Entity, Triplet, TripletMetadata
 
-__all__ = ["TranslationState", "IngestionState", "Entity"]
+__all__ = ["TranslationState", "IngestionState", "Entity", "Triplet", "TripletMetadata"]
