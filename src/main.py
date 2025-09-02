@@ -7,7 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.workflow import create_translation_workflow
-from src.memory import memo
+from src.knowledge_graph import memo
+
 
 def run_translation():
     """Main function to run the translation workflow."""
@@ -18,7 +19,6 @@ def run_translation():
 
     # Database Ingestion
     print("Ingesting new entries")
-
 
     # Create workflow
     print("Creating translation workflow...")

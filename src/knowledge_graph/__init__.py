@@ -1,11 +1,8 @@
-"""Memory Relevant"""
+"""Interface for accessing the knowledge graph"""
 
-from .entity import Entity, EntityType
+from addition import add_entity, get_entities, reset_database
 
-__all__ = [
-    "Entity",
-    "EntityType",
-]
+__all__ = [add_entity, get_entities, reset_database]
 
 
 """

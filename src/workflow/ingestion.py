@@ -1,4 +1,4 @@
-""" Functional pipeline for ingestion """
+"""Functional pipeline for ingestion"""
 
 from langgraph.graph import StateGraph, END
 
@@ -10,9 +10,10 @@ from ..nodes.ingestion import (
     triplet_extractor_node,
 )
 
+
 def create_ingestion_workflow():
     """Create and compile the ingestion workflow
-    
+
     Returns:
         Compiled ingestion workflow for use
     """

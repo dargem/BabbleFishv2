@@ -28,7 +28,7 @@ Current pipeline
     - ingestion (get triplets into graphical database with localisations)
     - translation (generic translation workflow with feedback loops etc)
 - agent profiles 
-- temporal knowledge graphs for memory
+- add knowledge graph interface
 - langsmith for some evaluations on unit tests
 - Include batch processing capabilities
 - Add metrics and monitoring

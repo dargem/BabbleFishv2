@@ -1,5 +1,6 @@
 """State for the translation workflow"""
-from typing import TypedDict, List
+
+from typing import TypedDict
 
 
 class TranslationState(TypedDict):

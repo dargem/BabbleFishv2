@@ -5,10 +5,10 @@ Responsible for managing additions into the database, both for entities and rela
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from entity import Entity, EntityType
+from ..models import Entity, EntityType
+from typing import List
 
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY_4")
+load_dotenv(override=True)
 
 neo4j_uri = os.getenv("NEO4J_URI")
 neo4j_user = "neo4j"
@@ -17,7 +17,21 @@ neo4j_password = os.getenv("NEO4J_PASS")
 driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
 
 
+def _execute_write(query):
+    with driver.session() as session:
+        session.execute_write(reset_database)
+
+
+def _execute_read(query):
+    with driver.session() as session:
+        return session.execute_read(reset_database)
+
+
 # some sample query/writes
+def add_entities(entities: List[Entity]):
+    query = ""
+
+
 def add_entity(tx, entity: Entity):
     tx.run(
         """
@@ -42,13 +56,13 @@ def get_entities(tx):
     return [record["names"] for record in result]
 
 
-def delete_all(tx):
+def reset_database(tx):
     tx.run("MATCH (n) DETACH DELETE n")
 
 
 # Using sessions to execute queries
 with driver.session() as session:
-    session.execute_write(delete_all)
+    session.execute_write(reset_database)
     e = Entity(
         names=["Alice", "Alicia"],
         translation="Αλίκη",
