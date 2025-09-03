@@ -430,3 +430,42 @@ def _calculate_simple_similarity(str1: str, str2: str) -> float:
     union = len(bigrams1.union(bigrams2))
 
     return intersection / union if union > 0 else 0.0
+
+def reconstruct_entities(unstructured_entities: List[Dict]) -> List[Entity]:
+    """
+    Reconstruct Entity objects from Neo4j dictionary data
+    
+    Args:
+        unstructured_entities: List of dictionaries containing Neo4j node properties
+        
+    Returns:
+        List of Entity objects
+    """
+    entity_list = []
+    for unstructured_entity in unstructured_entities:
+        name_entry_list = []
+        # Handle the case where names_list exists
+
+        if "names_list" in unstructured_entity and unstructured_entity["names_list"]:
+            names_list = unstructured_entity["names_list"]
+            translations_list = unstructured_entity.get("translations_list", [""] * len(names_list))
+            is_weak_list = unstructured_entity.get("is_weak_list", [False] * len(names_list))
+            
+            for i in range(len(names_list)):
+                translation = translations_list[i] if i < len(translations_list) else ""
+                is_weak = is_weak_list[i] if i < len(is_weak_list) else False
+                
+                name_entry_list.append(NameEntry(
+                    name=names_list[i],
+                    translation=translation,
+                    is_weak=is_weak
+                ))
+        
+        entity_list.append(Entity(
+            names=name_entry_list,
+            entity_type=EntityType(unstructured_entity["entity_type"]),
+            description=unstructured_entity.get("description", ""),
+            chapter_idx=unstructured_entity.get("chapter_idx", []),
+            properties=unstructured_entity.get("properties", {})
+        ))
+    return entity_list

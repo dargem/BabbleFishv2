@@ -19,6 +19,7 @@ def example_usage():
 
     # Initialize the knowledge graph manager
     with KnowledgeGraphManager() as kg:
+        kg.reset_database()
         # Create some example entities
         entities = [
             Entity(
@@ -136,7 +137,7 @@ def example_usage():
 
         # Find entity by name
         print("\nFinding Harry Potter...")
-        harry = kg.find_entity_by_name("Harry")
+        harry = kg.find_entity_by_name("The Boy Who Lived")
         if harry:
             print(f"Found: {harry}")
 
@@ -184,20 +185,7 @@ def example_usage():
         print("\nAll Person entities:")
         people = kg.get_entities_by_type(EntityType.CHARACTER)
         for person in people:
-            name_entry_list = []
-            for i in range(len(person["names_list"])):
-                name = person["names_list"][i]
-                translation = person["translations_list"][i]
-                is_weak = person["is_weak_list"][i]
-                name_entry_list.append(NameEntry(name, translation, is_weak))
-
-            entity = Entity(
-                names=name_entry_list,
-                entity_type=EntityType(person["entity_type"]),
-                description=person.get("description"),
-                chapter_idx=person.get("chapter_idx"),
-            )
-            print(f"  {get_entity_summary(entity)}")
+            print(f"  {get_entity_summary(person)}")
 
         # Get triplets from a specific chapter
         print(f"\nRelationships from chapter 1:")
@@ -211,18 +199,18 @@ def example_usage():
         print("\nEntities connected to Harry Potter:")
         connected = query_interface.find_connected_entities("Harry Potter", max_depth=2)
         for conn in connected:
-            entity_names = conn["entity"]["names"]
+            entity = conn["entity"]  # This is now an Entity object
             distance = conn["distance"]
-            print(f"  {entity_names[0]} (distance: {distance})")
+            print(f"  {entity.names[0].name} (distance: {distance})")
 
         # Get character interactions
         print("\nCharacter interactions:")
         interactions = query_interface.get_character_interactions()
         for interaction in interactions:
-            person1_names = interaction["person1"]["names"]
-            person2_names = interaction["person2"]["names"]
+            person1 = interaction["person1"]  # This is now an Entity object
+            person2 = interaction["person2"]  # This is now an Entity object
             predicate = interaction["interaction"]["predicate"]
-            print(f"  {person1_names[0]} -[{predicate}]-> {person2_names[0]}")
+            print(f"  {person1.names[0].name} -[{predicate}]-> {person2.names[0].name}")
 
         # Get narrative graph for chapter 1
         print("\nChapter 1 narrative graph:")

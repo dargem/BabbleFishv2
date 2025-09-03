@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
 from neo4j import GraphDatabase, Driver, Session
 from src.models.graph_data import Entity, Triplet, EntityType, TripletMetadata
+from .utils import reconstruct_entities
 
 load_dotenv(override=True)
 
@@ -61,7 +62,7 @@ class KnowledgeGraphManager:
         with self.driver.session() as session:
             return session.execute_write(self._add_entities_tx, entities)
 
-    def find_entity_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+    def find_entity_by_name(self, name: str) -> Optional[Entity]:
         """
         Find an entity by any of its names
 
@@ -69,12 +70,15 @@ class KnowledgeGraphManager:
             name: Name to search for
 
         Returns:
-            Entity properties if found, None otherwise
+            Entity object if found, None otherwise
         """
         with self.driver.session() as session:
-            return session.execute_read(self._find_entity_by_name_tx, name)
+            entity_data = session.execute_read(self._find_entity_by_name_tx, name)
+            if entity_data:
+                return reconstruct_entities([entity_data])[0]
+            return None
 
-    def get_entities_by_type(self, entity_type: EntityType) -> List[Dict[str, Any]]:
+    def get_entities_by_type(self, entity_type: EntityType) -> List[Entity]:
         """
         Get all entities of a specific type
 
@@ -82,20 +86,22 @@ class KnowledgeGraphManager:
             entity_type: Type of entities to retrieve
 
         Returns:
-            List of entity properties
+            List of Entity objects
         """
         with self.driver.session() as session:
-            return session.execute_read(self._get_entities_by_type_tx, entity_type)
+            entities_data = session.execute_read(self._get_entities_by_type_tx, entity_type)
+            return reconstruct_entities(entities_data)
 
-    def get_all_entities(self) -> List[Dict[str, Any]]:
+    def get_all_entities(self) -> List[Entity]:
         """
         Get all entities in the knowledge graph
 
         Returns:
-            List of all entity properties
+            List of all Entity objects
         """
         with self.driver.session() as session:
-            return session.execute_read(self._get_all_entities_tx)
+            entities_data = session.execute_read(self._get_all_entities_tx)
+            return reconstruct_entities(entities_data)
 
     # Triplet operations
     def add_triplet(self, triplet: Triplet) -> bool:

@@ -2,7 +2,8 @@
 
 from typing import List, Dict, Any, Optional, Set
 from .graph_manager import KnowledgeGraphManager
-from src.models.graph_data import EntityType
+from src.models.graph_data import EntityType, Entity
+from .utils import reconstruct_entities
 
 
 class KnowledgeGraphQuery:
@@ -11,7 +12,7 @@ class KnowledgeGraphQuery:
     def __init__(self, graph_manager: KnowledgeGraphManager):
         self.graph_manager = graph_manager
 
-    def find_entities_by_chapter(self, chapter_idx: int) -> List[Dict[str, Any]]:
+    def find_entities_by_chapter(self, chapter_idx: int) -> List[Entity]:
         """
         Find all entities mentioned in a specific chapter
 
@@ -19,10 +20,11 @@ class KnowledgeGraphQuery:
             chapter_idx: Chapter index
 
         Returns:
-            List of entities from the chapter
+            List of Entity objects from the chapter
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(self._find_entities_by_chapter_tx, chapter_idx)
+            entities_data = session.execute_read(self._find_entities_by_chapter_tx, chapter_idx)
+            return reconstruct_entities(entities_data)
 
     def find_connected_entities(
         self, entity_name: str, max_depth: int = 2
@@ -35,12 +37,17 @@ class KnowledgeGraphQuery:
             max_depth: Maximum relationship depth to traverse
 
         Returns:
-            List of connected entities with path information
+            List of connected entities with path information (contains Entity objects)
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(
+            results = session.execute_read(
                 self._find_connected_entities_tx, entity_name, max_depth
             )
+            # Convert the entity data in each result to Entity objects
+            for result in results:
+                if "entity" in result:
+                    result["entity"] = reconstruct_entities([result["entity"]])[0]
+            return results
 
     def find_entity_mentions_across_chapters(
         self, entity_name: str
@@ -68,12 +75,19 @@ class KnowledgeGraphQuery:
             chapter_idx: Optional chapter filter
 
         Returns:
-            List of entity pairs connected by the relationship
+            List of entity pairs connected by the relationship (contains Entity objects)
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(
+            results = session.execute_read(
                 self._find_entities_by_relationship_tx, predicate, chapter_idx
             )
+            # Convert entity data to Entity objects
+            for result in results:
+                if "subject_entity" in result:
+                    result["subject_entity"] = reconstruct_entities([result["subject_entity"]])[0]
+                if "object_entity" in result:
+                    result["object_entity"] = reconstruct_entities([result["object_entity"]])[0]
+            return results
 
     def get_character_interactions(
         self, chapter_idx: Optional[int] = None
@@ -85,12 +99,19 @@ class KnowledgeGraphQuery:
             chapter_idx: Optional chapter filter
 
         Returns:
-            List of character interactions
+            List of character interactions (contains Entity objects)
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(
+            results = session.execute_read(
                 self._get_character_interactions_tx, chapter_idx
             )
+            # Convert entity data to Entity objects
+            for result in results:
+                if "person1" in result:
+                    result["person1"] = reconstruct_entities([result["person1"]])[0]
+                if "person2" in result:
+                    result["person2"] = reconstruct_entities([result["person2"]])[0]
+            return results
 
     def find_similar_entities(
         self, entity_name: str, similarity_threshold: float = 0.8
@@ -103,12 +124,17 @@ class KnowledgeGraphQuery:
             similarity_threshold: Similarity threshold (0-1)
 
         Returns:
-            List of potentially similar entities
+            List of potentially similar entities (contains Entity objects)
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(
+            results = session.execute_read(
                 self._find_similar_entities_tx, entity_name, similarity_threshold
             )
+            # Convert entity data to Entity objects
+            for result in results:
+                if "entity" in result:
+                    result["entity"] = reconstruct_entities([result["entity"]])[0]
+            return results
 
     def get_temporal_relationships(self, temporal_type: str) -> List[Dict[str, Any]]:
         """
@@ -118,12 +144,19 @@ class KnowledgeGraphQuery:
             temporal_type: "static", "dynamic", or "atemporal"
 
         Returns:
-            List of relationships with the specified temporal type
+            List of relationships with the specified temporal type (contains Entity objects)
         """
         with self.graph_manager.driver.session() as session:
-            return session.execute_read(
+            results = session.execute_read(
                 self._get_temporal_relationships_tx, temporal_type
             )
+            # Convert entity data to Entity objects
+            for result in results:
+                if "subject_entity" in result:
+                    result["subject_entity"] = reconstruct_entities([result["subject_entity"]])[0]
+                if "object_entity" in result:
+                    result["object_entity"] = reconstruct_entities([result["object_entity"]])[0]
+            return results
 
     def get_chapter_narrative_graph(self, chapter_idx: int) -> Dict[str, Any]:
         """
@@ -167,16 +200,17 @@ class KnowledgeGraphQuery:
         tx, entity_name: str, max_depth: int
     ) -> List[Dict[str, Any]]:
         """Transaction to find connected entities"""
-        query = """
+        # Build query with max_depth as literal since Neo4j doesn't support parameters in variable-length patterns
+        query = f"""
         MATCH (start:Entity)
         WHERE $entity_name IN start.all_names
-        MATCH path = (start)-[*1..$max_depth]-(connected:Entity)
+        MATCH path = (start)-[*1..{max_depth}]-(connected:Entity)
         RETURN 
             properties(connected) AS entity,
             length(path) AS distance,
-            [rel IN relationships(path) | {predicate: rel.predicate, chapter: rel.chapter_idx}] AS path_info
+            [rel IN relationships(path) | {{predicate: rel.predicate, chapter: rel.chapter_idx}}] AS path_info
         """
-        result = tx.run(query, entity_name=entity_name, max_depth=max_depth)
+        result = tx.run(query, entity_name=entity_name)
         return [dict(record) for record in result]
 
     @staticmethod
