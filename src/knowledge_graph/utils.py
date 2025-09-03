@@ -27,14 +27,14 @@ def create_entity_from_neo4j_data(data: Dict[str, Any]) -> Entity:
         names_list = data["names_list"]
         translations_list = data.get("translations_list", [""] * len(names_list))
         is_weak_list = data.get("is_weak_list", [False] * len(names_list))
-        
+
         # Ensure all lists are the same length
         max_len = len(names_list)
         if len(translations_list) < max_len:
             translations_list.extend([""] * (max_len - len(translations_list)))
         if len(is_weak_list) < max_len:
             is_weak_list.extend([False] * (max_len - len(is_weak_list)))
-        
+
         names = [
             NameEntry(
                 name=names_list[i],
@@ -57,24 +57,39 @@ def create_entity_from_neo4j_data(data: Dict[str, Any]) -> Entity:
         entity_type=entity_type,
         description=data.get("description", ""),
         chapter_idx=data.get("chapter_idx", []),
-        properties={k: v for k, v in data.items() if k not in ["names_list", "translations_list", "is_weak_list", "all_names", "entity_type", "description", "chapter_idx", "strong_names", "weak_names"]}
+        properties={
+            k: v
+            for k, v in data.items()
+            if k
+            not in [
+                "names_list",
+                "translations_list",
+                "is_weak_list",
+                "all_names",
+                "entity_type",
+                "description",
+                "chapter_idx",
+                "strong_names",
+                "weak_names",
+            ]
+        },
     )
 
 
 def get_name_translations_from_neo4j_data(data: Dict[str, Any]) -> Dict[str, str]:
     """
     Extract name-to-translation mapping from Neo4j node data
-    
+
     Args:
         data: Neo4j node properties
-        
+
     Returns:
         Dictionary mapping names to translations
     """
     if "names_list" in data and "translations_list" in data:
         names_list = data["names_list"]
         translations_list = data.get("translations_list", [])
-        
+
         # Create mapping, handling cases where lists might be different lengths
         translations = {}
         for i, name in enumerate(names_list):
@@ -82,7 +97,7 @@ def get_name_translations_from_neo4j_data(data: Dict[str, Any]) -> Dict[str, str
                 translations[name] = translations_list[i]
             else:
                 translations[name] = ""  # Default to empty if no translation
-        
+
         return translations
     return {}
 
@@ -90,7 +105,7 @@ def get_name_translations_from_neo4j_data(data: Dict[str, Any]) -> Dict[str, str
 def print_entity_with_translations(entity: Entity) -> None:
     """
     Print an entity with all its name-translation pairs
-    
+
     Args:
         entity: Entity to print
     """
@@ -99,7 +114,7 @@ def print_entity_with_translations(entity: Entity) -> None:
     for name_entry in entity.names:
         status = "weak" if name_entry.is_weak else "strong"
         print(f"  '{name_entry.name}' → '{name_entry.translation}' ({status})")
-    
+
     if entity.chapter_idx:
         chapters = ", ".join(map(str, entity.chapter_idx))
         print(f"Appears in chapters: {chapters}")
@@ -431,41 +446,39 @@ def _calculate_simple_similarity(str1: str, str2: str) -> float:
 
     return intersection / union if union > 0 else 0.0
 
+
 def reconstruct_entities(unstructured_entities: List[Dict]) -> List[Entity]:
     """
     Reconstruct Entity objects from Neo4j dictionary data
-    
+
     Args:
         unstructured_entities: List of dictionaries containing Neo4j node properties
-        
+
     Returns:
         List of Entity objects
     """
     entity_list = []
     for unstructured_entity in unstructured_entities:
         name_entry_list = []
-        # Handle the case where names_list exists
+        for i in range(len(unstructured_entity["names_list"])):
+            try:
+                name_entry_list.append(
+                    NameEntry(
+                        name=unstructured_entity["names_list"][i],
+                        translation=unstructured_entity["translations_list"][i],
+                        is_weak=unstructured_entity["is_weak_list"][i],
+                    )
+                )
+            except:
+                raise ValueError("Fatal error with data entry, name list not correlated to values")
 
-        if "names_list" in unstructured_entity and unstructured_entity["names_list"]:
-            names_list = unstructured_entity["names_list"]
-            translations_list = unstructured_entity.get("translations_list", [""] * len(names_list))
-            is_weak_list = unstructured_entity.get("is_weak_list", [False] * len(names_list))
-            
-            for i in range(len(names_list)):
-                translation = translations_list[i] if i < len(translations_list) else ""
-                is_weak = is_weak_list[i] if i < len(is_weak_list) else False
-                
-                name_entry_list.append(NameEntry(
-                    name=names_list[i],
-                    translation=translation,
-                    is_weak=is_weak
-                ))
-        
-        entity_list.append(Entity(
-            names=name_entry_list,
-            entity_type=EntityType(unstructured_entity["entity_type"]),
-            description=unstructured_entity.get("description", ""),
-            chapter_idx=unstructured_entity.get("chapter_idx", []),
-            properties=unstructured_entity.get("properties", {})
-        ))
+        entity_list.append(
+            Entity(
+                names=name_entry_list,
+                entity_type=EntityType(unstructured_entity["entity_type"]),
+                description=unstructured_entity.get("description", ""),
+                chapter_idx=unstructured_entity.get("chapter_idx", []),
+                properties=unstructured_entity.get("properties", {}),
+            )
+        )
     return entity_list

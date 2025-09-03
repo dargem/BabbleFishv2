@@ -62,22 +62,24 @@ class Entity:
     @property
     def translations(self) -> Dict[str, str]:
         """Get mapping of names to their translations"""
-        return {entry.name: entry.translation for entry in self.names if entry.translation}
-    
+        return {
+            entry.name: entry.translation for entry in self.names if entry.translation
+        }
+
     def get_translation_for_name(self, name: str) -> Optional[str]:
         """Get the translation for a specific name"""
         for entry in self.names:
             if entry.name.lower() == name.lower():
                 return entry.translation
         return None
-    
+
     def get_name_entry(self, name: str) -> Optional[NameEntry]:
         """Get the full NameEntry for a specific name"""
         for entry in self.names:
             if entry.name.lower() == name.lower():
                 return entry
         return None
-    
+
     def add_name_entry(self, name_entry: NameEntry) -> None:
         """Add a new name entry if it doesn't already exist"""
         existing_names = {entry.name.lower() for entry in self.names}

@@ -23,7 +23,9 @@ class KnowledgeGraphQuery:
             List of Entity objects from the chapter
         """
         with self.graph_manager.driver.session() as session:
-            entities_data = session.execute_read(self._find_entities_by_chapter_tx, chapter_idx)
+            entities_data = session.execute_read(
+                self._find_entities_by_chapter_tx, chapter_idx
+            )
             return reconstruct_entities(entities_data)
 
     def find_connected_entities(
@@ -84,9 +86,13 @@ class KnowledgeGraphQuery:
             # Convert entity data to Entity objects
             for result in results:
                 if "subject_entity" in result:
-                    result["subject_entity"] = reconstruct_entities([result["subject_entity"]])[0]
+                    result["subject_entity"] = reconstruct_entities(
+                        [result["subject_entity"]]
+                    )[0]
                 if "object_entity" in result:
-                    result["object_entity"] = reconstruct_entities([result["object_entity"]])[0]
+                    result["object_entity"] = reconstruct_entities(
+                        [result["object_entity"]]
+                    )[0]
             return results
 
     def get_character_interactions(
@@ -153,9 +159,13 @@ class KnowledgeGraphQuery:
             # Convert entity data to Entity objects
             for result in results:
                 if "subject_entity" in result:
-                    result["subject_entity"] = reconstruct_entities([result["subject_entity"]])[0]
+                    result["subject_entity"] = reconstruct_entities(
+                        [result["subject_entity"]]
+                    )[0]
                 if "object_entity" in result:
-                    result["object_entity"] = reconstruct_entities([result["object_entity"]])[0]
+                    result["object_entity"] = reconstruct_entities(
+                        [result["object_entity"]]
+                    )[0]
             return results
 
     def get_chapter_narrative_graph(self, chapter_idx: int) -> Dict[str, Any]:

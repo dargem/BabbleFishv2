@@ -142,29 +142,33 @@ def example_usage():
             print(f"Found: {harry}")
 
         # Demonstrate name-to-translation linking
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("NAME-TO-TRANSLATION LINKING DEMONSTRATION")
-        print("="*50)
-        
+        print("=" * 50)
+
         # Get Harry Potter entity from the created entities
         harry_entity = entities[0]  # The first entity we created
-        
+
         print(f"\nEntity: {harry_entity.entity_type.value}")
         print("Name entries with their translations:")
         for name_entry in harry_entity.names:
             weakness = " (weak)" if name_entry.is_weak else " (strong)"
             print(f"  '{name_entry.name}' → '{name_entry.translation}'{weakness}")
-        
+
         print(f"\nAll translations mapping: {harry_entity.translations}")
-        
+
         # Test specific name lookups
         print(f"\nTranslation lookup examples:")
         print(f"  'Harry' → '{harry_entity.get_translation_for_name('Harry')}'")
-        print(f"  'The Boy Who Lived' → '{harry_entity.get_translation_for_name('The Boy Who Lived')}'")
-        
+        print(
+            f"  'The Boy Who Lived' → '{harry_entity.get_translation_for_name('The Boy Who Lived')}'"
+        )
+
         # Test case-insensitive lookup
-        print(f"  'harry potter' (lowercase) → '{harry_entity.get_translation_for_name('harry potter')}'")
-        
+        print(
+            f"  'harry potter' (lowercase) → '{harry_entity.get_translation_for_name('harry potter')}'"
+        )
+
         # Get full name entry
         name_entry = harry_entity.get_name_entry("Harry Potter")
         if name_entry:
@@ -173,7 +177,7 @@ def example_usage():
             print(f"  Translation: {name_entry.translation}")
             print(f"  Is Weak: {name_entry.is_weak}")
 
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
 
         # Get all relationships for Harry Potter
         print("\nHarry's relationships:")

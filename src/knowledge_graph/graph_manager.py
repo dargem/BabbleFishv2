@@ -89,7 +89,9 @@ class KnowledgeGraphManager:
             List of Entity objects
         """
         with self.driver.session() as session:
-            entities_data = session.execute_read(self._get_entities_by_type_tx, entity_type)
+            entities_data = session.execute_read(
+                self._get_entities_by_type_tx, entity_type
+            )
             return reconstruct_entities(entities_data)
 
     def get_all_entities(self) -> List[Entity]:
