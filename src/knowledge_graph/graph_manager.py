@@ -15,7 +15,7 @@ class KnowledgeGraphManager:
         """Initialize the knowledge graph manager"""
         self._connection = Neo4jConnection()
         self.driver = self._connection.get_driver()
-        
+
         # Initialize operation handlers
         self._entity_ops = EntityOperations(self.driver)
         self._triplet_ops = TripletOperations(self.driver)
@@ -134,5 +134,3 @@ class KnowledgeGraphManager:
             Dictionary with entity and relationship counts
         """
         return self._db_ops.get_stats()
-
-

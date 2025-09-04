@@ -470,7 +470,9 @@ def reconstruct_entities(unstructured_entities: List[Dict]) -> List[Entity]:
                     )
                 )
             except:
-                raise ValueError("Fatal error with data entry, name list not correlated to values")
+                raise ValueError(
+                    "Fatal error with data entry, name list not correlated to values"
+                )
 
         entity_list.append(
             Entity(

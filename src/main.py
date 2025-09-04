@@ -28,7 +28,7 @@ def run_translation():
     # run it
     ingestion_app.invoke(state_input)
     print("Ingested entries")
-    
+
     exit()
     # Create workflow
     print("Creating translation workflow...")
