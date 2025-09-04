@@ -48,7 +48,8 @@ class Config:
         os.environ["GOOGLE_API_KEY"] = api_key
         llm = GoogleGenerativeAI(model=self.model_name, temperature=self.temperature)
         try:
-            llm.invoke("Are you working")
+            #llm.invoke("Hey are you working, repond with yes/no")
+            holder = 0
         except Exception as e:
             e = str(e)
             match = re.search(r'message:\s*"([^"]+)"', e)
@@ -83,9 +84,10 @@ class Config:
                 lowest_entry = (key, value)
         return lowest_entry[0]
 
-    def get_llm(self) -> GoogleGenerativeAI:
+    def get_llm(self, force_rotate = False) -> GoogleGenerativeAI:
         """Get configured LLM instance."""
-        os.environ["GOOGLE_API_KEY"] = self._next_api_key()
+        if force_rotate or self.key_usage_dic[os.environ["GOOGLE_API_KEY"] > 15]:
+            os.environ["GOOGLE_API_KEY"] = self._next_api_key()
         self.key_usage_dic[os.environ["GOOGLE_API_KEY"]] += 1  # tick it
         return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature)
 
