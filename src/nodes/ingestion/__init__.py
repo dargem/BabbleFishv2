@@ -6,9 +6,9 @@ https://cookbook.openai.com/examples/partners/temporal_agents_with_knowledge_gra
 """
 
 from .triplet_extraction import triplet_extractor_node
-from .term_addition import term_addition_node
+from .term_addition import entity_addition_node
 
 __all__ = [
     "triplet_extractor_node",
-    "term_addition_node",
+    "entity_addition_node",
 ]

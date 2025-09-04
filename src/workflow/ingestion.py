@@ -6,7 +6,7 @@ from ..models import IngestionState
 
 
 from ..nodes.ingestion import (
-    term_addition_node,
+    entity_addition_node,
     triplet_extractor_node,
 )
 
@@ -18,3 +18,6 @@ def create_ingestion_workflow():
         Compiled ingestion workflow for use
     """
     workflow = StateGraph(IngestionState)
+
+    workflow.add_node("entity_addition_node", entity_addition_node)
+    workflow.add_node("triplet_extractor_node", triplet_extractor_node)

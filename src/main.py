@@ -7,29 +7,36 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.workflow import create_translation_workflow
+from src.workflow import create_ingestion_workflow
 from knowledge_graph import KnowledgeGraphManager
-from knowledge_graph import example_usage
 
 
 def run_translation():
     """Main function to run the translation workflow."""
-    example_usage()
-    exit()
+    kg = KnowledgeGraphManager()
+    kg.reset_database()
 
     with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
         sample_text = f.read()
     print("Loaded text from file")
 
     # Database Ingestion
-    print("Ingesting new entries")
-
+    print("Ingesting new entries...")
+    state_input = {"knowledge_graph": kg}
+    # Create workflow
+    ingestion_app = create_ingestion_workflow()
+    # run it
+    ingestion_app.invoke(state_input)
+    print("Ingested entries")
+    
+    exit()
     # Create workflow
     print("Creating translation workflow...")
-    app = create_translation_workflow()
+    translation_app = create_translation_workflow()
     # run workflow
     print("Starting translation process...")
     state_input = {"text": sample_text}
-    result = app.invoke(state_input)
+    result = translation_app.invoke(state_input)
 
     # Print results
     print("\n" + "=" * 50)
@@ -44,7 +51,7 @@ def run_translation():
 
     # Generate workflow visualization
     try:
-        mermaid_code = app.get_graph().draw_mermaid()
+        mermaid_code = translation_app.get_graph().draw_mermaid()
         md_content = (
             f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
         )

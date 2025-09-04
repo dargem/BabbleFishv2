@@ -7,7 +7,7 @@ from ...models import TranslationState
 from ...config import config
 
 
-def term_addition_node(state: TranslationState) -> dict:
+def entity_addition_node(state: TranslationState) -> dict:
     """Recognise entities from original text.
 
     Args:
@@ -45,14 +45,25 @@ def term_addition_node(state: TranslationState) -> dict:
     Only create a strong link if you are absolutely certain two phrases refer to the same entity, and these are unique phrases like first/last name.
     Otherwise create weak links or no links when not necessary.
     
-    This is an example input with example output.
-    
+    This is an example json output.
+    {
+        "Name": str,
+        "Type": enum,
+        "Strong Match": List[str]
+        "Weak Match": List[str]
+        "Description": str
+        "Summary": str
+    }
+
+
+
     <input>
     In October 1998, Clara Mendoza moved from Seville, Spain, to Brighton, England, to begin her studies at the University of Sussex. 
     She had received a scholarship from the British Council to pursue a degree in History of Art. 
     Her first professor, Dr. Martin Holloway, introduced her to archival work at the Victoria and Albert Museum in London. 
     There, Clara uncovered letters written in 1872 by Eleanor Whitcombe, a painter who exhibited in the Royal Academy of Arts.
     </input>
+
     <output>
     [
         {
