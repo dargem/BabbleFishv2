@@ -23,7 +23,7 @@ def create_ingestion_workflow():
     workflow.add_node("triplet_extractor_node", triplet_extractor_node)
 
     workflow.set_entry_point("entity_addition_node")
-    workflow.add_edge("entity_addition_node","triplet_extractor_node")
+    workflow.add_edge("entity_addition_node", "triplet_extractor_node")
     workflow.add_edge("triplet_extractor_node", END)
 
     return workflow.compile()

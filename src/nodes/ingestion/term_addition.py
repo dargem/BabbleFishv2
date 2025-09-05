@@ -11,16 +11,36 @@ from ...config import config
 
 
 class EntityTranslation(BaseModel):
-    original_term: str = Field(..., description="The original entity term from the source text.")
-    translated_term: str = Field(..., description="The translated term for the original entity.")
+    original_term: str = Field(
+        ..., description="The original entity term from the source text."
+    )
+    translated_term: str = Field(
+        ..., description="The translated term for the original entity."
+    )
+
 
 class EntitySchema(BaseModel):
     """Schema for a single named entity and its translation information."""
-    name: EntityTranslation = Field(..., description="The core name of the entity and its translation.")
-    entity_type: str = Field(..., description="The category of the entity, such as Character, Place, or Organization.")
-    strong_matches: List[EntityTranslation] = Field(..., description="A list of terms that are strong matches for the entity, along with their translations.")
-    weak_matches: List[EntityTranslation] = Field(..., description="A list of terms that are weak matches for the entity, along with their translations.")
-    description: str = Field(..., description="An in-depth description of this entity from the source text.")
+
+    name: EntityTranslation = Field(
+        ..., description="The core name of the entity and its translation."
+    )
+    entity_type: str = Field(
+        ...,
+        description="The category of the entity, such as Character, Place, or Organization.",
+    )
+    strong_matches: List[EntityTranslation] = Field(
+        ...,
+        description="A list of terms that are strong matches for the entity, along with their translations.",
+    )
+    weak_matches: List[EntityTranslation] = Field(
+        ...,
+        description="A list of terms that are weak matches for the entity, along with their translations.",
+    )
+    description: str = Field(
+        ..., description="An in-depth description of this entity from the source text."
+    )
+
 
 class EntitySchemaList(BaseModel):
     entities: List[EntitySchema] = Field(..., description="A list of entity Schema")
