@@ -6,6 +6,7 @@ from langchain_google_genai import GoogleGenerativeAI
 import enum
 import re
 import textwrap
+from typing import Dict
 
 load_dotenv(override=True)  # Force override system environment variables
 
@@ -84,12 +85,14 @@ class Config:
                 lowest_entry = (key, value)
         return lowest_entry[0]
 
-    def get_llm(self, force_rotate=False) -> GoogleGenerativeAI:
+    def get_llm(self, force_rotate=False, schema: Dict=None) -> GoogleGenerativeAI:
         """Get configured LLM instance."""
-        if force_rotate or self.key_usage_dic[os.environ["GOOGLE_API_KEY"] > 15]:
+        if force_rotate or self.key_usage_dic[os.environ["GOOGLE_API_KEY"]] > 15:
             os.environ["GOOGLE_API_KEY"] = self._next_api_key()
         self.key_usage_dic[os.environ["GOOGLE_API_KEY"]] += 1  # tick it
-        return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature)
+        if not schema:
+            return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature)
+        return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature).with_structured_output(schema)
 
 
 # Global config instance

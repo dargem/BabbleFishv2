@@ -22,7 +22,7 @@ def run_translation():
 
     # Database Ingestion
     print("Ingesting new entries...")
-    state_input = {"knowledge_graph": kg}
+    state_input = {"knowledge_graph": kg, "text": sample_text}
     # Create workflow
     ingestion_app = create_ingestion_workflow()
     # run it
