@@ -2,19 +2,29 @@
 
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from typing import List
+
+from pydantic import BaseModel, Field
+from typing import List, Tuple
 
 from ...models import TranslationState
 from ...config import config
 
-ingestion_schema = {
-    "Name": str,
-    "Type": str,
-    "Strong Match": List[str],
-    "Weak Match": List[str],
-    "Description": str,
-    "Summary": str,
-}
+
+class EntityTranslation(BaseModel):
+    original_term: str = Field(..., description="The original entity term from the source text.")
+    translated_term: str = Field(..., description="The translated term for the original entity.")
+
+class EntitySchema(BaseModel):
+    """Schema for a single named entity and its translation information."""
+    name: EntityTranslation = Field(..., description="The core name of the entity and its translation.")
+    entity_type: str = Field(..., description="The category of the entity, such as Character, Place, or Organization.")
+    strong_matches: List[EntityTranslation] = Field(..., description="A list of terms that are strong matches for the entity, along with their translations.")
+    weak_matches: List[EntityTranslation] = Field(..., description="A list of terms that are weak matches for the entity, along with their translations.")
+    description: str = Field(..., description="An in-depth description of this entity from the source text.")
+
+class EntitySchemaList(BaseModel):
+    entities: List[EntitySchema] = Field(..., description="A list of entity Schema")
+
 
 def entity_addition_node(state: TranslationState) -> dict:
     """Recognise entities from original text.
@@ -26,8 +36,7 @@ def entity_addition_node(state: TranslationState) -> dict:
         Dictionary with nodes + reasoning
     """
     print("Finding terms...")
-    print(state)
-    llm = config.get_llm(schema=None) # for now ingestion schema doesn't seem to be working
+    llm = config.get_llm(schema=EntitySchemaList)
 
     template = """
     You are a translator tasked with Named Entity Reconition, identifying named terms in the following text.
@@ -53,16 +62,6 @@ def entity_addition_node(state: TranslationState) -> dict:
     
     Only create a strong link if you are absolutely certain two phrases refer to the same entity, and these are unique phrases like first/last name.
     Otherwise create weak links or no links when not necessary.
-    
-    This is an example json output.
-    {{
-        "Name": str,
-        "Type": str,
-        "Strong Match": List[str],
-        "Weak Match": List[str],
-        "Description": str,
-        "Summary": str,
-    }}
 
     <input>
     In October 1998, Clara Mendoza moved from Seville, Spain, to Brighton, England, to begin her studies at the University of Sussex. 
@@ -74,128 +73,162 @@ def entity_addition_node(state: TranslationState) -> dict:
     <output>
     [
         {{
-            "Name": "Clara Mendoza",
-            "Type": "Character",
-            "Strong Match": ["Clara", "Clara Mendoza"],
-            "Weak Match": [],
-            "Description": "A Spanish student who moved from Seville to Brighton in 1998 to study History of Art at the University of Sussex.",
-            "Summary": "Main subject of the passage, likely recurring individual."
+            "name": {{
+            "original_term": "Clara Mendoza",
+            "translated_term": "Clara Mendoza"
+            }},
+            "entity_type": "Character",
+            "strong_matches": [],
+            "weak_matches": [
+            {{
+                "original_term": "Clara",
+                "translated_term": "Clara"
+            }}
+            ],
+            "description": "A student who moved from Seville, Spain to Brighton, England to study at the University of Sussex."
         }},
         {{
-            "Name": "Seville",
-            "Type": "Place",
-            "Strong Match": ["Seville"],
-            "Weak Match": [],
-            "Description": "A city in Spain, the place where Clara Mendoza lived before moving.",
-            "Summary": "Place of origin for Clara."
+            "name": {{
+            "original_term": "Seville",
+            "translated_term": "Seville"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "A city in Spain where Clara Mendoza lived before moving to Brighton."
         }},
         {{
-            "Name": "Spain",
-            "Type": "Place",
-            "Strong Match": ["Spain"],
-            "Weak Match": [],
-            "Description": "Country where Seville is located.",
-            "Summary": "Clara’s country of origin."
+            "name": {{
+            "original_term": "Spain",
+            "translated_term": "Spain"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The country of origin for Clara Mendoza."
         }},
         {{
-            "Name": "Brighton",
-            "Type": "Place",
-            "Strong Match": ["Brighton"],
-            "Weak Match": [],
-            "Description": "City in England where Clara moved for her studies.",
-            "Summary": "New residence for Clara."
+            "name": {{
+            "original_term": "Brighton",
+            "translated_term": "Brighton"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "A city in England where Clara Mendoza moved to for her studies."
         }},
         {{
-            "Name": "England",
-            "Type": "Place",
-            "Strong Match": ["England"],
-            "Weak Match": [],
-            "Description": "Country where Brighton is located.",
-            "Summary": "Destination country of Clara’s move."
+            "name": {{
+            "original_term": "England",
+            "translated_term": "England"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The country where Clara Mendoza pursued her studies."
         }},
         {{
-            "Name": "University of Sussex",
-            "Type": "Place",
-            "Strong Match": ["University of Sussex"],
-            "Weak Match": ["the University"],
-            "Description": "The university where Clara pursued a degree in History of Art.",
-            "Summary": "Institution of Clara’s studies."
+            "name": {{
+            "original_term": "University of Sussex",
+            "translated_term": "University of Sussex"
+            }},
+            "entity_type": "Organization",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The university Clara Mendoza attended."
         }},
         {{
-            "Name": "British Council",
-            "Type": "Organization",
-            "Strong Match": ["British Council"],
-            "Weak Match": [],
-            "Description": "Organization that awarded Clara a scholarship.",
-            "Summary": "Scholarship provider."
+            "name": {{
+            "original_term": "British Council",
+            "translated_term": "British Council"
+            }},
+            "entity_type": "Organization",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The organization that provided a scholarship to Clara Mendoza."
         }},
         {{
-            "Name": "History of Art",
-            "Type": "Field of Study",
-            "Strong Match": ["History of Art"],
-            "Weak Match": [],
-            "Description": "Clara’s chosen academic discipline.",
-            "Summary": "Field of study."
+            "name": {{
+            "original_term": "History of Art",
+            "translated_term": "History of Art"
+            }},
+            "entity_type": "Academic Subject",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The degree Clara Mendoza pursued."
         }},
         {{
-            "Name": "Dr. Martin Holloway",
-            "Type": "Character",
-            "Strong Match": ["Dr. Martin Holloway", "Martin Holloway"],
-            "Weak Match": ["Professor Holloway"],
-            "Description": "Clara’s first professor at the University of Sussex, who introduced her to archival work.",
-            "Summary": "Important mentor figure."
+            "name": {{
+            "original_term": "Dr. Martin Holloway",
+            "translated_term": "Dr. Martin Holloway"
+            }},
+            "entity_type": "Character",
+            "strong_matches": [],
+            "weak_matches": [
+            {{
+                "original_term": "Dr. Holloway",
+                "translated_term": "Dr. Holloway"
+            }},
+            {{
+                "original_term": "Dr. Martin",
+                "translated_term": "Dr. Martin"
+            }}
+            ],
+            "description": "Clara Mendoza's first professor who introduced her to archival work."
         }},
         {{
-            "Name": "Victoria and Albert Museum",
-            "Type": "Place",
-            "Strong Match": ["Victoria and Albert Museum"],
-            "Weak Match": ["the Museum"],
-            "Description": "Museum in London where Clara performed archival work.",
-            "Summary": "Institution where Clara trained."
+            "name": {{
+            "original_term": "Victoria and Albert Museum",
+            "translated_term": "Victoria and Albert Museum"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [
+            {{
+                "original_term": "Victoria and Albert Museum in London",
+                "translated_term": "Victoria and Albert Museum in London"
+            }}
+            ],
+            "weak_matches": [],
+            "description": "The museum in London where Clara Mendoza performed archival work."
         }},
         {{
-            "Name": "London",
-            "Type": "Place",
-            "Strong Match": ["London"],
-            "Weak Match": [],
-            "Description": "City in England where the Victoria and Albert Museum is located.",
-            "Summary": "Location of museum."
+            "name": {{
+            "original_term": "London",
+            "translated_term": "London"
+            }},
+            "entity_type": "Place",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The city where the Victoria and Albert Museum is located."
         }},
         {{
-            "Name": "Eleanor Whitcombe",
-            "Type": "Character",
-            "Strong Match": ["Eleanor Whitcombe"],
-            "Weak Match": ["Whitcombe"],
-            "Description": "Painter from the 19th century whose letters Clara uncovered.",
-            "Summary": "Historical figure relevant to Clara’s research."
+            "name": {{
+            "original_term": "Eleanor Whitcombe",
+            "translated_term": "Eleanor Whitcombe"
+            }},
+            "entity_type": "Character",
+            "strong_matches": [],
+            "weak_matches": [
+            {{
+                "original_term": "a painter",
+                "translated_term": "a painter"
+            }}
+            ],
+            "description": "A painter from 1872 whose letters were uncovered by Clara Mendoza."
         }},
         {{
-            "Name": "Royal Academy of Arts",
-            "Type": "Organization",
-            "Strong Match": ["Royal Academy of Arts"],
-            "Weak Match": ["the Academy"],
-            "Description": "Institution where Eleanor Whitcombe exhibited her paintings.",
-            "Summary": "Art institution connected to Whitcombe."
-        }},
-        {{
-            "Name": "October 1998",
-            "Type": "Date/Event",
-            "Strong Match": ["October 1998"],
-            "Weak Match": [],
-            "Description": "Time when Clara Mendoza moved from Seville to Brighton.",
-            "Summary": "Key temporal marker for the narrative."
-        }},
-        {{
-            "Name": "1872",
-            "Type": "Date/Event",
-            "Strong Match": ["1872"],
-            "Weak Match": [],
-            "Description": "Year in which Eleanor Whitcombe wrote the letters discovered by Clara.",
-            "Summary": "Historical date relevant to archival discovery."
+            "name": {{
+            "original_term": "Royal Academy of Arts",
+            "translated_term": "Royal Academy of Arts"
+            }},
+            "entity_type": "Organization",
+            "strong_matches": [],
+            "weak_matches": [],
+            "description": "The organization where Eleanor Whitcombe exhibited her paintings."
         }}
     ]
     </output>
-    Prioritise finding as many entities as you can.
+    Prioritise finding as many entities as you can. Do not include anything except json form output.
 
     Text: {text}
     """
@@ -204,7 +237,7 @@ def entity_addition_node(state: TranslationState) -> dict:
 
     message = HumanMessage(content=prompt.format(text=state["text"]))
 
-    entities = llm.invoke([message]).strip()
+    entities = llm.invoke([message])
     print(entities)
 
     # add unification with the database and entity class

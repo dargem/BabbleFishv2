@@ -1,10 +1,6 @@
 # BabbleFishv2
 
-Attempted implementation of 
-(Perhaps) Beyond Human Translation: Harnessing Multi-Agent Collaboration for Translating Ultra-Long Literary Texts. https://arxiv.org/html/2405.11804v1. Aided with some Graphiti inspired graphRAG using a graph database with temporal chapter based memory, WIP.
-
-Translation system using LangGraph with iterative feedback loops and fluency optimization.
-Agentic memory through graphRAG using graphiti to build entities + relationship database with neo4j.
+Agentic translation system, an attempted implementation of (Perhaps) Beyond Human Translation: Harnessing Multi-Agent Collaboration for Translating Ultra-Long Literary Texts. https://arxiv.org/html/2405.11804v1. Aided with Graphiti inspired graphRAG using temporal chapter based memory, WIP.
 
 ## Features
 

@@ -3,10 +3,12 @@
 import os
 from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 import enum
 import re
 import textwrap
 from typing import Dict
+
 
 load_dotenv(override=True)  # Force override system environment variables
 
@@ -92,7 +94,7 @@ class Config:
         self.key_usage_dic[os.environ["GOOGLE_API_KEY"]] += 1  # tick it
         if not schema:
             return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature)
-        return GoogleGenerativeAI(model=self.model_name, temperature=self.temperature).with_structured_output(schema)
+        return ChatGoogleGenerativeAI(model=self.model_name, temperature=self.temperature).with_structured_output(schema)
 
 
 # Global config instance
