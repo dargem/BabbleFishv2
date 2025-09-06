@@ -26,8 +26,10 @@ def run_translation():
     # Create workflow
     ingestion_app = create_ingestion_workflow()
     # run it
-    ingestion_app.invoke(state_input)
+    result = ingestion_app.invoke(state_input)
     print("Ingested entries")
+    for entity in result["entities"]:
+        print(entity)
 
     exit()
     # Create workflow

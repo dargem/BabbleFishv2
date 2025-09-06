@@ -1,4 +1,4 @@
-"""entity addition node for the translation workflow, paired with the removal node"""
+"""entity addition node for the translation workflow"""
 
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
@@ -120,6 +120,8 @@ def entity_addition_node(state: TranslationState) -> dict:
     
     Only create a strong link if you are absolutely certain two phrases refer to the same entity, and these are unique phrases like first/last name.
     Otherwise create weak links or no links when not necessary.
+
+    An example translation:
 
     <input>
     In October 1998, Clara Mendoza moved from Seville, Spain, to Brighton, England, to begin her studies at the University of Sussex. 
@@ -286,7 +288,8 @@ def entity_addition_node(state: TranslationState) -> dict:
         }}
     ]
     </output>
-    Prioritise finding as many entities as you can. Do not include anything except json form output.
+    Prioritise finding as many entities as you can. The more entities you find the better, output one for all characters at the bare minimum. 
+    Do not include anything except json form output.
 
     Text: {text}
     """

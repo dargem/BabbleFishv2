@@ -21,6 +21,30 @@ from ...models import TranslationState
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ...config import config
+from pydantic import BaseModel, Field
+from typing import Dict, Optional, Any
+
+
+class TripletMetadata(BaseModel):
+    temporal_type: str = Field(..., description="")
+    statement_type: str = Field(..., description="")
+    confidence: float = Field(
+        ...,
+        description="A number between 0 and 1 indicating the confidence of this triplet",
+    )  # change to strength?
+    additional_props: Optional[Dict[str, Any]] = Field(
+        None,
+        description="An optional field, add if you want to contextualise the triplet",
+    )
+
+
+class TripletSchema(BaseModel):
+    subject: str = (Field(..., description="the subject of the triplet"),)
+    predicate: str = Field(..., description="the action of the subject on the object")
+    object: str = Field(..., description="the object receiving the subject's action")
+    metadata: TripletMetadata = Field(
+        ..., description="The metadata related to this triplet"
+    )
 
 
 def triplet_extractor_node(state: TranslationState):

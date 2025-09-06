@@ -111,13 +111,25 @@ class Entity:
         return props
 
 
+class TemporalType(Enum):
+    static = 0
+    dynamic = 1
+    atemporal = 2
+
+
+class StatementType(Enum):
+    fact = 0
+    opinion = 1
+    prediction = 2
+
+
 @dataclass
 class TripletMetadata:
     """Metadata for a triplet/relationship"""
 
     chapter_idx: int
-    temporal_type: Optional[str] = None  # "static", "dynamic", "atemporal"
-    statement_type: Optional[str] = None  # "fact", "opinion", "prediction"
+    temporal_type: Optional[TemporalType] = None  # "static", "dynamic", "atemporal"
+    statement_type: Optional[StatementType] = None  # "fact", "opinion", "prediction"
     confidence: Optional[float] = None
     source_text: Optional[str] = None
     additional_props: Dict[str, Any] = None
