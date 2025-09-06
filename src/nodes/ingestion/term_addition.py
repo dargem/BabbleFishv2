@@ -4,9 +4,9 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
 from pydantic import BaseModel, Field
-from typing import List, Tuple
+from typing import List
 
-from ...models import TranslationState
+from ...models import TranslationState, Entity, NameEntry
 from ...config import config
 
 
@@ -44,6 +44,44 @@ class EntitySchema(BaseModel):
 
 class EntitySchemaList(BaseModel):
     entities: List[EntitySchema] = Field(..., description="A list of entity Schema")
+
+
+def _name_entry_creator(
+    name: EntityTranslation,
+    is_weak: bool,
+) -> NameEntry:
+    return NameEntry(
+        name=name.original_term, translation=name.translated_term, is_weak=is_weak
+    )
+
+
+def _name_entry_list_creator(
+    name_lists: List[EntityTranslation], is_weak: bool
+) -> List[NameEntry]:
+    return [_name_entry_creator(name, is_weak) for name in name_lists]
+
+
+def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Entity]:
+    """Decomposes an Entity Schema List into a list of entities"""
+    entity_list = []
+    for entity_schema in entity_schema_list.entities:
+        name_entry_list = []
+        name_entry_list.append(_name_entry_creator(entity_schema.name, is_weak=False))
+        name_entry_list.extend(
+            _name_entry_list_creator(entity_schema.strong_matches, is_weak=False)
+        )
+        name_entry_list.extend(
+            _name_entry_list_creator(entity_schema.weak_matches, is_weak=True)
+        )
+        entity_list.append(
+            Entity(
+                names=name_entry_list,
+                entity_type=entity_schema.entity_type,  # TODO need to add stuff for enum validation still!
+                description=entity_schema.description,
+                chapter_idx=0,  # TODO Holder
+            )
+        )
+    return entity_list
 
 
 def entity_addition_node(state: TranslationState) -> dict:
@@ -257,8 +295,7 @@ def entity_addition_node(state: TranslationState) -> dict:
 
     message = HumanMessage(content=prompt.format(text=state["text"]))
 
-    entities = llm.invoke([message])
-    print(entities)
+    entities = _entity_schema_decomposer(llm.invoke([message]))
 
     # add unification with the database and entity class
     return {"entities": entities}

@@ -2,7 +2,7 @@
 
 from .translation import TranslationState
 from .ingestion import IngestionState
-from .graph_data import Entity, EntityType, Triplet, TripletMetadata
+from .graph_data import Entity, EntityType, Triplet, TripletMetadata, NameEntry
 
 __all__ = [
     "TranslationState",
@@ -11,4 +11,5 @@ __all__ = [
     "EntityType",
     "Triplet",
     "TripletMetadata",
+    "NameEntry",
 ]
