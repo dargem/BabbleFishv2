@@ -33,7 +33,7 @@ class TripletMetadata(BaseModel):
         description="A number between 0 and 1 indicating the confidence of this triplet",
     )  # change to strength?
     additional_props: Optional[Dict[str, Any]] = Field(
-        None,
+        default=None,
         description="An optional field, add if you want to contextualise the triplet",
     )
 
