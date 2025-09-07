@@ -123,6 +123,12 @@ class StatementType(Enum):
     prediction = 2
 
 
+class RelativeTemporalType(Enum):
+    current = 0
+    future = 1
+    past = 2
+
+
 @dataclass
 class TripletMetadata:
     """Metadata for a triplet/relationship"""
