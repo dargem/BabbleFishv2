@@ -116,10 +116,12 @@ class TemporalType(Enum):
     dynamic = "dynamic"
     atemporal = "atemporal"
 
+
 class StatementType(Enum):
     fact = "fact"
     opinion = "opinion"
     prediction = "prediction"
+
 
 class TenseType(Enum):
     current = "current"
@@ -132,11 +134,11 @@ class TripletMetadata:
 
     chapter_idx: int
     temporal_type: TemporalType  # static, dynamic, atemporal
-    statement_type: StatementType # fact, opinion, prediction
-    tense_type: TenseType # current, future, past 
+    statement_type: StatementType  # fact, opinion, prediction
+    tense_type: TenseType  # current, future, past
     importance: float
     source_text: str
-    additional_props: Optional[Dict[str, Any]] = None
+    additional_props: Optional[str] = None
 
     def __post_init__(self):
         if self.additional_props is None:

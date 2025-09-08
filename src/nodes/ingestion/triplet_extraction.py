@@ -17,7 +17,14 @@ triplet extraction
         - Probably filter to exclude by llm?
 """
 
-from ...models import IngestionState, TemporalType, StatementType, TenseType
+from ...models import (
+    IngestionState,
+    TemporalType,
+    StatementType,
+    TenseType,
+    Triplet,
+    TripletMetadata,
+)
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ...config import config
@@ -25,15 +32,19 @@ from pydantic import BaseModel, Field
 from typing import Dict, Optional, Any, List
 
 
-class TripletMetadata(BaseModel):
-    temporal_type: TemporalType = Field(..., description="The temporal category of the triplet")
-    statement_type: StatementType = Field(..., description="The statement type of the triplet")
+class TripletMetadataSchema(BaseModel):
+    temporal_type: TemporalType = Field(
+        ..., description="The temporal category of the triplet"
+    )
+    statement_type: StatementType = Field(
+        ..., description="The statement type of the triplet"
+    )
     tense_type: TenseType = Field(..., description="The relative tense of the triplet")
     importance: float = Field(
         ...,
         description="A number between 0 and 100 indicating the importance of this triplet",
     )
-    additional_props: Optional[Dict[str, Any]] = Field(
+    additional_props: Optional[str] = Field(
         default=None,
         description="An optional field, add if you want to place more entries to contextualise the triplet",
     )
@@ -43,16 +54,45 @@ class TripletSchema(BaseModel):
     subject: str = Field(..., description="The subject of the triplet")
     predicate: str = Field(..., description="The action of the subject on the object")
     object: str = Field(..., description="The object receiving the subject's action")
-    metadata: TripletMetadata = Field(
+    metadata: TripletMetadataSchema = Field(
         ..., description="The metadata related to this triplet"
     )
 
+
 class TripletSchemaList(BaseModel):
-    triplet_list: List[TripletSchema] = Field(..., description="A list of triplets made from the text")
+    triplet_list: List[TripletSchema] = Field(
+        ..., description="A list of triplets made from the text"
+    )
+
+def triplet_metadata_decomposer(triplet: TripletSchema) -> TripletMetadata:
+    metadata = triplet.metadata
+    return TripletMetadata(
+        chapter_idx=0,
+        temporal_type=metadata.temporal_type,
+        statement_type=metadata.statement_type,
+        tense_type=metadata.tense_type,
+        importance=metadata.importance,
+        source_text="LOTM",
+        additional_props=metadata.additional_props,
+    )
+
+def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[Triplet]:
+    triplet_list = []
+    triplet_schema_list = triplets.triplet_list
+    for triplet in triplet_schema_list:
+        triplet_list.append(
+            Triplet(
+                subject_name=triplet.subject,
+                predicate=triplet.predicate,
+                object_name=triplet.object,
+                metadata=triplet_metadata_decomposer(triplet)
+            )
+        )
+    return triplet_list
 
 
 def triplet_extractor_node(state: IngestionState):
-    print("finding triplets...")
+    print("Finding triplets...")
     llm = config.get_llm(schema=TripletSchemaList)
 
     prompt = PromptTemplate(
@@ -112,9 +152,14 @@ def triplet_extractor_node(state: IngestionState):
 
         ===Text for Triplet Extraction===
         {text}
-        """
+        """,
     )
 
     message = HumanMessage(content=prompt.format(text=state["text"]))
     # parser needed!
-    print(llm.invoke([message]))
+    unparsed_triplets=llm.invoke([message])
+    parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
+    for triplet in parsed_triplets:
+        print(triplet.subject_name, triplet.predicate, triplet.object_name)
+        print(triplet.metadata.__dict__)
+
