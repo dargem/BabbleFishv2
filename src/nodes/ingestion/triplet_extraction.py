@@ -17,7 +17,7 @@ triplet extraction
         - Probably filter to exclude by llm?
 """
 
-from ...models import TranslationState, TemporalType, StatementType
+from ...models import IngestionState, TemporalType, StatementType, TenseType
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ...config import config
@@ -27,20 +27,20 @@ from typing import Dict, Optional, Any, List
 
 class TripletMetadata(BaseModel):
     temporal_type: TemporalType = Field(..., description="The temporal category of the triplet")
-    statement_type: StatementType = Field(..., description="The type of statement")
-    time: str = Field(..., description="The time a triplet was created")
-    confidence: float = Field(
+    statement_type: StatementType = Field(..., description="The statement type of the triplet")
+    tense_type: TenseType = Field(..., description="The relative tense of the triplet")
+    importance: float = Field(
         ...,
-        description="A number between 0 and 1 indicating the confidence of this triplet",
-    )  # change to strength?
+        description="A number between 0 and 100 indicating the importance of this triplet",
+    )
     additional_props: Optional[Dict[str, Any]] = Field(
         default=None,
-        description="An optional field, add if you want to contextualise the triplet",
+        description="An optional field, add if you want to place more entries to contextualise the triplet",
     )
 
 
 class TripletSchema(BaseModel):
-    subject: str = Field(..., description="The subject of the triplet"),
+    subject: str = Field(..., description="The subject of the triplet")
     predicate: str = Field(..., description="The action of the subject on the object")
     object: str = Field(..., description="The object receiving the subject's action")
     metadata: TripletMetadata = Field(
@@ -51,23 +51,45 @@ class TripletSchemaList(BaseModel):
     triplet_list: List[TripletSchema] = Field(..., description="A list of triplets made from the text")
 
 
-def triplet_extractor_node(state: TranslationState):
+def triplet_extractor_node(state: IngestionState):
+    print("finding triplets...")
     llm = config.get_llm(schema=TripletSchemaList)
 
     prompt = PromptTemplate(
-        input_variables=["text", "language"],
+        input_variables=["text"],
         template="""
-        {% macro tidy(name) -%}
-        {{ name.replace('_', ' ')}}
-        {%- endmacro %}
-
-        You are an expert finance professional and information-extraction assistant.
+        You are an expert information-extraction assistant.
 
         ===Tasks===
-        1. Identify and extract triplets from the chunk given the extraction guidelines
-        2. Label these as temporally Static, Dynamic, or Atemporal 
+        1. Identify and extract as many triplets as possible from the chunk given according to the extraction guidelines
+        2. Label triplets as temporally Static, Dynamic, or Atemporal
+            - Static facts often describe a singular point in time
+                - They are always valid at the point they occurred
+                - For example the following are static:
+                    - The company was founded in 1998
+                    - X resulted in Y
+            - Dynamic facts describe a period in time
+                - They are valid at the point they occurred, but also into the future or past
+                - For example the following are dynamically:
+                    - John is the mayor
+                    - The economy is shrinking
+            - Atemporal facts describe absolute truths
+                - They are always valid, both in present past and future
+                - For example the following are atemporal:
+                    - The speed of light in a vacuum is ≈3x10⁸ ms⁻¹
+                    - The moon orbits the earth
+                    - Water boils at 100 degrees celsius
         3. Classify as a Fact, Opinion, or Prediction
-        4. Judge the strength of the triplet from a scale of 0 to 1
+            - Facts are verifiably true at the time of the claim
+            - Opinions are subjectively true considering the speakers judgement
+            - Predictions are hypotheticals
+        4. Classify the tense of the triplet as present or past
+            - Past is applicable if its part of a flashback sequence or the triplet refers to a past event
+                - e.g. Bob used to like Nike would be resolved into the triplet of Bob liking Nike resolved as past.
+            - Present is the present part of the story which is currently happening, doesn't include flashbacks.
+        4. Judge the importance of the triplet from a scale of 0 to 100
+            - 100 is for highly important triplets containing essential information
+            - 20 would connote low importance
         5. Optionally add additional propositions to the triplet if contextualisation required
 
         ===Extraction Guidelines===
@@ -85,41 +107,14 @@ def triplet_extractor_node(state: TranslationState):
             - There should be no reference to abstract entities such as 'the company', resolve to the actual entity name.
             - expand abbreviations and acronyms to their full form
 
-        - Include any explicit dates, times, or quantitative qualifiers that make the fact precise
-        - If a statement refers to more than 1 temporal event, it should be broken into multiple statements describing the different temporalities of the event.
-        - If there is a static and dynamic version of a relationship described, both versions should be extracted
+        - Include any explicit dates, times, or quantitative qualifiers that make the fact precise in the metadata
+        - If a triplet refers to more than 1 temporal event, it should be broken into multiple statements describing the different temporalities of the event.
 
-        {%- if definitions %}
-        {%- for section_key, section_dict in definitions.items() %}
-        ==== {{ tidy(section_key) | upper }} DEFINITIONS & GUIDANCE ====
-            {%- for category, details in section_dict.items() %}
-        {{ loop.index }}. {{ category }}
-        - Definition: {{ details.get("definition", "") }}
-            {% endfor -%}
-        {% endfor -%}
-        {% endif -%}
-
-        ===Examples===
-        Example Chunk: '''
-        TechNova Q1 Transcript (Edited Version)
-        Attendees:
-        * Matt Taylor
-            ABC Ltd - Analyst
-        * Taylor Morgan
-            BigBank Senior - Coordinator
-        ----
-        On April 1st, 2024, John Smith was appointed CFO of TechNova Inc. He works alongside the current Senior VP Olivia Doe. He is currently overseeing the company’s global restructuring initiative, which began in May 2024 and is expected to continue into 2025.
-        Analysts believe this strategy may boost profitability, though others argue it risks employee morale. One investor stated, “I think Jane has the right vision.”
-        According to TechNova’s Q1 report, the company achieved a 10% increase in revenue compared to Q1 2023. It is expected that TechNova will launch its AI-driven product line in Q3 2025.
-        Since June 2024, TechNova Inc has been negotiating strategic partnerships in Asia. Meanwhile, it has also been expanding its presence in Europe, starting July 2024. As of September 2025, the company is piloting a remote-first work policy across all departments.
-        Competitor SkyTech announced last month they have developed a new AI chip and launched their cloud-based learning platform.
-        '''
-        ===End of Examples===
-
-        **Output format**
-        Return only a list of extracted labelled statements in the JSON ARRAY of objects that match the schema below:
-        {{ json_schema }}
-        """,
+        ===Text for Triplet Extraction===
+        {text}
+        """
     )
 
-    pass
+    message = HumanMessage(content=prompt.format(text=state["text"]))
+    # parser needed!
+    print(llm.invoke([message]))

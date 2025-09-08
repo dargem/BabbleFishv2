@@ -112,21 +112,18 @@ class Entity:
 
 
 class TemporalType(Enum):
-    static = 0
-    dynamic = 1
-    atemporal = 2
-
+    static = "static"
+    dynamic = "dynamic"
+    atemporal = "atemporal"
 
 class StatementType(Enum):
-    fact = 0
-    opinion = 1
-    prediction = 2
+    fact = "fact"
+    opinion = "opinion"
+    prediction = "prediction"
 
-
-class RelativeTemporalType(Enum):
-    current = 0
-    future = 1
-    past = 2
+class TenseType(Enum):
+    current = "current"
+    past = "past"
 
 
 @dataclass
@@ -134,11 +131,12 @@ class TripletMetadata:
     """Metadata for a triplet/relationship"""
 
     chapter_idx: int
-    temporal_type: Optional[TemporalType] = None  # "static", "dynamic", "atemporal"
-    statement_type: Optional[StatementType] = None  # "fact", "opinion", "prediction"
-    confidence: Optional[float] = None
-    source_text: Optional[str] = None
-    additional_props: Dict[str, Any] = None
+    temporal_type: TemporalType  # static, dynamic, atemporal
+    statement_type: StatementType # fact, opinion, prediction
+    tense_type: TenseType # current, future, past 
+    importance: float
+    source_text: str
+    additional_props: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if self.additional_props is None:

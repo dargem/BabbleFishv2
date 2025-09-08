@@ -10,6 +10,7 @@ from .graph_data import (
     NameEntry,
     TemporalType,
     StatementType,
+    TenseType,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "NameEntry",
     "TemporalType",
     "StatementType",
+    "TenseType",
 ]

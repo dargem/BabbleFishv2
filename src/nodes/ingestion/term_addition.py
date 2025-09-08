@@ -6,7 +6,7 @@ from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
 from typing import List
 
-from ...models import TranslationState, Entity, NameEntry
+from ...models import IngestionState, Entity, NameEntry
 from ...config import config
 
 
@@ -84,7 +84,7 @@ def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Enti
     return entity_list
 
 
-def entity_addition_node(state: TranslationState) -> dict:
+def entity_addition_node(state: IngestionState) -> dict:
     """Recognise entities from original text.
 
     Args:
