@@ -3,7 +3,7 @@
 Agentic translation system, an attempted implementation of (Perhaps) Beyond Human Translation: Harnessing Multi-Agent Collaboration for Translating Ultra-Long Literary Texts. https://arxiv.org/html/2405.11804v1. Aided with Graphiti inspired graphRAG using temporal chapter based memory, WIP.
 
 ## Features
-
+- **Graphical Database**: Facade created, interfaces neo4j
 - **Feedback Loops**: LLM based feedback loops for reviewing
 - **Workflow Visualization**: Generates Mermaid diagrams of the process
 
