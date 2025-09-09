@@ -16,7 +16,7 @@ def run_translation():
     kg = KnowledgeGraphManager()
     kg.reset_database()
 
-    with open("../data/raw/lotm_files/lotm1.txt", "r", encoding="UTF-8") as f:
+    with open("../data/raw/lotm_files/lotm2.txt", "r", encoding="UTF-8") as f:
         sample_text = f.read()
     print("Loaded text from file")
 

@@ -46,7 +46,7 @@ class TripletMetadataSchema(BaseModel):
     )
     additional_props: Optional[str] = Field(
         default=None,
-        description="An optional field, add if you want to place more entries to contextualise the triplet",
+        description="An optional field, add if you want to add more information, triplets won't have the original text for context",
     )
 
 
@@ -64,6 +64,7 @@ class TripletSchemaList(BaseModel):
         ..., description="A list of triplets made from the text"
     )
 
+
 def triplet_metadata_decomposer(triplet: TripletSchema) -> TripletMetadata:
     metadata = triplet.metadata
     return TripletMetadata(
@@ -76,6 +77,7 @@ def triplet_metadata_decomposer(triplet: TripletSchema) -> TripletMetadata:
         additional_props=metadata.additional_props,
     )
 
+
 def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[Triplet]:
     triplet_list = []
     triplet_schema_list = triplets.triplet_list
@@ -85,7 +87,7 @@ def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[Triplet]:
                 subject_name=triplet.subject,
                 predicate=triplet.predicate,
                 object_name=triplet.object,
-                metadata=triplet_metadata_decomposer(triplet)
+                metadata=triplet_metadata_decomposer(triplet),
             )
         )
     return triplet_list
@@ -98,68 +100,78 @@ def triplet_extractor_node(state: IngestionState):
     prompt = PromptTemplate(
         input_variables=["text"],
         template="""
-        You are an expert information-extraction assistant.
+        You are an expert information-extraction assistant. Your task is to extract **high-importance, context-independent triplets** suitable for a knowledge base or knowledge graph.
 
-        ===Tasks===
-        1. Identify and extract as many triplets as possible from the chunk given according to the extraction guidelines
-        2. Label triplets as temporally Static, Dynamic, or Atemporal
-            - Static facts often describe a singular point in time
-                - They are always valid at the point they occurred
-                - For example the following are static:
-                    - The company was founded in 1998
-                    - X resulted in Y
-            - Dynamic facts describe a period in time
-                - They are valid at the point they occurred, but also into the future or past
-                - For example the following are dynamically:
-                    - John is the mayor
-                    - The economy is shrinking
-            - Atemporal facts describe absolute truths
-                - They are always valid, both in present past and future
-                - For example the following are atemporal:
-                    - The speed of light in a vacuum is ≈3x10⁸ ms⁻¹
-                    - The moon orbits the earth
-                    - Water boils at 100 degrees celsius
-        3. Classify as a Fact, Opinion, or Prediction
-            - Facts are verifiably true at the time of the claim
-            - Opinions are subjectively true considering the speakers judgement
-            - Predictions are hypotheticals
-        4. Classify the tense of the triplet as present or past
-            - Past is applicable if its part of a flashback sequence or the triplet refers to a past event
-                - e.g. Bob used to like Nike would be resolved into the triplet of Bob liking Nike resolved as past.
-            - Present is the present part of the story which is currently happening, doesn't include flashbacks.
-        4. Judge the importance of the triplet from a scale of 0 to 100
-            - 100 is for highly important triplets containing essential information
-            - 20 would connote low importance
-        5. Optionally add additional propositions to the triplet if contextualisation required
+        === Triplet Definition ===
 
-        ===Extraction Guidelines===
-        - Follow the json output structure to clearly show subject-predicate-object relationships
-            - Subject is the action maker
-            - Predicate is the action
-            - Object is the receiver of the action
-        - Each triplet should express a single, complete relationship (it is a good idea to split a statement into multiple triplets to achieve this)
-        - Avoid complex or compound predicates that combine multiple relationships
-        - Must be understandable without requiring context of the entire document
-        - Should be minimally modified from the original text
-        - Must be understandable without requiring context of the entire document,
-            - resolve co-references and pronouns to extract complete statements, if in doubt use main_entity for example:
-            "your nearest competitor" -> "main_entity's nearest competitor"
-            - There should be no reference to abstract entities such as 'the company', resolve to the actual entity name.
-            - expand abbreviations and acronyms to their full form
+        A triplet is a single, abstracted fact expressed as:  
+        **Subject (Named Entity) — Predicate — Object (Named Entity, Attribute, Possession, Location, Ability, Role, or Quantifiable Fact)**  
+        A triplet is *NOT THE ORIGINAL TEXT*, it is a modi
+        
+        Rules for triplets:
 
-        - Include any explicit dates, times, or quantitative qualifiers that make the fact precise in the metadata
-        - If a triplet refers to more than 1 temporal event, it should be broken into multiple statements describing the different temporalities of the event.
+        1. **Do not include narrative actions, thoughts, or mundane events.**  
+        - Example to exclude: "Alice picked up a pen", "John walked to the store".  
+        2. **At all costs never include vague pronouns, articles, or undefined entities.**  
+        - Example to exclude: "it", "himself", "this", "the object", "his".
+        - Grammatical clarity does not matter, ensure all entities are resolved at all costs
+        3. **Always perform coreference resolution.**  
+        - Replace pronouns or vague references with the correct named entity.  
+        4. **Only extract triplets with meaningful, knowledge-worthy information.**  
 
-        ===Text for Triplet Extraction===
+        Acceptable triplets include:  
+        - Relationships between named entities (people, organizations, institutions).  
+        - Example: "Maria Gonzalez — member of — World Health Organization"  
+        - Roles, titles, occupations, or official positions.  
+        - Example: "Thomas Clarke — works as — Biochemist"  
+        - Abilities, powers, rituals, supernatural rules, or procedural requirements.  
+        - Example: "Fire Ritual — requires — three sacred leaves from Grynn"  
+        - Important locations, historical facts, or possessions of entities.  
+        - Example: "Alexander Hamilton — founded — Bank of New York"  
+        - Quantifiable or verifiable facts about named entities.  
+        - Example: "Mount Everest — height — 8848 meters"  
+
+        === Temporal and Context Labels ===  
+
+        Each triplet must be labeled as:  
+        - **Temporal Type:** Static, Dynamic, or Atemporal  
+        - **Statement Type:** Fact, Opinion, Prediction  
+        - **Tense Type:** Past, Present  
+        - **Importance:** 0-100  
+
+        Optional: Add additional propositions for clarity if needed.
+
+        === Key Filters ===  
+
+        - Never output generic events or trivial narrative actions, even if they involve named entities.  
+        - Never include abstract, speculative, or rhetorical statements.  
+        - Triplets must be fully understandable **without reading the source text**.  
+        - Only include **knowledge-worthy relationships or attributes**.  
+
+        === Extraction Guidelines ===
+
+        1. Resolve all pronouns to named entities.  
+        2. Extract only **high-value, concrete facts**.  
+        3. Avoid compound predicates; break multi-fact statements into separate triplets.  
+        4. Include explicit dates, numbers, or qualifiers if available.  
+        5. If a fact is temporary or procedural, label appropriately (Dynamic).  
+        6. Abstract narrative actions into knowledge-worthy facts only if they convey abilities, powers, or roles.
+
+        === Task ===
+
+        Extract **only triplets that meet these criteria**. Ignore everything else.
+
         {text}
         """,
     )
 
     message = HumanMessage(content=prompt.format(text=state["text"]))
     # parser needed!
-    unparsed_triplets=llm.invoke([message])
+    unparsed_triplets = llm.invoke([message])
     parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
     for triplet in parsed_triplets:
-        print(triplet.subject_name, triplet.predicate, triplet.object_name)
-        print(triplet.metadata.__dict__)
-
+        if triplet.metadata.importance >= 0:
+            print(
+                f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
+            )
+            print(triplet.metadata.__dict__)
