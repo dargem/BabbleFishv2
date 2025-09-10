@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any, Optional
 from neo4j import Driver
-from src.models.graph_data import Entity, EntityType
+from src.models.node import Entity, EntityType
 from .utils import reconstruct_entities
 
 

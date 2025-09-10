@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any, Optional, Set
 from .graph_manager import KnowledgeGraphManager
-from src.models.graph_data import EntityType, Entity
+from src.models.node import EntityType, Entity
 from .utils import reconstruct_entities
 
 

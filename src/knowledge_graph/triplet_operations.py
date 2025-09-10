@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any
 from neo4j import Driver
-from src.models.graph_data import Triplet
+from src.models.edge import Triplet
 
 
 class TripletOperations:

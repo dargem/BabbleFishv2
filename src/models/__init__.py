@@ -2,12 +2,14 @@
 
 from .translation import TranslationState
 from .ingestion import IngestionState
-from .graph_data import (
+from .node import (
     Entity,
     EntityType,
+    NameEntry,
+)
+from .edge import (
     Triplet,
     TripletMetadata,
-    NameEntry,
     TemporalType,
     StatementType,
     TenseType,
