@@ -1,4 +1,4 @@
-"""Data models for the knowledge graph"""
+"""Node based data models"""
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
@@ -19,31 +19,6 @@ class EntityType(Enum):
     LANGUAGE = "Language"  # Fictional tongues, scripts, dialects
     SPECIES = "Species"  # Distinct races/lineages in the setting
     MYTH = "Myth"  # Legends, prophecies, religious/magic lore
-
-
-class Predicate(Enum):
-    """Enumeration of normalised predicates."""
-
-    IS_A = "IS_A"
-    HAS_A = "HAS_A"
-    LOCATED_IN = "LOCATED_IN"
-    HOLDS_ROLE = "HOLDS_ROLE"
-    PRODUCES = "PRODUCES"
-    SELLS = "SELLS"
-    LAUNCHED = "LAUNCHED"
-    DEVELOPED = "DEVELOPED"
-    ADOPTED_BY = "ADOPTED_BY"
-    INVESTS_IN = "INVESTS_IN"
-    COLLABORATES_WITH = "COLLABORATES_WITH"
-    SUPPLIES = "SUPPLIES"
-    HAS_REVENUE = "HAS_REVENUE"
-    INCREASED = "INCREASED"
-    DECREASED = "DECREASED"
-    RESULTED_IN = "RESULTED_IN"
-    TARGETS = "TARGETS"
-    PART_OF = "PART_OF"
-    DISCONTINUED = "DISCONTINUED"
-    SECURED = "SECURED"
 
 
 @dataclass
@@ -134,68 +109,3 @@ class Entity:
         props.update(self.properties)
 
         return props
-
-
-class TemporalType(Enum):
-    static = "static"
-    dynamic = "dynamic"
-    atemporal = "atemporal"
-
-
-class StatementType(Enum):
-    fact = "fact"
-    opinion = "opinion"
-    prediction = "prediction"
-
-
-class TenseType(Enum):
-    current = "current"
-    past = "past"
-
-
-@dataclass
-class TripletMetadata:
-    """Metadata for a triplet/relationship"""
-
-    chapter_idx: int
-    temporal_type: TemporalType  # static, dynamic, atemporal
-    statement_type: StatementType  # fact, opinion, prediction
-    tense_type: TenseType  # current, future, past
-    importance: float
-    source_text: str
-    additional_props: Optional[str] = None
-
-    def __post_init__(self):
-        if self.additional_props is None:
-            self.additional_props = {}
-
-    def to_neo4j_props(self) -> Dict[str, Any]:
-        """Convert metadata to Neo4j relationship properties"""
-        props = {"chapter_idx": self.chapter_idx}
-
-        if self.temporal_type:
-            props["temporal_type"] = self.temporal_type
-        if self.statement_type:
-            props["statement_type"] = self.statement_type
-        if self.confidence is not None:
-            props["confidence"] = self.confidence
-        if self.source_text:
-            props["source_text"] = self.source_text
-
-        # Add additional properties
-        props.update(self.additional_props)
-
-        return props
-
-
-@dataclass
-class Triplet:
-    """A relationship triplet between entities"""
-
-    subject_name: str  # Name of the subject entity
-    predicate: str  # The relationship type
-    object_name: str  # Name of the object entity
-    metadata: TripletMetadata
-
-    def __str__(self):
-        return f"({self.subject_name}) -[{self.predicate}]-> ({self.object_name})"
