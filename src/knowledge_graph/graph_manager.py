@@ -1,8 +1,7 @@
 """Knowledge graph manager for Neo4j operations"""
 
 from typing import List, Dict, Any, Optional
-from src.models.node import Entity
-from src.models.edge import Triplet, EntityType
+from src.core import Entity, Triplet, EntityType
 from .connection import Neo4jConnection
 from .entity_operations import EntityOperations
 from .triplet_operations import TripletOperations

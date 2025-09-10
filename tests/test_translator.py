@@ -4,7 +4,7 @@ import unittest
 import os
 from unittest.mock import Mock
 
-from src.nodes.translation.translator import translator_node
+from src.workflows.translation.translator import translator_node
 from tests.base import MockLLMTestCase
 from tests.fixtures import (
     CHINESE_SAMPLE_TEXT,

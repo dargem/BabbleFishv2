@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import Mock
 
-from src.nodes.translation.editing import junior_editor_node, fluency_editor_node
+from src.workflows.translation.editing import junior_editor_node, fluency_editor_node
 from tests.base import MockLLMTestCase
 from tests.fixtures import (
     CHINESE_SAMPLE_TEXT,

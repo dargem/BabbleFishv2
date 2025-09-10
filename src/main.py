@@ -6,9 +6,8 @@ from pathlib import Path
 # Add the parent directory to sys.path to enable relative imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.workflow import create_translation_workflow
-from src.workflow import create_ingestion_workflow
-from knowledge_graph import KnowledgeGraphManager
+from src.workflows import create_translation_workflow, create_ingestion_workflow
+from src.knowledge_graph import KnowledgeGraphManager
 
 
 def run_translation():

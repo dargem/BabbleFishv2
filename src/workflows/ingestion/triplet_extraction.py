@@ -17,8 +17,8 @@ triplet extraction
         - Probably filter to exclude by llm?
 """
 
-from ...models import (
-    IngestionState,
+from ..states import IngestionState
+from src.core import (
     TemporalType,
     StatementType,
     TenseType,
@@ -27,7 +27,7 @@ from ...models import (
 )
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from ...config import config
+from src.config import config
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, Any, List
 

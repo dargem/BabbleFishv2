@@ -1,7 +1,7 @@
 """Utilities for knowledge graph operations"""
 
 from typing import List, Dict, Any, Tuple, Optional
-from src.models.graph_data import (
+from src.core import (
     Entity,
     Triplet,
     EntityType,

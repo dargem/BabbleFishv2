@@ -5,13 +5,10 @@ from .query import KnowledgeGraphQuery
 from .utils import get_entity_summary, get_triplet_summary
 
 
-from src.models.node import (
+from src.core import (
     Entity,
     EntityType,
     NameEntry,
-)
-
-from src.models.edge import (
     Triplet,
     TripletMetadata,
 )

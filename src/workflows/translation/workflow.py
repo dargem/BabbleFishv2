@@ -2,9 +2,9 @@
 
 from langgraph.graph import StateGraph, END
 
-from ..models import TranslationState
+from ..states import TranslationState
 
-from ..nodes.translation import (
+from . import (
     style_node,
     language_detector_node,
     translator_node,
@@ -12,7 +12,7 @@ from ..nodes.translation import (
     fluency_editor_node,
     inc_translate_feedback_node,
 )
-from ..config import config
+from ...config import config
 
 APPROVED_RESPONSE_MARKER = "approved response accepted"
 STYLE_GUIDE_NEEDED = "style_guide needed"

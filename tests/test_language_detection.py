@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 
-from src.nodes.translation.language_detection import language_detector_node
+from src.workflows.translation.language_detection import language_detector_node
 from tests.base import BaseTranslationTest
 from tests.fixtures import CHINESE_SAMPLE_TEXT, MINIMAL_CHINESE_TEXT
 

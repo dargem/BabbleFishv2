@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock, patch
 from typing import Dict, Any
 
-from src.models import TranslationState
+from src.core import TranslationState
 
 
 class BaseTranslationTest(unittest.TestCase):

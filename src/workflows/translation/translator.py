@@ -3,8 +3,8 @@
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from ...models import TranslationState
-from ...config import config
+from ..states import TranslationState
+from src.config import config
 
 
 def translator_node(state: TranslationState) -> dict:

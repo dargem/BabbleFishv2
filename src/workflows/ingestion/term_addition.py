@@ -6,8 +6,9 @@ from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
 from typing import List
 
-from ...models import IngestionState, Entity, NameEntry
-from ...config import config
+from ..states import IngestionState
+from src.core import Entity, NameEntry
+from src.config import config
 
 
 class EntityTranslation(BaseModel):

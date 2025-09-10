@@ -1,23 +1,20 @@
-"""Contains state models for workflow and models for graph data"""
+"""Core domain models for the knowledge graph"""
 
-from .translation import TranslationState
-from .ingestion import IngestionState
-from .node import (
+from .entities import (
     Entity,
     EntityType,
     NameEntry,
 )
-from .edge import (
+from .relationships import (
     Triplet,
     TripletMetadata,
     TemporalType,
     StatementType,
     TenseType,
+    FictionPredicate,
 )
 
 __all__ = [
-    "TranslationState",
-    "IngestionState",
     "Entity",
     "EntityType",
     "Triplet",
@@ -26,4 +23,5 @@ __all__ = [
     "TemporalType",
     "StatementType",
     "TenseType",
+    "FictionPredicate",
 ]

@@ -2,10 +2,10 @@
 
 from langgraph.graph import StateGraph, END
 
-from ..models import IngestionState
+from ..states import IngestionState
 
 
-from ..nodes.ingestion import (
+from . import (
     entity_addition_node,
     triplet_extractor_node,
 )
