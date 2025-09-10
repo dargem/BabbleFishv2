@@ -21,6 +21,31 @@ class EntityType(Enum):
     MYTH = "Myth"  # Legends, prophecies, religious/magic lore
 
 
+class Predicate(Enum):
+    """Enumeration of normalised predicates."""
+
+    IS_A = "IS_A"
+    HAS_A = "HAS_A"
+    LOCATED_IN = "LOCATED_IN"
+    HOLDS_ROLE = "HOLDS_ROLE"
+    PRODUCES = "PRODUCES"
+    SELLS = "SELLS"
+    LAUNCHED = "LAUNCHED"
+    DEVELOPED = "DEVELOPED"
+    ADOPTED_BY = "ADOPTED_BY"
+    INVESTS_IN = "INVESTS_IN"
+    COLLABORATES_WITH = "COLLABORATES_WITH"
+    SUPPLIES = "SUPPLIES"
+    HAS_REVENUE = "HAS_REVENUE"
+    INCREASED = "INCREASED"
+    DECREASED = "DECREASED"
+    RESULTED_IN = "RESULTED_IN"
+    TARGETS = "TARGETS"
+    PART_OF = "PART_OF"
+    DISCONTINUED = "DISCONTINUED"
+    SECURED = "SECURED"
+
+
 @dataclass
 class NameEntry:
     """Type of a name entry, strong name entries are grouped, weak aren't"""

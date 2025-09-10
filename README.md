@@ -15,7 +15,8 @@ Current pipeline
 - **Fluency Editor**: Base text blind index based editing for fluency
 
 ## TODO
-
+- Setup phase creates domain specific edge types
+- Integrate in better edge types
 - change architecture, 3 workflows,
     - setup (get language, style guide etc), 
     - ingestion (get triplets into graphical database with localisations)
