@@ -1,6 +1,6 @@
 """Configuration schemas with validation."""
 
-from pydantic import BaseSettings, Field, validator
+from pydantic import BaseSettings, Field, field_validator
 from typing import List, Optional
 
 
@@ -25,13 +25,13 @@ class LLMConfig(BaseSettings):
     api_keys: List[str] = Field(min_items=1)
     max_requests_per_key: int = Field(default=15, ge=1, le=100)
     
-    @validator('api_keys')
+    @field_validator('api_keys')
     def validate_api_keys(cls, v):
         if not v or any(not key.strip() for key in v):
             raise ValueError("All API keys must be non-empty")
         return [key.strip() for key in v]
     
-    @validator('model_name')
+    @field_validator('model_name')
     def validate_model_name(cls, v):
         allowed_models = [
             "gemini-2.5-pro",
@@ -71,7 +71,7 @@ class AppConfig(BaseSettings):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     workflow: WorkflowConfig = Field(default_factory=WorkflowConfig)
     
-    @validator('log_level')
+    @field_validator('log_level')
     def validate_log_level(cls, v):
         allowed_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in allowed_levels:
