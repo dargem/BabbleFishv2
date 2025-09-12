@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 from typing import List
 from ..states import IngestionState
 from src.core import Entity, NameEntry
-from src.config import config
 
 
 class TermTranslation(BaseModel):
@@ -91,14 +90,14 @@ def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Enti
     return entity_list
 
 
-class Entity_Creator:
+class EntityCreator:
     """Recognise entities from original text"""
 
     def __init__(self, llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager):
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    def entity_addition_node(self, state: IngestionState) -> List[Entity]:
+    def create_entities(self, state: IngestionState) -> List[Entity]:
         """
         Args:
             state: Current translation state
