@@ -98,7 +98,7 @@ class Entity_Creator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    def entity_addition_node(self, state: IngestionState) -> dict:
+    def entity_addition_node(self, state: IngestionState) -> List[Entity]:
         """
         Args:
             state: Current translation state
@@ -107,7 +107,6 @@ class Entity_Creator:
             Dictionary with nodes + reasoning
         """
         print("Finding terms...")
-        llm = config.get_llm(schema=EntitySchemaList)
 
         template = """
         You are a translator tasked with Named Entity Reconition, identifying named terms in the following text.
@@ -311,7 +310,12 @@ class Entity_Creator:
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
 
-        entities = _entity_schema_decomposer(llm.invoke([message]))
+        schema_entities = self.llm_provider.schema_invoke(
+            message=[message],
+            schema=EntitySchemaList,
+        )
 
-        # add unification with the database and entity class
+        entities = _entity_schema_decomposer(schema_entities)
+
+        # TODO add unification with the database and entity class later
         return {"entities": entities}
