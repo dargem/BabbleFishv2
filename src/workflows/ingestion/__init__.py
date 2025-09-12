@@ -6,8 +6,8 @@ https://cookbook.openai.com/examples/partners/temporal_agents_with_knowledge_gra
 """
 
 
-from .triplet_extraction import TripletCreator
-from .term_addition import EntityCreator
+from .triplet_creator import TripletCreator
+from .term_creator import EntityCreator
 
 __all__ = [
     "TripletCreator",

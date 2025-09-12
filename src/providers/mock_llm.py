@@ -36,7 +36,7 @@ class MockLLMProvider(LLMProvider):
         self.request_count = 0
         self.is_healthy = True
 
-    async def invoke(self, messages: List[BaseMessage]) -> str:
+    async def invoke(self, message: List[BaseMessage]) -> str:
         """Mock LLM invocation.
 
         Args:

@@ -13,8 +13,10 @@ from src.config import ConfigFactory, Container
 from src.workflows import create_translation_workflow, create_ingestion_workflow
 from src.knowledge_graph import KnowledgeGraphManager
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
+DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 async def run_translation():
     """Main function to run the translation workflow."""
@@ -26,15 +28,19 @@ async def run_translation():
     llm_provider: LLMProvider = container.get_llm_provider()
     kg_manager: KnowledgeGraphManager = container.get_knowledge_graph_manager()
 
-    with open("../data/raw/lotm_files/lotm2.txt", "r", encoding="UTF-8") as f:
+    # Use absolute path based on script location
+    script_dir = Path(__file__).parent.parent  # Go up from src/ to project root
+    file_path = DATA_DIR / "lotm2.txt"
+    
+    with open(file_path, "r", encoding="UTF-8") as f:
         sample_text = f.read()
     print("Loaded text from file")
 
     # Database Ingestion
     print("Ingesting new entries...")
-    ingestion_app = create_ingestion_workflow(llm_provider)
+    ingestion_app = create_ingestion_workflow(llm_provider, kg_manager)
     state_input = {"knowledge_graph": kg_manager, "text": sample_text}
-    result = ingestion_app.invoke(state_input)
+    result = await ingestion_app.ainvoke(state_input)
 
     print("Ingested entries")
     for entity in result["entities"]:
@@ -43,7 +49,7 @@ async def run_translation():
     exit()
     # Create workflow
     print("Creating translation workflow...")
-    translation_app = create_translation_workflow()
+    translation_app = create_translation_workflow(llm_provider)
     # run workflow
     print("Starting translation process...")
     state_input = {"text": sample_text}
@@ -66,9 +72,10 @@ async def run_translation():
         md_content = (
             f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
         )
-        with open("../workflow_graph.md", "w") as f:
+        output_path = script_dir / "workflow_graph.md"
+        with open(output_path, "w") as f:
             f.write(md_content)
-        print("\nWorkflow diagram saved to workflow_graph.md")
+        print(f"\nWorkflow diagram saved to {output_path}")
     except Exception as e:
         print(f"Error generating workflow diagram: {e}")
 

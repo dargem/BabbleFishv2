@@ -17,10 +17,11 @@ Current pipeline
 ## TODO
 - Setup phase creates domain specific edge types
 - Integrate in better edge types
+- Enforce better edge detection and node unification
 - change architecture, 3 workflows,
     - setup (get language, style guide etc), 
-    - ingestion (get triplets into graphical database with localisations)
-    - translation (generic translation workflow with feedback loops etc)
+    - ingestion (get triplets into graphical database with localisations) status: Partially done
+    - translation (generic translation workflow with feedback loops etc) status: Partially done
 - agent profiles 
 - langsmith for some evaluations on unit tests
 - Include batch processing capabilities

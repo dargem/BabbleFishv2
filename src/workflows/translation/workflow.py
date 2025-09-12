@@ -1,18 +1,21 @@
 """Stateful orchestration workflow for translation"""
 
-from langgraph.graph import StateGraph, END
+# type hints
+from __future__ import annotations
+from src.providers import LLMProvider
 
+# imports
+from langgraph.graph import StateGraph, END
 from ..states import TranslationState
 
 from . import (
-    style_node,
-    language_detector_node,
-    translator_node,
-    junior_editor_node,
-    fluency_editor_node,
-    inc_translate_feedback_node,
+    StyleAnalyzer,
+    LanguageDetector,
+    Translator,
+    JuniorEditor,
+    FluencyEditor,
+    FeedbackRouter,
 )
-from ...config import config
 
 APPROVED_RESPONSE_MARKER = "approved response accepted"
 STYLE_GUIDE_NEEDED = "style_guide needed"
@@ -64,12 +67,42 @@ def entry_dispatcher(state: TranslationState):
     print("Dispatching...")
 
 
-def create_translation_workflow():
+def create_translation_workflow(llm_provider: LLMProvider):
     """Create and compile the translation workflow.
+
+    Args:
+        llm_provider: The LLM provider to use for all translation nodes
 
     Returns:
         Compiled workflow graph
     """
+    # Instantiate all the translation classes
+    style_analyzer = StyleAnalyzer(llm_provider)
+    language_detector = LanguageDetector()
+    translator = Translator(llm_provider)
+    junior_editor = JuniorEditor(llm_provider)
+    fluency_editor = FluencyEditor(llm_provider)
+    feedback_router = FeedbackRouter()
+
+    # Create wrapper functions that match the expected node signature
+    def style_node(state: TranslationState) -> dict:
+        return style_analyzer.analyze_style(state)
+
+    def language_detector_node(state: TranslationState) -> dict:
+        return language_detector.detect_language(state)
+
+    def translator_node(state: TranslationState) -> dict:
+        return translator.translate(state)
+
+    def junior_editor_node(state: TranslationState) -> dict:
+        return junior_editor.review_translation(state)
+
+    def fluency_editor_node(state: TranslationState) -> dict:
+        return fluency_editor.improve_fluency(state)
+
+    def inc_translate_feedback_node(state: TranslationState) -> TranslationState:
+        return feedback_router.increment_feedback(state)
+
     workflow = StateGraph(TranslationState)
 
     # Add nodes

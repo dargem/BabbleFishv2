@@ -1,75 +1,82 @@
 """Translation node for the translation workflow."""
 
+# type hints
+from __future__ import annotations
+from src.providers import LLMProvider
+
+# imports
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-
 from ..states import TranslationState
-from src.config import config
 
 
-def translator_node(state: TranslationState) -> dict:
-    """Translate text from detected language to English.
+class Translator:
+    """Translates text from detected language to English"""
 
-    Args:
-        state: Current translation state
+    def __init__(self, llm_provider: LLMProvider):
+        self.llm_provider = llm_provider
 
-    Returns:
-        Dictionary with the translation
-    """
-    print("Translating text...")
+    def translate(self, state: TranslationState) -> dict:
+        """Translate text from detected language to English.
 
-    llm = config.get_llm()
+        Args:
+            state: Current translation state
 
-    base_template = """
-    You are a professional translator specialising in fiction. 
-    You work with {language} to English translations and are highly proficient in localisation.
-    Prioritise fluency while maintaining semantic meaning.
-    Translate the following {language} text to English.
-    Text: {text}
-    """
-
-    # Check if this is a feedback iteration
-    if "translation" in state and state.get("translation"):
-        template = (
-            base_template
-            + """
-        Your prior translation was: 
-        {translation}
-        Your feedback was: 
-        {feedback}
-        With this feedback incorporated, create a richer response.
-        Your updated translation, incorporating feedback:
+        Returns:
+            Dictionary with the translation
         """
-        )
+        print("Translating text...")
 
-        prompt = PromptTemplate(
-            input_variables=["text", "language", "feedback", "translation"],
-            template=template,
-        )
+        base_template = """
+        You are a professional translator specialising in fiction. 
+        You work with {language} to English translations and are highly proficient in localisation.
+        Prioritise fluency while maintaining semantic meaning.
+        Translate the following {language} text to English.
+        Text: {text}
+        """
 
-        message = HumanMessage(
-            content=prompt.format(
-                language=state["language"],
-                text=state["text"],
-                feedback=state["feedback"],
-                translation=state["translation"],
+        # Check if this is a feedback iteration
+        if "translation" in state and state.get("translation"):
+            template = (
+                base_template
+                + """
+            Your prior translation was: 
+            {translation}
+            Your feedback was: 
+            {feedback}
+            With this feedback incorporated, create a richer response.
+            Your updated translation, incorporating feedback:
+            """
             )
-        )
-    else:
-        # Initial translation
-        template = base_template + "\n\nTranslation:"
 
-        prompt = PromptTemplate(
-            input_variables=["text", "language"],
-            template=template,
-        )
-
-        message = HumanMessage(
-            content=prompt.format(
-                language=state["language"],
-                text=state["text"],
+            prompt = PromptTemplate(
+                input_variables=["text", "language", "feedback", "translation"],
+                template=template,
             )
-        )
 
-    translation = llm.invoke([message]).strip()
-    return {"translation": translation}
+            message = HumanMessage(
+                content=prompt.format(
+                    language=state["language"],
+                    text=state["text"],
+                    feedback=state["feedback"],
+                    translation=state["translation"],
+                )
+            )
+        else:
+            # Initial translation
+            template = base_template + "\n\nTranslation:"
+
+            prompt = PromptTemplate(
+                input_variables=["text", "language"],
+                template=template,
+            )
+
+            message = HumanMessage(
+                content=prompt.format(
+                    language=state["language"],
+                    text=state["text"],
+                )
+            )
+
+        translation = self.llm_provider.invoke([message]).strip()
+        return {"translation": translation}

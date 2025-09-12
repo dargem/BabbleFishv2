@@ -1,66 +1,73 @@
 """style node to preface the translation workflow, this is only ran if style hasn't been set"""
 
+# type hints
+from __future__ import annotations
+from src.providers import LLMProvider
+
+# imports
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-
 from ..states import TranslationState
-from src.config import config
 
 
-def style_node(state: TranslationState) -> dict:
-    """
-    Creates a description of the novels style, genre etc for aiding in translation style.
-    Args:
-        state: original text
+class StyleAnalyzer:
+    """Analyzes and generates style guides for text"""
 
-    Returns:
-        Dictionary with style guide
-    """
-    print("Generating style guide...")
+    def __init__(self, llm_provider: LLMProvider):
+        self.llm_provider = llm_provider
 
-    llm = config.get_llm()
+    def analyze_style(self, state: TranslationState) -> dict:
+        """
+        Creates a description of the novels style, genre etc for aiding in translation style.
+        Args:
+            state: original text
 
-    template = """
-    You are a highly experienced literary analyst and editor. Your task is to provide a detailed style guide for a fiction text, which will be used to ensure consistency and fidelity during translation.
+        Returns:
+            Dictionary with style guide
+        """
+        print("Generating style guide...")
 
-    Following is a sample of the text, from it you are tasked to build the style guide. 
-    
-    Ensure your style guide functions as a generalised guide for aesthetics of language and form, not specifically referencing the chapter as it is just one among many.
-    
-    Analyze the following text and provide a comprehensive breakdown of its key literary elements. 
-    
-    Structure your response in the following sections:
+        template = """
+        You are a highly experienced literary analyst and editor. Your task is to provide a detailed style guide for a fiction text, which will be used to ensure consistency and fidelity during translation.
 
-    ## **1. Genre and Subgenre**
-    Identify the primary and, if applicable, secondary genres (e.g., science fiction, historical fiction, fantasy, thriller, romance). Specify any subgenres (e.g., cyberpunk, cozy mystery, epic fantasy, psychological thriller) that define the text's specific conventions.
+        Following is a sample of the text, from it you are tasked to build the style guide. 
+        
+        Ensure your style guide functions as a generalised guide for aesthetics of language and form, not specifically referencing the chapter as it is just one among many.
+        
+        Analyze the following text and provide a comprehensive breakdown of its key literary elements. 
+        
+        Structure your response in the following sections:
 
-    ## **2. Literary Style and Techniques**
-    Describe the author's writing style.
-    - **Sentence Structure:** Is it simple and direct, or complex and ornate? Are sentences long and flowing, or short and punchy?
-    - **Pacing:** Is the narrative fast-paced and action-driven, or slow and reflective?
-    - **Prose Style:** Is the language poetic, academic, minimalist, or conversational? Note any distinctive uses of metaphor, simile, or symbolism.
-    - **Narrative Voice:** Is the text written in the first person (I), third person (he/she), or a more unique perspective? Is the narrator reliable or unreliable?
-    - **Dialogue:** Is the dialogue realistic and naturalistic, or stylized and formal?
+        ## **1. Genre and Subgenre**
+        Identify the primary and, if applicable, secondary genres (e.g., science fiction, historical fiction, fantasy, thriller, romance). Specify any subgenres (e.g., cyberpunk, cozy mystery, epic fantasy, psychological thriller) that define the text's specific conventions.
 
-    ## **3. Tone and Mood**
-    Characterize the overall tone and mood of the text.
-    - **Tone:** Is the author's attitude humorous, serious, satirical, suspenseful, or melancholic?
-    - **Mood:** What atmosphere does the text evoke for the reader? Is it tense, mysterious, romantic, nostalgic or another?
+        ## **2. Literary Style and Techniques**
+        Describe the author's writing style.
+        - **Sentence Structure:** Is it simple and direct, or complex and ornate? Are sentences long and flowing, or short and punchy?
+        - **Pacing:** Is the narrative fast-paced and action-driven, or slow and reflective?
+        - **Prose Style:** Is the language poetic, academic, minimalist, or conversational? Note any distinctive uses of metaphor, simile, or symbolism.
+        - **Narrative Voice:** Is the text written in the first person (I), third person (he/she), or a more unique perspective? Is the narrator reliable or unreliable?
+        - **Dialogue:** Is the dialogue realistic and naturalistic, or stylized and formal?
 
-    ## **4. Style Recommendations for Translation**
-    Based on your analysis, provide specific instructions for a translator. For example:
-    - **Formal vs. Informal Language:** Should the translation favor a formal or informal register?
-    - **Slang and Idioms:** Should regional slang or idiomatic expressions be preserved, adapted, or omitted?
-    - **Tone Preservation:** What specific elements of the tone (e.g., dry humor, suspense) must be prioritized?
+        ## **3. Tone and Mood**
+        Characterize the overall tone and mood of the text.
+        - **Tone:** Is the author's attitude humorous, serious, satirical, suspenseful, or melancholic?
+        - **Mood:** What atmosphere does the text evoke for the reader? Is it tense, mysterious, romantic, nostalgic or another?
 
-    ---
-    **Text to Analyze:**
-    {text}
-    """
+        ## **4. Style Recommendations for Translation**
+        Based on your analysis, provide specific instructions for a translator. For example:
+        - **Formal vs. Informal Language:** Should the translation favor a formal or informal register?
+        - **Slang and Idioms:** Should regional slang or idiomatic expressions be preserved, adapted, or omitted?
+        - **Tone Preservation:** What specific elements of the tone (e.g., dry humor, suspense) must be prioritized?
 
-    prompt = PromptTemplate(input_variables=["text"], template=template)
+        ---
+        **Text to Analyze:**
+        {text}
+        """
 
-    message = HumanMessage(content=prompt.format(text=state["text"]))
+        prompt = PromptTemplate(input_variables=["text"], template=template)
 
-    style_guide = llm.invoke([message]).strip()
-    return {"style_guide": style_guide}
+        message = HumanMessage(content=prompt.format(text=state["text"]))
+
+        style_guide = self.llm_provider.invoke([message]).strip()
+        return {"style_guide": style_guide}

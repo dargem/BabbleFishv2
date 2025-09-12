@@ -97,7 +97,7 @@ class EntityCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    def create_entities(self, state: IngestionState) -> List[Entity]:
+    async def create_entities(self, state: IngestionState) -> dict[str,List[Entity]]:
         """
         Args:
             state: Current translation state
@@ -309,12 +309,12 @@ class EntityCreator:
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
 
-        schema_entities = self.llm_provider.schema_invoke(
-            message=[message],
+        unparsed_entities = await self.llm_provider.schema_invoke(
+            messages=[message],
             schema=EntitySchemaList,
         )
 
-        entities = _entity_schema_decomposer(schema_entities)
+        entities = _entity_schema_decomposer(unparsed_entities)
 
         # TODO add unification with the database and entity class later
         return {"entities": entities}

@@ -33,9 +33,8 @@ from src.core import (
 )
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from src.config import config
 from pydantic import BaseModel, Field
-from typing import Dict, Optional, Any, List
+from typing import Optional, List
 
 
 class TripletMetadataSchema(BaseModel):
@@ -106,7 +105,7 @@ class TripletCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    def create_triplets(self, state: IngestionState):
+    async def create_triplets(self, state: IngestionState) -> dict[str, List[Triplet]]:
         print("Finding triplets...")
 
         prompt = PromptTemplate(
@@ -178,7 +177,7 @@ class TripletCreator:
         )
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
-        unparsed_triplets = self.llm_provider.schema_invoke([message])
+        unparsed_triplets = await self.llm_provider.schema_invoke(messages=[message], schema=TripletSchemaList)
         parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
         for triplet in parsed_triplets:
             if triplet.metadata.importance >= 0:
@@ -186,3 +185,5 @@ class TripletCreator:
                     f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
                 )
                 print(triplet.metadata.__dict__)
+        
+        return {"triplets": parsed_triplets}

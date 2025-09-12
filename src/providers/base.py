@@ -26,7 +26,7 @@ class LLMProvider(ABC):
 
     @abstractmethod
     async def schema_invoke(
-        self, message: List[BaseMessage], schema: BaseModel
+        self, messages: List[BaseMessage], schema: BaseModel
     ) -> BaseModel:
         """Invoke the LLM with automatic key management.
 
