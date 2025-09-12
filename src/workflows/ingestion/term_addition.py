@@ -11,7 +11,9 @@ from src.core import Entity, NameEntry
 from src.config import config
 
 
-class EntityTranslation(BaseModel):
+class TermTranslation(BaseModel):
+    """Sub schema for a terms translation"""
+
     original_term: str = Field(
         ..., description="The original entity term from the source text."
     )
@@ -23,18 +25,18 @@ class EntityTranslation(BaseModel):
 class EntitySchema(BaseModel):
     """Schema for a single named entity and its translation information."""
 
-    name: EntityTranslation = Field(
+    name: TermTranslation = Field(
         ..., description="The core name of the entity and its translation."
     )
     entity_type: str = Field(
         ...,
         description="The category of the entity, such as Character, Place, or Organization.",
     )
-    strong_matches: List[EntityTranslation] = Field(
+    strong_matches: List[TermTranslation] = Field(
         ...,
         description="A list of terms that are strong matches for the entity, along with their translations.",
     )
-    weak_matches: List[EntityTranslation] = Field(
+    weak_matches: List[TermTranslation] = Field(
         ...,
         description="A list of terms that are weak matches for the entity, along with their translations.",
     )
@@ -48,7 +50,7 @@ class EntitySchemaList(BaseModel):
 
 
 def _name_entry_creator(
-    name: EntityTranslation,
+    name: TermTranslation,
     is_weak: bool,
 ) -> NameEntry:
     return NameEntry(
@@ -57,7 +59,7 @@ def _name_entry_creator(
 
 
 def _name_entry_list_creator(
-    name_lists: List[EntityTranslation], is_weak: bool
+    name_lists: List[TermTranslation], is_weak: bool
 ) -> List[NameEntry]:
     return [_name_entry_creator(name, is_weak) for name in name_lists]
 

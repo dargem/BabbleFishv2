@@ -1,17 +1,22 @@
 """Functional pipeline for ingestion"""
 
+# type hints
+from __future__ import annotations
+from src.providers import LLMProvider
+from src.knowledge_graph import KnowledgeGraphManager
+
+# imports
 from langgraph.graph import StateGraph, END
-
 from ..states import IngestionState
-
-
 from . import (
     entity_addition_node,
     triplet_extractor_node,
 )
 
 
-def create_ingestion_workflow():
+def create_ingestion_workflow(
+    llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager
+):
     """Create and compile the ingestion workflow
 
     Returns:

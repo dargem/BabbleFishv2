@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
-from pydantic_settings import BaseSettings
 
 
 class DatabaseConfig(BaseModel):

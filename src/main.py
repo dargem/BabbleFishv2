@@ -1,19 +1,30 @@
 """Main application module for BabbleFish Translation System."""
 
+# type hints
+from __future__ import annotations
+from src.providers import LLMProvider
+from src.knowledge_graph import KnowledgeGraphManager
+
+# imports
 import sys
+import asyncio
 from pathlib import Path
-
-# Add the parent directory to sys.path to enable relative imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
+from src.config import ConfigFactory, Container
 from src.workflows import create_translation_workflow, create_ingestion_workflow
 from src.knowledge_graph import KnowledgeGraphManager
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-def run_translation():
+
+async def run_translation():
     """Main function to run the translation workflow."""
-    kg = KnowledgeGraphManager()
-    kg.reset_database()
+
+    config = ConfigFactory.create_config(env="development")
+    container = Container()
+    container.set_config(config)
+
+    llm_provider: LLMProvider = container.get_llm_provider()
+    kg_manager: KnowledgeGraphManager = container.get_knowledge_graph_manager()
 
     with open("../data/raw/lotm_files/lotm2.txt", "r", encoding="UTF-8") as f:
         sample_text = f.read()
@@ -21,11 +32,10 @@ def run_translation():
 
     # Database Ingestion
     print("Ingesting new entries...")
-    state_input = {"knowledge_graph": kg, "text": sample_text}
-    # Create workflow
-    ingestion_app = create_ingestion_workflow()
-    # run it
+    ingestion_app = create_ingestion_workflow(llm_provider)
+    state_input = {"knowledge_graph": kg_manager, "text": sample_text}
     result = ingestion_app.invoke(state_input)
+
     print("Ingested entries")
     for entity in result["entities"]:
         print(entity)
@@ -64,4 +74,4 @@ def run_translation():
 
 
 if __name__ == "__main__":
-    run_translation()
+    asyncio.run(run_translation())

@@ -165,7 +165,7 @@ class ConfigFactory:
     """Factory for creating environment-specific configurations."""
 
     @staticmethod
-    def create_config(env: str = None) -> AppConfig:
+    def create_config(env: str) -> AppConfig:
         """Create configuration for the specified environment.
 
         Args:
@@ -175,8 +175,6 @@ class ConfigFactory:
         Returns:
             AppConfig instance for the environment
         """
-        if env is None:
-            env = os.getenv("ENVIRONMENT", "development")
 
         loaders = {
             "development": DevelopmentConfig(),
