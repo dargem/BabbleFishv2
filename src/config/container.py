@@ -1,8 +1,13 @@
 """Simple dependency injection container (manual implementation)."""
 
+# type hints
+from __future__ import annotations
+from src.workflows import create_ingestion_workflow, create_translation_workflow
+from src.knowledge_graph import KnowledgeGraphManager
+
+# imports
 from typing import Dict, Any
 import asyncio
-
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 from .schemas import AppConfig
@@ -66,12 +71,16 @@ class Container:
             self._instances["kg_manager"] = KnowledgeGraphManager()
         return self._instances["kg_manager"]
 
-    # Future workflow factories can be added here
-    # def get_translation_workflow(self) -> TranslationWorkflow:
-    #     return TranslationWorkflow(
-    #         llm_provider=self.get_llm_provider(),
-    #         kg_manager=self.get_knowledge_graph_manager()
-    #     )
+    def get_translation_workflow(self):
+        return create_translation_workflow(
+            llm_provider=self.get_llm_provider(),
+        )
+    
+    def get_ingestion_workflow(self):
+        return create_ingestion_workflow(
+            llm_provider=self.get_llm_provider(),
+            kg_manager=self.get_knowledge_graph_manager(),
+        )
 
     async def health_check(self) -> Dict[str, bool]:
         """Perform health checks on all components.

@@ -28,6 +28,7 @@ from src.core import (
     TemporalType,
     StatementType,
     TenseType,
+    PredicateType,
     Triplet,
     TripletMetadata,
 )
@@ -57,7 +58,7 @@ class TripletMetadataSchema(BaseModel):
 
 class TripletSchema(BaseModel):
     subject: str = Field(..., description="The subject of the triplet")
-    predicate: str = Field(..., description="The action of the subject on the object")
+    predicate: PredicateType = Field(..., description="The action of the subject on the object")
     object: str = Field(..., description="The object receiving the subject's action")
     metadata: TripletMetadataSchema = Field(
         ..., description="The metadata related to this triplet"
@@ -179,11 +180,5 @@ class TripletCreator:
         message = HumanMessage(content=prompt.format(text=state["text"]))
         unparsed_triplets = await self.llm_provider.schema_invoke(messages=[message], schema=TripletSchemaList)
         parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
-        for triplet in parsed_triplets:
-            if triplet.metadata.importance >= 0:
-                print(
-                    f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
-                )
-                print(triplet.metadata.__dict__)
         
         return {"triplets": parsed_triplets}

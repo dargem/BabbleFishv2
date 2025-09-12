@@ -24,9 +24,8 @@ async def run_translation():
     config = ConfigFactory.create_config(env="development")
     container = Container()
     container.set_config(config)
-
-    llm_provider: LLMProvider = container.get_llm_provider()
-    kg_manager: KnowledgeGraphManager = container.get_knowledge_graph_manager()
+    ingestion_app = container.get_ingestion_workflow()
+    translation_app = container.get_translation_workflow()
 
     # Use absolute path based on script location
     script_dir = Path(__file__).parent.parent  # Go up from src/ to project root
@@ -37,15 +36,19 @@ async def run_translation():
     print("Loaded text from file")
 
     # Database Ingestion
-    print("Ingesting new entries...")
-    ingestion_app = create_ingestion_workflow(llm_provider, kg_manager)
-    state_input = {"knowledge_graph": kg_manager, "text": sample_text}
-    result = await ingestion_app.ainvoke(state_input)
+    state_input = {"text": sample_text}
+    result = await ingestion_app.ainvoke(state_input) #ignore type issue
 
     print("Ingested entries")
     for entity in result["entities"]:
         print(entity)
 
+    for triplet in result["triplets"]:
+        if triplet.metadata.importance >= 0:
+            print(
+                f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
+            )
+            print(triplet.metadata.__dict__)
     exit()
     # Create workflow
     print("Creating translation workflow...")
@@ -64,7 +67,7 @@ async def run_translation():
         if isinstance(result[key], str) and result[key].strip():
             print(f"\n{key.upper()}:")
             print("-" * len(key))
-            print(result[key])
+            #print(result[key])
 
     # Generate workflow visualization
     try:

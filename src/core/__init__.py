@@ -11,7 +11,7 @@ from .relationships import (
     TemporalType,
     StatementType,
     TenseType,
-    FictionPredicate,
+    PredicateType,
 )
 
 __all__ = [
@@ -23,5 +23,5 @@ __all__ = [
     "TemporalType",
     "StatementType",
     "TenseType",
-    "FictionPredicate",
+    "PredicateType",
 ]

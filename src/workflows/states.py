@@ -17,9 +17,6 @@ class IngestionState(TypedDict):
         triplets: Subject Object Predicate Triplets extracted from text
     """
 
-    knowledge_graph: (
-        Any  # KnowledgeGraphManager - using Any to avoid runtime import issues
-    )
     text: str
     entities: List[Entity]
     new_entities: List[Entity]

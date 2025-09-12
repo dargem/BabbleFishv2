@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 
-class FictionPredicate(Enum):
+class PredicateType(Enum):
     """Enumeration of normalized predicates for fiction and worldbuilding."""
 
     # Identity & Roles
