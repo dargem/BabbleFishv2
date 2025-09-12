@@ -4,8 +4,8 @@ import asyncio
 from typing import List
 import logging
 from langchain.schema import BaseMessage
-from langchain_google_genai import GoogleGenerativeAI
-
+from langchain_google_genai import GoogleGenerativeAI, ChatGoogleGenerativeAI
+from pydantic import BaseModel
 from .base import LLMProvider
 from .api_key_manager import APIKeyManager
 
@@ -92,6 +92,74 @@ class GoogleLLMProvider(LLMProvider):
 
         # If we get here, all retries failed
         raise Exception(f"All API keys failed. Last error: {last_exception}")
+
+    async def schema_invoke(
+        self, messages: List[BaseMessage], schema: BaseModel
+    ) -> BaseModel:
+        """Invoke the Google LLM with structured output and automatic key rotation.
+
+        Args:
+            messages: List of messages to send to the LLM
+            schema: BaseModel schema for structured response
+
+        Returns:
+            The LLM response as the specified BaseModel schema
+
+        Raises:
+            Exception: If all API keys are exhausted or the request fails
+        """
+        max_retries = await self.api_key_manager.get_available_keys_count()
+        last_exception = None
+
+        for attempt in range(max_retries):
+            try:
+                # Get a fresh API key for this request
+                api_key = await self.api_key_manager.get_available_key()
+
+                # Create LLM instance with current key
+                llm_kwargs = {
+                    "model": self.model_name,
+                    "temperature": self.temperature,
+                    "google_api_key": api_key,
+                }
+                if self.max_tokens:
+                    llm_kwargs["max_tokens"] = self.max_tokens
+
+                # only chatgooglegenerativeai supports structured, generic doesn't
+                llm = ChatGoogleGenerativeAI(**llm_kwargs)
+
+                # Create structured LLM with schema
+                structured_llm = llm.with_structured_output(schema)
+
+                # Make the request in a thread to avoid blocking
+                response = await asyncio.to_thread(structured_llm.invoke, messages)
+
+                logger.debug(
+                    f"Structured LLM request successful with key ending in ...{api_key[-4:]}"
+                )
+                return response
+
+            except Exception as e:
+                last_exception = e
+                logger.warning(
+                    f"Structured LLM request failed on attempt {attempt + 1}: {e}"
+                )
+
+                # Mark the key as having an error
+                if "api_key" in locals():
+                    await self.api_key_manager.mark_key_error(api_key, e)
+
+                # If this was the last attempt, raise the exception
+                if attempt == max_retries - 1:
+                    break
+
+                # Wait a bit before retrying
+                await asyncio.sleep(1)
+
+        # If we get here, all retries failed
+        raise Exception(
+            f"All API keys failed for structured output. Last error: {last_exception}"
+        )
 
     async def health_check(self) -> bool:
         """Check if the provider is healthy and has available keys.

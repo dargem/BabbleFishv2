@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 from langchain.schema import BaseMessage
+from pydantic import BaseModel
 
 
 class LLMProvider(ABC):
@@ -17,6 +18,24 @@ class LLMProvider(ABC):
 
         Returns:
             The LLM response as a string
+
+        Raises:
+            Exception: If all API keys are exhausted or unhealthy
+        """
+        pass
+
+    @abstractmethod
+    async def schema_invoke(
+        self, message: List[BaseMessage], schema: BaseModel
+    ) -> BaseModel:
+        """Invoke the LLM with automatic key management.
+
+        Args:
+            messages: List of messages to send to the LLM
+            schema: BaseModel for response formatting
+
+        Returns:
+            The LLM response as the BaseModel schema
 
         Raises:
             Exception: If all API keys are exhausted or unhealthy
