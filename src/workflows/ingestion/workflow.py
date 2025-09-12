@@ -10,7 +10,7 @@ from langgraph.graph import StateGraph, END
 from ..states import IngestionState
 from . import (
     EntityCreator,
-    triplet_extractor_node,
+    TripletCreator,
 )
 
 
@@ -24,12 +24,12 @@ def create_ingestion_workflow(
     """
     # Create nodes with injected dependencies
     entity_creator = EntityCreator(llm_provider, kg_manager)
-    #triplet_creator = 
+    triplet_creator = TripletCreator(llm_provider, kg_manager)
 
     workflow = StateGraph(IngestionState)
 
     workflow.add_node("entity_addition_node", entity_creator.create_entities)
-    workflow.add_node("triplet_extractor_node", triplet_extractor_node)
+    workflow.add_node("triplet_extractor_node", triplet_creator.create_triplets)
 
     workflow.set_entry_point("entity_addition_node")
     workflow.add_edge("entity_addition_node", "triplet_extractor_node")

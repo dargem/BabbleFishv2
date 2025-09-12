@@ -22,7 +22,7 @@ from __future__ import annotations
 from src.providers import LLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 
-#imports
+# imports
 from ..states import IngestionState
 from src.core import (
     TemporalType,
@@ -101,13 +101,13 @@ def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[Triplet]:
 
 class TripletCreator:
     """Generates triplets"""
+
     def __init__(self, llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager):
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
-    
-    def triplet_extractor_node(self, state: IngestionState):
+
+    def create_triplets(self, state: IngestionState):
         print("Finding triplets...")
-        llm = config.get_llm(schema=TripletSchemaList)
 
         prompt = PromptTemplate(
             input_variables=["text"],
@@ -178,8 +178,7 @@ class TripletCreator:
         )
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
-        # parser needed!
-        unparsed_triplets = llm.invoke([message])
+        unparsed_triplets = self.llm_provider.schema_invoke([message])
         parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
         for triplet in parsed_triplets:
             if triplet.metadata.importance >= 0:
