@@ -24,7 +24,7 @@ async def run_translation():
     translation_app = container.get_translation_workflow()
 
     # Use absolute path based on script location
-    script_dir = Path(__file__).parent.parent  # Go up from src/ to project root
+    script_dir = Path(__file__).parent.parents
     file_path = DATA_DIR / "lotm2.txt"
 
     with open(file_path, "r", encoding="UTF-8") as f:

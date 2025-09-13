@@ -2,13 +2,16 @@
 
 # type hints
 from __future__ import annotations
-from src.workflows import create_ingestion_workflow, create_translation_workflow
-from src.knowledge_graph import KnowledgeGraphManager
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.knowledge_graph import KnowledgeGraphManager
 
 # imports
 from typing import Dict, Any
 import asyncio
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
+from src.workflows import IngestionWorkflowFactory, TranslationWorkflowFactory
 from src.knowledge_graph import KnowledgeGraphManager
 from .schemas import AppConfig
 
@@ -29,6 +32,8 @@ class Container:
         """
         self._config = config
         self._instances.clear()  # Clear existing instances when config changes
+        self._ingestion_workflow_factory = IngestionWorkflowFactory(self)
+        self._translation_workflow_factory = TranslationWorkflowFactory(self)
 
     def _get_api_key_manager(self) -> APIKeyManager:
         """Get or create the API key manager instance."""
@@ -77,15 +82,10 @@ class Container:
             raise NotImplementedError
 
     def get_translation_workflow(self):
-        return create_translation_workflow(
-            llm_provider=self._get_llm_provider(),
-        )
+        return self._translation_workflow_factory.create_workflow()
 
     def get_ingestion_workflow(self):
-        return create_ingestion_workflow(
-            llm_provider=self._get_llm_provider(),
-            kg_manager=self._get_knowledge_graph_manager(),
-        )
+        return self._ingestion_workflow_factory.create_workflow()
 
     async def health_check(self) -> Dict[str, bool]:
         """Perform health checks on all components.

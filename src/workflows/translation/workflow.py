@@ -1,13 +1,15 @@
-"""Stateful orchestration workflow for translation"""
+"""Factory for creating translation workflows"""
 
 # type hints
 from __future__ import annotations
-from src.providers import LLMProvider
-from src.config import Container
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.config import Container
 from typing import Dict, Any
 
 # imports
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, END, START
 from ..states import TranslationState
 
 from . import (
@@ -37,11 +39,12 @@ def route_junior_pass(state: TranslationState) -> bool:
     return "approved response accepted" in state["feedback"]
 
 
-def route_increment_exceed(state: TranslationState, container: Container) -> bool:
+def route_increment_exceed(state: TranslationState, container: "Container") -> bool:
     """Check if maximum feedback loops have been exceeded.
 
     Args:
         state: Current translation state
+        container: Container instance
 
     Returns:
         True if max loops exceeded, False otherwise
@@ -55,7 +58,7 @@ def route_increment_exceed(state: TranslationState, container: Container) -> boo
 class TranslationWorkflowFactory:
     """Factory for creating translation workflows"""
 
-    def __init__(self, container: Container):
+    def __init__(self, container: "Container"):
         self.container = container
 
     def create_workflow(self) -> StateGraph:
@@ -68,6 +71,13 @@ class TranslationWorkflowFactory:
         self._add_routing(workflow)
 
         return workflow.compile()
+
+    def _route_increment_exceed(self, state: TranslationState) -> bool:
+        """Check if maximum feedback loops have been exceeded."""
+        return (
+            state["feedback_rout_loops"]
+            >= self.container._config.workflow.max_feedback_loops
+        )
 
     def _create_nodes(self) -> Dict[str, Any]:
         """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected
@@ -82,143 +92,31 @@ class TranslationWorkflowFactory:
             "feedback_router": FeedbackRouter().increment_feedback,
         }
 
-    def _add_nodes(workflow: StateGraph, nodes):
-        for node in nodes:
-            workflow.add_node(node)
+    def _add_nodes(self, workflow: StateGraph, nodes):
+        for key, value in nodes.items():
+            # parses dict into format for entry
+            workflow.add_node(key, value)
 
     def _add_routing(self, workflow: StateGraph):
         # Add edges
-        workflow.add_edge("style_node", "entry_node")
-        workflow.add_edge("language_detector_node", "entry_node")
-        workflow.add_edge("translator_node", "inc_translate_feedback_node")
+        workflow.add_edge(START, "style_analyzer")
+        workflow.add_edge("style_analyzer", "language_detector")
+        workflow.add_edge("language_detector", "translator")
+        workflow.add_edge("translator", "feedback_router")
 
         # Conditional routing from feedback increment
         workflow.add_conditional_edges(
-            "inc_translate_feedback_node",
-            route_increment_exceed,
-            path_map={True: "fluency_editor_node", False: "junior_editor_node"},
+            "feedback_router",
+            self._route_increment_exceed,
+            path_map={True: "fluency_editor", False: "junior_editor"},
         )
 
         # Conditional routing from junior editor
         workflow.add_conditional_edges(
-            "junior_editor_node",
+            "junior_editor",
             route_junior_pass,
-            path_map={True: "fluency_editor_node", False: "translator_node"},
+            path_map={True: "fluency_editor", False: "translator"},
         )
 
         # Final edge to end
-        workflow.add_edge("fluency_editor_node", END)
-
-    def route_preloads(state: TranslationState) -> object:
-        """Runs nodes to preload if they don't exist
-        Args:
-            state: Current translation state
-
-        Returns:
-            name of the next node
-        """
-        if "style_guide" not in state.keys():
-            return STYLE_GUIDE_NEEDED
-        elif "language" not in state.keys():
-            return LANGUAGE_NEEDED
-        else:
-            return CONTINUE
-
-    def route_junior_pass(state: TranslationState) -> bool:
-        """Check if junior editor approved the translation.
-
-        Args:
-            state: Current translation state
-
-        Returns:
-            True if translation is approved, False otherwise
-        """
-        return "approved response accepted" in state["feedback"]
-
-    def create_translation_workflow(self):
-        """Create and compile the translation workflow.
-
-        Args:
-            llm_provider: The LLM provider to use for all translation nodes
-
-        Returns:
-            Compiled workflow graph
-        """
-        llm_provider = self.container._get_llm_provider()
-        # Instantiate all the translation classes
-        style_analyzer = StyleAnalyzer(llm_provider)
-        language_detector = LanguageDetector()
-        translator = Translator(llm_provider)
-        junior_editor = JuniorEditor(llm_provider)
-        fluency_editor = FluencyEditor(llm_provider)
-        feedback_router = FeedbackRouter()
-
-        # Create wrapper functions that match the expected node signature
-        def style_node(state: TranslationState) -> dict:
-            return style_analyzer.analyze_style(state)
-
-        def language_detector_node(state: TranslationState) -> dict:
-            return language_detector.detect_language(state)
-
-        def translator_node(state: TranslationState) -> dict:
-            return translator.translate(state)
-
-        def junior_editor_node(state: TranslationState) -> dict:
-            return junior_editor.review_translation(state)
-
-        def fluency_editor_node(state: TranslationState) -> dict:
-            return fluency_editor.improve_fluency(state)
-
-        def inc_translate_feedback_node(state: TranslationState) -> TranslationState:
-            return feedback_router.increment_feedback(state)
-
-        def entry_dispatcher(state: TranslationState):
-            """Used for purely routing"""
-            print("Dispatching...")
-
-        workflow = StateGraph(TranslationState)
-
-        # Add nodes
-        workflow.add_node("entry_node", entry_dispatcher)
-        workflow.add_node("style_node", style_node)
-        workflow.add_node("language_detector_node", language_detector_node)
-        workflow.add_node("translator_node", translator_node)
-        workflow.add_node("junior_editor_node", junior_editor_node)
-        workflow.add_node("inc_translate_feedback_node", inc_translate_feedback_node)
-        workflow.add_node("fluency_editor_node", fluency_editor_node)
-
-        # Set entry point
-        workflow.set_entry_point("entry_node")
-        workflow.add_conditional_edges(
-            "entry_node",
-            route_preloads,
-            path_map={
-                STYLE_GUIDE_NEEDED: "style_node",
-                LANGUAGE_NEEDED: "language_detector_node",
-                CONTINUE: "translator_node",
-            },
-        )
-
-        # Add edges
-        workflow.add_edge("style_node", "entry_node")
-        workflow.add_edge("language_detector_node", "entry_node")
-        workflow.add_edge("translator_node", "inc_translate_feedback_node")
-
-        # Conditional routing from feedback increment
-        workflow.add_conditional_edges(
-            "inc_translate_feedback_node",
-            route_increment_exceed,
-            path_map={True: "fluency_editor_node", False: "junior_editor_node"},
-        )
-
-        # Conditional routing from junior editor
-        workflow.add_conditional_edges(
-            "junior_editor_node",
-            route_junior_pass,
-            path_map={True: "fluency_editor_node", False: "translator_node"},
-        )
-
-        # Final edge to end
-        workflow.add_edge("fluency_editor_node", END)
-
-        return workflow.compile()
+        workflow.add_edge("fluency_editor", END)

@@ -1,13 +1,16 @@
-"""Functional pipeline for ingestion"""
+"""Factory for creating Ingestion Workflows"""
 
 # type hints
 from __future__ import annotations
-from src.providers import LLMProvider
-from src.knowledge_graph import KnowledgeGraphManager
-from src.config import Container
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.providers import LLMProvider
+    from src.knowledge_graph import KnowledgeGraphManager
+    from src.config import Container
 
 # imports
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, END, START
 from ..states import IngestionState
 from . import (
     EntityCreator,
@@ -21,7 +24,7 @@ class IngestionWorkflowFactory:
     def __init__(self, container: Container):
         self.container = container
 
-    def create_ingestion_workflow(self):
+    def create_workflow(self):
         """Create and compile the ingestion workflow
 
         Returns:
@@ -36,13 +39,13 @@ class IngestionWorkflowFactory:
         entity_creator = EntityCreator(llm_provider, kg_manager)
         triplet_creator = TripletCreator(llm_provider, kg_manager)
 
-        # Add nodes to workflow
+        # Add nodes
         workflow = StateGraph(IngestionState)
         workflow.add_node("entity_addition_node", entity_creator.create_entities)
         workflow.add_node("triplet_extractor_node", triplet_creator.create_triplets)
 
-        # Add routing logic
-        workflow.set_entry_point("entity_addition_node")
+        # Route nodes
+        workflow.add_edge(START, "entity_addition_node")
         workflow.add_edge("entity_addition_node", "triplet_extractor_node")
         workflow.add_edge("triplet_extractor_node", END)
 
