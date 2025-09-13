@@ -5,94 +5,81 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+from enum import Enum
+
+
 class PredicateType(Enum):
-    """Enumeration of normalized predicates for fiction and worldbuilding."""
+    """Generalized predicates for entities, relationships, and attributes."""
 
-    # Identity & Roles
-    IS_A = "IS_A"  # "Gandalf IS_A Wizard"
-    HOLDS_TITLE = "HOLDS_TITLE"  # "Aragorn HOLDS_TITLE King of Gondor"
-    MEMBER_OF = "MEMBER_OF"  # "Harry Potter MEMBER_OF Gryffindor House"
-    LEADS = "LEADS"  # "Daenerys LEADS Unsullied"
-    SERVES = "SERVES"  # "Sam SERVES Frodo"
-    ALIAS_OF = "ALIAS_OF"  # "Clark Kent ALIAS_OF Superman"
-    SUCCESSOR_TO = "SUCCESSOR_TO"  # "Joffrey SUCCESSOR_TO Robert Baratheon"
-    APPRENTICE_OF = "APPRENTICE_OF"  # "Anakin Skywalker APPRENTICE_OF Obi-Wan Kenobi"
+    # Identity & Classification
+    IS_A = "IS_A"  # "A IS_A Wizard"
+    HAS_ROLE = "HAS_ROLE"  # "A HAS_ROLE King"
+    MEMBER_OF = "MEMBER_OF"  # "A MEMBER_OF Organization"
+    PART_OF = "PART_OF"  # "A PART_OF Whole"
+    SUCCESSOR_OF = "SUCCESSOR_OF"  # "A SUCCESSOR_OF B"
+    PREDECESSOR_OF = "PREDECESSOR_OF"  # "A PREDECESSOR_OF B"
 
-    # Relationships
-    RELATED_TO = "RELATED_TO"  # Family or kinship
-    ALLIED_WITH = "ALLIED_WITH"  # Allies, friends
-    ENEMY_OF = "ENEMY_OF"  # Rivals, opponents
-    BETRAYED = "BETRAYED"  # Betrayal events
-    MENTORS = "MENTORS"  # "Obi-Wan MENTORS Luke"
-    SPOUSE_OF = "SPOUSE_OF"  # "Aragorn SPOUSE_OF Arwen"
-    PARENT_OF = "PARENT_OF"  # "Darth Vader PARENT_OF Luke Skywalker"
-    CHILD_OF = "CHILD_OF"  # "Luke Skywalker CHILD_OF Darth Vader"
-    LOVES = "LOVES"  # "Romeo LOVES Juliet"
-    FEARS = "FEARS"  # "Winston Smith FEARS Rats"
-    TRUSTS = "TRUSTS"  # "Frodo TRUSTS Gandalf"
-    DISTRUSTS = "DISTRUSTS"  # "Boromir DISTRUSTS Saruman"
+    # Social & Familial Relationships
+    FRIEND_OF = "FRIEND_OF"  # "A FRIEND_OF B"
+    ALLIED_WITH = "ALLIED_WITH"  # "A ALLIED_WITH B"
+    ENEMY_OF = "ENEMY_OF"  # "A ENEMY_OF B"
+    SPOUSE_OF = "SPOUSE_OF"  # "A SPOUSE_OF B"
+    PARENT_OF = "PARENT_OF"  # "A PARENT_OF B"
+    CHILD_OF = "CHILD_OF"  # "A CHILD_OF B"
+    SIBLING_OF = "SIBLING_OF"  # "A SIBLING_OF B"
+    MENTOR_OF = "MENTOR_OF"  # "A MENTOR_OF B"
+    APPRENTICE_OF = "APPRENTICE_OF"  # "A APPRENTICE_OF B"
 
-    # Locations & Possessions
-    LOCATED_IN = "LOCATED_IN"  # "The One Ring LOCATED_IN Mount Doom"
-    OWNS = "OWNS"  # "Smaug OWNS Treasure Hoard"
-    POSSESSES = "POSSESSES"  # "Arthur POSSESSES Excalibur"
-    DESTROYS = "DESTROYS"  # "Sauron DESTROYS Númenor"
-    BORN_IN = "BORN_IN"  # "Superman BORN_IN Krypton"
-    RULES_OVER = "RULES_OVER"  # "Sauron RULES_OVER Mordor"
-    ESCAPED_FROM = "ESCAPED_FROM"  # "Edmond Dantès ESCAPED_FROM Château d'If"
+    # Trust & Emotion
+    TRUSTS = "TRUSTS"  # "A TRUSTS B"
+    DISTRUSTS = "DISTRUSTS"  # "A DISTRUSTS B"
+    LOVES = "LOVES"  # "A LOVES B"
+    HATES = "HATES"  # "A HATES B"
+    FEARS = "FEARS"  # "A FEARS B"
+    RESPECTS = "RESPECTS"  # "A RESPECTS B"
+    DISRESPECTS = "DISRESPECTS"  # "A DISRESPECTS B"
+    ENVIES = "ENVIES"  # "A ENVIES B"
+    ADMIRE = "ADMIRE"  # "A ADMIRE B"
+    PITIES = "PITIES"  # "A PITIES B"
+    BETRAYS = "BETRAYS"  # "A BETRAYS B"
+    FORGIVES = "FORGIVES"  # "A FORGIVES B"
+    PROTECTS = "PROTECTS"  # "A PROTECTS B"
+    DEFENDS = "DEFENDS"  # "A DEFENDS B"
 
-    # Abilities & Powers
-    HAS_POWER = "HAS_POWER"  # "Superman HAS_POWER Flight"
-    USES_POWER = "USES_POWER"  # "Doctor Strange USES_POWER Time Manipulation"
-    CURSED_WITH = "CURSED_WITH"  # "Frodo CURSED_WITH Burden of the Ring"
-    BLESSED_BY = "BLESSED_BY"  # "Achilles BLESSED_BY Gods"
-    WEAK_TO = "WEAK_TO"  # "Superman WEAK_TO Kryptonite"
-    IMMUNE_TO = "IMMUNE_TO"  # "Daenerys Targaryen IMMUNE_TO Fire"
-    TRANSFORMED_INTO = "TRANSFORMED_INTO"  # "The Beast TRANSFORMED_INTO Prince Adam"
+    # Possession & Control
+    OWNS = "OWNS"  # "A OWNS B"
+    GUARDS = "GUARDS"  # "A GUARDS B"
+    SEEKS = "SEEKS"  # "A SEEKS B"
+    CREATES = "CREATES"  # "A CREATES B"
+    DESTROYS = "DESTROYS"  # "A DESTROYS B"
+    LOSES = "LOSES"  # A LOSES B
+    RULES_OVER = "RULES_OVER"  # "A RULES_OVER B"
 
-    # Rituals, Magic, Lore
-    PERFORMS = "PERFORMS"  # "Cult PERFORMS Dark Ritual"
-    REQUIRES = "REQUIRES"  # "Dark Ritual REQUIRES Sacrifice"
-    CREATED = "CREATED"  # "Morgoth CREATED Orcs"
-    DESTINED_FOR = "DESTINED_FOR"  # "Prophecy DESTINED_FOR Hero"
-    SUMMONS = "SUMMONS"  # "The Sorcerer SUMMONS A Demon"
-    FORETOLD_BY = (
-        "FORETOLD_BY"  # "Anakin's downfall FORETOLD_BY The Prophecy of the Chosen One"
-    )
-    DERIVES_FROM = "DERIVES_FROM"  # "The One Power DERIVES_FROM The True Source"
+    # Location & Origin
+    LOCATED_IN = "LOCATED_IN"  # "A LOCATED_IN B"
+    BORN_IN = "BORN_IN"  # "A BORN_IN B"
+    ORIGINATES_FROM = "ORIGINATES_FROM"  # "A ORIGINATES_FROM B"
+    ESCAPED_FROM = "ESCAPED_FROM"  # "A ESCAPED_FROM B"
 
-    # Events & Outcomes
-    FOUGHT_IN = "FOUGHT_IN"  # "Jon Snow FOUGHT_IN Battle of the Bastards"
-    KILLED = "KILLED"  # "Achilles KILLED Hector"
-    RESCUED = "RESCUED"  # "Mario RESCUED Princess Peach"
-    DIED_IN = "DIED_IN"  # "Boromir DIED_IN Amon Hen"
-    RESURRECTED = "RESURRECTED"  # "Gandalf RESURRECTED After Balrog Battle"
-    CAUSED = "CAUSED"  # "Icarus's hubris CAUSED His fall"
-    WITNESSED = "WITNESSED"  # "Samwise Gamgee WITNESSED Boromir's death"
-    PARTICIPATED_IN = (
-        "PARTICIPATED_IN"  # "Bilbo Baggins PARTICIPATED_IN The Council of Elrond"
-    )
+    # Abilities & Attributes
+    HAS_ATTRIBUTE = "HAS_ATTRIBUTE"  # "A HAS_ATTRIBUTE Strong"
+    HAS_POWER = "HAS_POWER"  # "A HAS_POWER Flight"
+    WEAK_TO = "WEAK_TO"  # "A WEAK_TO B"
+    IMMUNE_TO = "IMMUNE_TO"  # "A IMMUNE_TO B"
+    TRANSFORMED_INTO = "TRANSFORMED_INTO"  # "A TRANSFORMED_INTO B"
 
-    # Organizations & Factions
-    PART_OF = "PART_OF"  # "Night's Watch PART_OF The Wall"
-    FOUNDED = "FOUNDED"  # "Salazar Slytherin FOUNDED Slytherin House"
-    RULES = "RULES"  # "Emperor Palpatine RULES Galactic Empire"
-    WORSHIPS = "WORSHIPS"  # "Cult WORSHIPS Elder God"
+    # Knowledge & Communication
+    MISUNDERSTANDS = "MISUNDERSTANDS"
+    KNOWS_SECRET = "KNOWS_SECRET"  # "A KNOWS_SECRET B"
+    DECEIVES = "DECEIVES"  # "A DECEIVES B"
 
-    # Artifacts & Items
-    DISCOVERED = "DISCOVERED"  # "Indiana Jones DISCOVERED Ark of the Covenant"
-    GUARDS = "GUARDS"  # "Cerberus GUARDS Underworld"
-    SEEKS = "SEEKS"  # "Gollum SEEKS One Ring"
-    PROTECTS = "PROTECTS"  # "Knights PROTECT Holy Grail"
-    WIELDS = "WIELDS"  # "Thor WIELDS Mjölnir"
-    FORGED = "FORGED"  # "Celebrimbor FORGED The Rings of Power"
-    CONTAINS = "CONTAINS"  # "The Tesseract CONTAINS The Space Stone"
-    COMPONENT_OF = "COMPONENT_OF"  # "The Elder Wand COMPONENT_OF The Deathly Hallows"
-
-    # Communication & Knowledge
-    KNOWS_SECRET = "KNOWS_SECRET"  # "Dumbledore KNOWS_SECRET Snape's true allegiance"
-    DECEIVED = "DECEIVED"  # "Othello DECEIVED Iago"
-    COMMUNICATES_WITH = "COMMUNICATES_WITH"  # "Professor X COMMUNICATES_WITH Jean Grey"
+    # Events
+    PARTICIPATED_IN = "PARTICIPATED_IN"  # "A PARTICIPATED_IN Event"
+    WITNESSED = "WITNESSED"  # "A WITNESSED B"
+    CAUSED = "CAUSED"  # "A CAUSED B"
+    AFFECTED_BY = "AFFECTED_BY"  # "A AFFECTED_BY B"
+    DIED_IN = "DIED_IN"  # "A DIED_IN B"
+    RESURRECTED_IN = "RESURRECTED_IN"  # "A RESURRECTED_IN B"
 
 
 class TemporalType(Enum):

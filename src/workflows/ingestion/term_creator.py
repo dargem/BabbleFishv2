@@ -97,7 +97,7 @@ class EntityCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    async def create_entities(self, state: IngestionState) -> dict[str,List[Entity]]:
+    async def create_entities(self, state: IngestionState) -> dict[str, List[Entity]]:
         """
         Args:
             state: Current translation state

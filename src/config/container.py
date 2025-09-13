@@ -30,7 +30,7 @@ class Container:
         self._config = config
         self._instances.clear()  # Clear existing instances when config changes
 
-    def get_api_key_manager(self) -> APIKeyManager:
+    def _get_api_key_manager(self) -> APIKeyManager:
         """Get or create the API key manager instance."""
         if "api_key_manager" not in self._instances:
             self._instances["api_key_manager"] = APIKeyManager(
@@ -39,7 +39,7 @@ class Container:
             )
         return self._instances["api_key_manager"]
 
-    def get_llm_provider(self) -> GoogleLLMProvider:
+    def _get_llm_provider(self) -> GoogleLLMProvider:
         """Get or create the LLM provider instance."""
         provider_key = f"llm_provider_{self._config.environment}"
 
@@ -56,7 +56,7 @@ class Container:
             else:
                 # Use real Google provider for dev/prod
                 self._instances[provider_key] = GoogleLLMProvider(
-                    api_key_manager=self.get_api_key_manager(),
+                    api_key_manager=self._get_api_key_manager(),
                     model_name=self._config.llm.model_name,
                     temperature=self._config.llm.temperature,
                     max_tokens=self._config.llm.max_tokens,
@@ -64,22 +64,27 @@ class Container:
 
         return self._instances[provider_key]
 
-    def get_knowledge_graph_manager(self) -> KnowledgeGraphManager:
+    def _get_knowledge_graph_manager(self) -> KnowledgeGraphManager:
         """Get or create the knowledge graph manager instance."""
         if "kg_manager" not in self._instances:
             # Note: In the future, pass database config to KG manager
             self._instances["kg_manager"] = KnowledgeGraphManager()
         return self._instances["kg_manager"]
 
+    def _get_node_factory(workflow_type: str):
+        workflow_types = {"translation", "ingestion"}
+        if workflow_type not in workflow_types:
+            raise NotImplementedError
+
     def get_translation_workflow(self):
         return create_translation_workflow(
-            llm_provider=self.get_llm_provider(),
+            llm_provider=self._get_llm_provider(),
         )
-    
+
     def get_ingestion_workflow(self):
         return create_ingestion_workflow(
-            llm_provider=self.get_llm_provider(),
-            kg_manager=self.get_knowledge_graph_manager(),
+            llm_provider=self._get_llm_provider(),
+            kg_manager=self._get_knowledge_graph_manager(),
         )
 
     async def health_check(self) -> Dict[str, bool]:
@@ -91,7 +96,7 @@ class Container:
         results = {}
 
         try:
-            llm_provider = self.get_llm_provider()
+            llm_provider = self._get_llm_provider()
             results["llm_provider"] = await llm_provider.health_check()
         except Exception as e:
             results["llm_provider"] = False
@@ -122,7 +127,7 @@ class Container:
         }
 
         try:
-            llm_provider = self.get_llm_provider()
+            llm_provider = self._get_llm_provider()
             if hasattr(llm_provider, "get_stats"):
                 stats["llm_provider"] = await llm_provider.get_stats()
             else:

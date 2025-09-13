@@ -6,6 +6,7 @@ from __future__ import annotations
 # imports
 from ..states import TranslationState
 
+
 class FeedbackRouter:
     """Manages feedback routing and state updates"""
 

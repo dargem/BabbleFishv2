@@ -58,7 +58,9 @@ class TripletMetadataSchema(BaseModel):
 
 class TripletSchema(BaseModel):
     subject: str = Field(..., description="The subject of the triplet")
-    predicate: PredicateType = Field(..., description="The action of the subject on the object")
+    predicate: PredicateType = Field(
+        ..., description="The action of the subject on the object"
+    )
     object: str = Field(..., description="The object receiving the subject's action")
     metadata: TripletMetadataSchema = Field(
         ..., description="The metadata related to this triplet"
@@ -112,13 +114,15 @@ class TripletCreator:
         prompt = PromptTemplate(
             input_variables=["text"],
             template="""
-            You are an expert information-extraction assistant. Your task is to extract **high-importance, context-independent triplets** suitable for a knowledge base or knowledge graph.
+            You are an expert information-extraction assistant. Your task is to extract only **high-importance relationships between entities**.
 
             === Triplet Definition ===
 
             A triplet is a single, abstracted fact expressed as:  
-            **Subject (Named Entity) — Predicate — Object (Named Entity, Attribute, Possession, Location, Ability, Role, or Quantifiable Fact)**  
-            A triplet is *NOT THE ORIGINAL TEXT*, it is an abstract representation of relationships
+            **Subject (Named Entity) — Predicate — Object (Named Entity)**  
+            
+            A triplet is *NOT THE ORIGINAL TEXT*, it is an abstract representation of relationships between entities.
+            
             
             Rules for triplets:
 
@@ -178,7 +182,9 @@ class TripletCreator:
         )
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
-        unparsed_triplets = await self.llm_provider.schema_invoke(messages=[message], schema=TripletSchemaList)
+        unparsed_triplets = await self.llm_provider.schema_invoke(
+            messages=[message], schema=TripletSchemaList
+        )
         parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
-        
+
         return {"triplets": parsed_triplets}

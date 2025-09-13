@@ -20,7 +20,9 @@ class LanguageDetector:
             Language.SPANISH: "Spanish",
             Language.FRENCH: "French",
         }
-        self.detector = LanguageDetectorBuilder.from_languages(*self.languages_mapped.keys()).build()
+        self.detector = LanguageDetectorBuilder.from_languages(
+            *self.languages_mapped.keys()
+        ).build()
 
     def detect_language(self, state: TranslationState) -> dict:
         """Detect the language of the input text.
@@ -32,7 +34,7 @@ class LanguageDetector:
             Dictionary with detected language
         """
         print("Detecting language...")
-        
+
         detected = self.detector.detect_language_of(state["text"])
         return {"language": self.languages_mapped[detected]}
 

@@ -2,21 +2,17 @@
 
 # type hints
 from __future__ import annotations
-from src.providers import LLMProvider
-from src.knowledge_graph import KnowledgeGraphManager
 
 # imports
-import sys
 import asyncio
 from pathlib import Path
 from src.config import ConfigFactory, Container
-from src.workflows import create_translation_workflow, create_ingestion_workflow
-from src.knowledge_graph import KnowledgeGraphManager
 
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
+
 
 async def run_translation():
     """Main function to run the translation workflow."""
@@ -30,14 +26,14 @@ async def run_translation():
     # Use absolute path based on script location
     script_dir = Path(__file__).parent.parent  # Go up from src/ to project root
     file_path = DATA_DIR / "lotm2.txt"
-    
+
     with open(file_path, "r", encoding="UTF-8") as f:
         sample_text = f.read()
     print("Loaded text from file")
 
     # Database Ingestion
     state_input = {"text": sample_text}
-    result = await ingestion_app.ainvoke(state_input) #ignore type issue
+    result = await ingestion_app.ainvoke(state_input)
 
     print("Ingested entries")
     for entity in result["entities"]:
@@ -48,11 +44,10 @@ async def run_translation():
             print(
                 f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
             )
-            print(triplet.metadata.__dict__)
+            # print(triplet.metadata.__dict__)
     exit()
     # Create workflow
     print("Creating translation workflow...")
-    translation_app = create_translation_workflow(llm_provider)
     # run workflow
     print("Starting translation process...")
     state_input = {"text": sample_text}
@@ -67,7 +62,7 @@ async def run_translation():
         if isinstance(result[key], str) and result[key].strip():
             print(f"\n{key.upper()}:")
             print("-" * len(key))
-            #print(result[key])
+            # print(result[key])
 
     # Generate workflow visualization
     try:
