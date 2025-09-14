@@ -33,6 +33,18 @@ class KnowledgeGraphManager:
 
     # Entity operations - delegate to EntityOperations
 
+    def update_entities(self, entities: List[Entity]) -> int:
+        """
+        Updates existing entities in the knowledge graph, if unique adds them
+
+        Args:
+            entities: List of entities to add/update
+
+        Returns:
+            Number of entities added/updated
+        """
+        
+
     def add_entities(self, entities: List[Entity]) -> int:
         """
         Add multiple entities to the knowledge graph

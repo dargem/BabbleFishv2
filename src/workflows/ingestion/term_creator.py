@@ -145,7 +145,7 @@ def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
     for entities in entities_list:
         for entity in entities:
             for name in entity.strong_names:
-                mapping[name.name] = entity
+                mapping[name] = entity
     return mapping
 
 

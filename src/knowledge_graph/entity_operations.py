@@ -13,6 +13,20 @@ class EntityOperations:
         """Initialize with Neo4j driver"""
         self.driver = driver
 
+    def update_entities(self, entities: List[Entity]) -> int:
+        """
+        Updates multiple entities into the knowledge graph
+
+        Args:
+            entities: List of entities to update
+
+        Returns:
+            Number of entities updated
+        """
+        # need some unification logic, needs to merge existing relationships + node info
+        # noting possible edge case already have multiple established entities due to something like a transitive match
+        # and probably error detection incase it suggests integrating nodes already deeply engrained        
+
     def add_entities(self, entities: List[Entity]) -> int:
         """
         Add multiple entities to the knowledge graph
@@ -97,7 +111,7 @@ class EntityOperations:
         LIMIT 1
         """
         result = tx.run(query, name=name)
-        record = result.single()
+        record = result.single
         return record["entity"] if record else None
 
     @staticmethod
