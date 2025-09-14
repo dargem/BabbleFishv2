@@ -9,10 +9,10 @@ from src.knowledge_graph import KnowledgeGraphManager
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Set
 from ..states import IngestionState
 from src.core import Entity, NameEntry
-
+import networkx as nx
 
 class TermTranslation(BaseModel):
     """Sub schema for a terms translation"""
@@ -89,6 +89,43 @@ def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Enti
         )
     return entity_list
 
+def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]):
+    total_strong_names = []
+    for entities in entities_list:
+        for entity in entities:
+            total_strong_names.extend(entity.strong_names)
+        G.add_nodes_from(total_strong_names)
+
+def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]):
+    for entities in entities_list:
+        for entity in entities:
+            for strong_names in entity.strong_names:
+                # Transitive so can anchor
+                anchor = strong_names[0]
+                for strong_name in strong_names[1:]:
+                    G.add_edge(anchor, strong_name)
+
+def _map_names(entities_list: List[Entity]) -> Dict[str, Entity]:
+    """Maps names into hashmap to track provenance"""
+    mapping = {}
+    for entities in entities_list:
+        for entity in entities:
+            for name in entity.strong_names:
+                mapping[name.name] = entity
+    return mapping
+
+def _find_related_entities(G: nx.Graph, mapping: Dict[str, Entity]) -> List[Set[Entity]]:
+    """Creates a list of sets for related entities"""
+    related_entities = []
+    for component in nx.connected_components(G):
+        connected = set()
+        for name in component:
+            connected.add(mapping[name]) # sets stores unique only
+        related_entities.append(connected)
+    return related_entities
+
+def _combine_entities(related_entities: List[Set[Entity]]) -> List[Entity]:
+    """Creates a list of combined entities"""
 
 class EntityCreator:
     """Recognise entities from original text"""
@@ -96,6 +133,23 @@ class EntityCreator:
     def __init__(self, llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager):
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
+
+
+    async def _unify_entities(self, new_entities: List[Entity]) -> List[Entity]:
+        """Uses graph based unification of entities based on strong matches"""
+        old_entities: List[Entity] = self.kg_manager.get_all_entities()
+
+        # Build graph
+        G = nx.Graph()
+        mapping = _map_names([old_entities, new_entities])
+        _add_nodes(G, [old_entities, new_entities])
+        _add_edges(G, [old_entities, new_entities])
+
+        # Extract out
+        related_entities = _find_related_entities(G, mapping)
+
+
+
 
     async def create_entities(self, state: IngestionState) -> dict[str, List[Entity]]:
         """

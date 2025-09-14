@@ -5,6 +5,7 @@ python-dotenv >= 1.1.1
 IPython >=  9.4.0
 lingua-language-detector >= 2.1.1
 neo4j >= 5.28.2
+networkx >= 3.5
 
 # Configuration and dependency injection
 pydantic >= 2.0.0
