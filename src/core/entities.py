@@ -86,6 +86,15 @@ class Entity:
         if name_entry.name.lower() not in existing_names:
             self.names.append(name_entry)
 
+    def merge_entity(self, entity: "Entity"):
+        """Combines another entity with itself"""
+        current_names = {name_entry.name for name_entry in self.names}
+        for name_entry in entity.all_names:
+            if name_entry.name not in current_names:
+                self.add_name_entry(name_entry)
+
+        self.chapter_idx.extend(entity.chapter_idx)
+
     def to_neo4j_props(self) -> Dict[str, Any]:
         """Convert entity to Neo4j node properties"""
         # Store NameEntry data as separate parallel arrays that Neo4j can handle

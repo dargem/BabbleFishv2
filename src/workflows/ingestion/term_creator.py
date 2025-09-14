@@ -14,6 +14,7 @@ from ..states import IngestionState
 from src.core import Entity, NameEntry
 import networkx as nx
 
+
 class TermTranslation(BaseModel):
     """Sub schema for a terms translation"""
 
@@ -68,7 +69,15 @@ def _name_entry_list_creator(
 
 
 def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Entity]:
-    """Decomposes an Entity Schema List into a list of entities"""
+    """
+    Decomposes an Entity Schema List into a list of entities
+
+    Args:
+        entity_schema_list: EntitySchemaList object, contains list of EntitySchema objects
+
+    Returns:
+        List of Entity objects composed from the schema
+    """
     entity_list = []
     for entity_schema in entity_schema_list.entities:
         name_entry_list = []
@@ -82,21 +91,37 @@ def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Enti
         entity_list.append(
             Entity(
                 names=name_entry_list,
-                entity_type=entity_schema.entity_type,  # TODO need to add stuff for enum validation still!
+                entity_type=entity_schema.entity_type,
                 description=entity_schema.description,
                 chapter_idx=0,  # TODO Holder
             )
         )
     return entity_list
 
-def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]):
+
+def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
+    """
+    Adds nodes to the graph
+
+    Args:
+        G: nx Graph for use
+        entities_list: List of lists of Entity objects for nodes
+    """
     total_strong_names = []
     for entities in entities_list:
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
         G.add_nodes_from(total_strong_names)
 
-def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]):
+
+def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
+    """
+    Adds edges to the graph
+
+    Args:
+        G: nx Graph for use
+        entities_list: List of lists of Entity objects for edges
+    """
     for entities in entities_list:
         for entity in entities:
             for strong_names in entity.strong_names:
@@ -105,8 +130,17 @@ def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]):
                 for strong_name in strong_names[1:]:
                     G.add_edge(anchor, strong_name)
 
-def _map_names(entities_list: List[Entity]) -> Dict[str, Entity]:
-    """Maps names into hashmap to track provenance"""
+
+def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
+    """
+    Maps names into hashmap to track provenance
+
+    Args:
+        entities_list: List of list of entity for mapping
+
+    Returns:
+        Mapping of names to entities
+    """
     mapping = {}
     for entities in entities_list:
         for entity in entities:
@@ -114,18 +148,39 @@ def _map_names(entities_list: List[Entity]) -> Dict[str, Entity]:
                 mapping[name.name] = entity
     return mapping
 
-def _find_related_entities(G: nx.Graph, mapping: Dict[str, Entity]) -> List[Set[Entity]]:
+
+def _find_related_entities(
+    G: nx.Graph, mapping: Dict[str, Entity]
+) -> List[Set[Entity]]:
     """Creates a list of sets for related entities"""
     related_entities = []
     for component in nx.connected_components(G):
         connected = set()
         for name in component:
-            connected.add(mapping[name]) # sets stores unique only
+            connected.add(mapping[name])  # sets stores unique only
         related_entities.append(connected)
     return related_entities
 
+
 def _combine_entities(related_entities: List[Set[Entity]]) -> List[Entity]:
-    """Creates a list of combined entities"""
+    """
+    Creates a list of combined entities through merging sets of Entity objects into one
+
+    Args:
+        related_entities: List of sets of Entity, entities in the same set to be merged into 1
+
+    Returns:
+        List of new Entity objects
+    """
+    new_entities = []
+    for entity_set in related_entities:
+        entity_list = entity_set.toArray()
+        base_entity: Entity = entity_list[0]
+        for entity in entity_list[1:]:
+            base_entity.merge_entity(entity)
+        new_entities.append(base_entity)
+    return new_entities
+
 
 class EntityCreator:
     """Recognise entities from original text"""
@@ -134,9 +189,17 @@ class EntityCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-
     async def _unify_entities(self, new_entities: List[Entity]) -> List[Entity]:
-        """Uses graph based unification of entities based on strong matches"""
+        """
+        Unifies entities or if newly introduced keeps them.
+        Uses graph based unification of entities based on strong matches.
+
+        Args:
+            new_entities: A list of Entity objects, needed for unification
+
+        Returns:
+            A list of Entity objects, these are all unique from old_entities
+        """
         old_entities: List[Entity] = self.kg_manager.get_all_entities()
 
         # Build graph
@@ -147,9 +210,7 @@ class EntityCreator:
 
         # Extract out
         related_entities = _find_related_entities(G, mapping)
-
-
-
+        new_unified_entities = _combine_entities(related_entities)
 
     async def create_entities(self, state: IngestionState) -> dict[str, List[Entity]]:
         """
