@@ -25,7 +25,7 @@ async def run_translation():
 
     # Use absolute path based on script location
     script_dir = Path(__file__).parent.parents
-    file_path = DATA_DIR / "lotm2.txt"
+    file_path = DATA_DIR / "lotm3.txt"
 
     with open(file_path, "r", encoding="UTF-8") as f:
         sample_text = f.read()
@@ -37,7 +37,7 @@ async def run_translation():
 
     print("Ingested entries")
     for entity in result["entities"]:
-        print(entity)
+        print(entity.strong_names)
 
     for triplet in result["triplets"]:
         if triplet.metadata.importance >= 0:

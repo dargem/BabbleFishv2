@@ -22,6 +22,7 @@ class IngestionWorkflowFactory:
     """Factory for creating ingestion workflows"""
 
     def __init__(self, container: Container):
+        # check if its better to pass graph manger + llm provider
         self.container = container
 
     def create_workflow(self):

@@ -56,13 +56,19 @@ class TripletMetadataSchema(BaseModel):
         description="An optional field, add if you want to add more information, triplets won't have the original text for context",
     )
 
+
 # experiment with enum vs str, need to find a good prompt first
 class TripletSchema(BaseModel):
-    subject: str = Field(..., description="The subject of the triplet, must be a Named Entity")
+    subject: str = Field(
+        ..., description="The subject of the triplet, must be a singular Named Entity"
+    )
     predicate: str = Field(
         ..., description="The relationship the subject has with the object"
     )
-    object: str = Field(..., description="The object receiving the subject's action, must be a Named Entity")
+    object: str = Field(
+        ...,
+        description="The object receiving the subject's action, must be a singular Named Entity",
+    )
     metadata: TripletMetadataSchema = Field(
         ..., description="The metadata related to this triplet"
     )
@@ -114,7 +120,7 @@ class TripletCreator:
 
         prompt = PromptTemplate(
             input_variables=["text"],
-            template = textwrap.dedent("""
+            template=textwrap.dedent("""
             You are a meticulous Knowledge Graph Architect. Your sole purpose is to extract enduring, high-value facts to build an encyclopedia-like knowledge base. You are not a story summarizer.
 
             Your task is to analyze the provided text and extract factual triplets. A triplet is an atomic piece of knowledge represented as **Subject (Named Entity) — Predicate — Object (Named Entity or Value)**.
@@ -179,7 +185,7 @@ class TripletCreator:
             ---
             ### TASK
 
-            Now, analyze the following text. Following the step-by-step process and all rules, extract only the high-value, encyclopedia-worthy triplets. If no such triplets exist, return an empty list.
+            Now, analyze the following text. Following the step-by-step process and all rules, extract high-value, encyclopedia-worthy triplets.
 
             {text}
             """),

@@ -1,14 +1,13 @@
 """The state inputs for workflows"""
+# TODO short term memory after database is dealt with
 
-from typing import TypedDict, List, TYPE_CHECKING, Any
+from typing import TypedDict, List
 from src.core import Entity, Triplet
-
-if TYPE_CHECKING:
-    from src.knowledge_graph import KnowledgeGraphManager
 
 
 class IngestionState(TypedDict):
-    """State object for ingestion workflow
+    """
+    State object for ingestion workflow
 
     Attributes:
         text: The original text to be translated
@@ -24,7 +23,8 @@ class IngestionState(TypedDict):
 
 
 class TranslationState(TypedDict):
-    """State object for the translation workflow.
+    """
+    State object for the translation workflow.
 
     Attributes:
         text: The original text to be translated

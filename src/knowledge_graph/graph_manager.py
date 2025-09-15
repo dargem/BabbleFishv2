@@ -43,7 +43,7 @@ class KnowledgeGraphManager:
         Returns:
             Number of entities added/updated
         """
-        
+        return self._entity_ops.update_entities(entities)
 
     def add_entities(self, entities: List[Entity]) -> int:
         """

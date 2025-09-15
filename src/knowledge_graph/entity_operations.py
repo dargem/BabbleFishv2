@@ -15,17 +15,21 @@ class EntityOperations:
 
     def update_entities(self, entities: List[Entity]) -> int:
         """
-        Updates multiple entities into the knowledge graph
+        Updates multiple entities into the knowledge graph.
+
+        For each entity:
+        - If it matches existing entities by strong names, merge them
+        - If it's a merge of multiple entities, combine their edges
+        - If it doesn't exist, create a new node
 
         Args:
             entities: List of entities to update
 
         Returns:
-            Number of entities updated
+            Number of entities processed
         """
-        # need some unification logic, needs to merge existing relationships + node info
-        # noting possible edge case already have multiple established entities due to something like a transitive match
-        # and probably error detection incase it suggests integrating nodes already deeply engrained        
+        with self.driver.session() as session:
+            return session.execute_write(self._update_entities_tx, entities)
 
     def add_entities(self, entities: List[Entity]) -> int:
         """
@@ -131,3 +135,176 @@ class EntityOperations:
         query = "MATCH (e:Entity) RETURN properties(e) AS entity"
         result = tx.run(query)
         return [record["entity"] for record in result]
+
+    @staticmethod
+    def _update_entities_tx(tx, entities: List[Entity]) -> int:
+        """Transaction to update multiple entities with merge logic"""
+        entities_processed = 0
+
+        for entity in entities:
+            if not entity.strong_names:
+                # No strong names - create as new entity
+                EntityOperations._create_new_entity(tx, entity)
+                entities_processed += 1
+                continue
+
+            # Find existing entities that share strong names
+            existing_entities = EntityOperations._find_matching_entities(
+                tx, entity.strong_names
+            )
+
+            if not existing_entities:
+                # No matches found - create new entity
+                EntityOperations._create_new_entity(tx, entity)
+                entities_processed += 1
+            else:
+                # Merge with existing entities
+                EntityOperations._merge_entities(tx, entity, existing_entities)
+                entities_processed += 1
+
+        return entities_processed
+
+    @staticmethod
+    def _find_matching_entities(tx, strong_names: List[str]) -> List[Dict[str, Any]]:
+        """Find existing entities that share any strong names"""
+        if not strong_names:
+            return []
+
+        query = """
+        MATCH (e:Entity)
+        WHERE ANY(existing_name IN e.strong_names 
+                  WHERE existing_name IN $strong_names)
+        RETURN e, properties(e) AS props
+        """
+        return list(tx.run(query, strong_names=strong_names))
+
+    @staticmethod
+    def _create_new_entity(tx, entity: Entity) -> None:
+        """Create a new entity node"""
+        query = """
+        CREATE (e:Entity)
+        SET e = $props
+        RETURN e
+        """
+        tx.run(query, props=entity.to_neo4j_props())
+
+    @staticmethod
+    def _merge_entities(
+        tx, new_entity: Entity, existing_entities: List[Dict[str, Any]]
+    ) -> None:
+        """Merge new entity with existing entities, preserving relationships"""
+        existing_nodes = [record["e"] for record in existing_entities]
+
+        # Collect all relationships from existing entities
+        relationships = EntityOperations._collect_relationships(tx, existing_nodes)
+
+        # Delete old entities
+        EntityOperations._delete_entities(tx, existing_nodes)
+
+        # Create new merged entity
+        new_node = EntityOperations._create_merged_entity(tx, new_entity)
+
+        # Recreate relationships with new entity
+        EntityOperations._recreate_relationships(tx, new_node, relationships)
+
+    @staticmethod
+    def _collect_relationships(tx, nodes: List[Any]) -> List[Dict[str, Any]]:
+        """Collect all relationships from given nodes"""
+        query = """
+        MATCH (e:Entity)-[r]-(other)
+        WHERE e IN $nodes
+        RETURN e, r, other, type(r) AS rel_type, 
+               startNode(r) = e AS is_outgoing,
+               properties(r) AS rel_props
+        """
+        return list(tx.run(query, nodes=nodes))
+
+    @staticmethod
+    def _delete_entities(tx, nodes: List[Any]) -> None:
+        """Delete entities and their relationships"""
+        query = """
+        MATCH (e:Entity)
+        WHERE e IN $nodes
+        DETACH DELETE e
+        """
+        tx.run(query, nodes=nodes)
+
+    @staticmethod
+    def _create_merged_entity(tx, entity: Entity) -> Any:
+        """Create the new merged entity"""
+        query = """
+        CREATE (new_e:Entity)
+        SET new_e = $props
+        RETURN new_e
+        """
+        result = tx.run(query, props=entity.to_neo4j_props())
+        return result.single()["new_e"]
+
+    @staticmethod
+    def _recreate_relationships(
+        tx, new_entity: Any, relationships: List[Dict[str, Any]]
+    ) -> None:
+        """Recreate relationships with the new entity, avoiding duplicates"""
+        unique_relationships = EntityOperations._deduplicate_relationships(
+            relationships
+        )
+
+        for rel_info in unique_relationships.values():
+            EntityOperations._create_relationship(tx, new_entity, rel_info)
+
+    @staticmethod
+    def _deduplicate_relationships(
+        relationships: List[Dict[str, Any]],
+    ) -> Dict[str, Dict[str, Any]]:
+        """Remove duplicate relationships"""
+        unique_relationships = {}
+
+        for rel_record in relationships:
+            other_node = rel_record["other"]
+            rel_type = rel_record["rel_type"]
+            is_outgoing = rel_record["is_outgoing"]
+            rel_props = rel_record["rel_props"]
+
+            # Create unique key for relationship
+            direction = "outgoing" if is_outgoing else "incoming"
+            rel_key = (other_node.element_id, rel_type, direction)
+
+            if rel_key not in unique_relationships:
+                unique_relationships[rel_key] = {
+                    "other": other_node,
+                    "type": rel_type,
+                    "outgoing": is_outgoing,
+                    "properties": rel_props,
+                }
+
+        return unique_relationships
+
+    @staticmethod
+    def _create_relationship(tx, new_entity: Any, rel_info: Dict[str, Any]) -> None:
+        """Create a single relationship"""
+        rel_type = rel_info["type"]
+
+        if rel_info["outgoing"]:
+            # Use dynamic query construction for relationship type
+            query = f"""
+            MATCH (new_e:Entity), (other)
+            WHERE elementId(new_e) = $new_id AND elementId(other) = $other_id
+            CREATE (new_e)-[r:`{rel_type}`]->(other)
+            SET r = $rel_props
+            RETURN r
+            """
+        else:
+            query = f"""
+            MATCH (new_e:Entity), (other)
+            WHERE elementId(new_e) = $new_id AND elementId(other) = $other_id
+            CREATE (other)-[r:`{rel_type}`]->(new_e)
+            SET r = $rel_props
+            RETURN r
+            """
+
+        tx.run(
+            query,
+            new_id=new_entity.element_id,
+            other_id=rel_info["other"].element_id,
+            rel_props=rel_info["properties"],
+        )
