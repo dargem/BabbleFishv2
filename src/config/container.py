@@ -4,15 +4,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from src.knowledge_graph import KnowledgeGraphManager
 
 # imports
 from typing import Dict, Any
 import asyncio
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
 from src.workflows import IngestionWorkflowFactory, TranslationWorkflowFactory
-from src.knowledge_graph import KnowledgeGraphManager
+from src.knowledge_graph import KnowledgeGraphManager, Neo4jConnection
 from .schemas import AppConfig
 
 
@@ -44,7 +42,7 @@ class Container:
             )
         return self._instances["api_key_manager"]
 
-    def _get_llm_provider(self) -> GoogleLLMProvider:
+    def get_llm_provider(self) -> GoogleLLMProvider:
         """Get or create the LLM provider instance."""
         provider_key = f"llm_provider_{self._config.environment}"
 
@@ -73,13 +71,9 @@ class Container:
         """Get or create the knowledge graph manager instance."""
         if "kg_manager" not in self._instances:
             # Note: In the future, pass database config to KG manager
-            self._instances["kg_manager"] = KnowledgeGraphManager()
+            connection = Neo4jConnection()
+            self._instances["kg_manager"] = KnowledgeGraphManager(connection)
         return self._instances["kg_manager"]
-
-    def _get_node_factory(workflow_type: str):
-        workflow_types = {"translation", "ingestion"}
-        if workflow_type not in workflow_types:
-            raise NotImplementedError
 
     def get_translation_workflow(self):
         return self._translation_workflow_factory.create_workflow()
@@ -96,7 +90,7 @@ class Container:
         results = {}
 
         try:
-            llm_provider = self._get_llm_provider()
+            llm_provider = self.get_llm_provider()
             results["llm_provider"] = await llm_provider.health_check()
         except Exception as e:
             results["llm_provider"] = False
@@ -127,7 +121,7 @@ class Container:
         }
 
         try:
-            llm_provider = self._get_llm_provider()
+            llm_provider = self.get_llm_provider()
             if hasattr(llm_provider, "get_stats"):
                 stats["llm_provider"] = await llm_provider.get_stats()
             else:

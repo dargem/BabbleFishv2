@@ -36,6 +36,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
 from typing import Optional, List
+import textwrap
 
 
 class TripletMetadataSchema(BaseModel):
@@ -55,13 +56,13 @@ class TripletMetadataSchema(BaseModel):
         description="An optional field, add if you want to add more information, triplets won't have the original text for context",
     )
 
-
+# experiment with enum vs str, need to find a good prompt first
 class TripletSchema(BaseModel):
-    subject: str = Field(..., description="The subject of the triplet")
-    predicate: PredicateType = Field(
-        ..., description="The action of the subject on the object"
+    subject: str = Field(..., description="The subject of the triplet, must be a Named Entity")
+    predicate: str = Field(
+        ..., description="The relationship the subject has with the object"
     )
-    object: str = Field(..., description="The object receiving the subject's action")
+    object: str = Field(..., description="The object receiving the subject's action, must be a Named Entity")
     metadata: TripletMetadataSchema = Field(
         ..., description="The metadata related to this triplet"
     )
@@ -113,72 +114,75 @@ class TripletCreator:
 
         prompt = PromptTemplate(
             input_variables=["text"],
-            template="""
-            You are an expert information-extraction assistant. Your task is to extract only **high-importance relationships between entities**.
+            template = textwrap.dedent("""
+            You are a meticulous Knowledge Graph Architect. Your sole purpose is to extract enduring, high-value facts to build an encyclopedia-like knowledge base. You are not a story summarizer.
 
-            === Triplet Definition ===
+            Your task is to analyze the provided text and extract factual triplets. A triplet is an atomic piece of knowledge represented as **Subject (Named Entity) — Predicate — Object (Named Entity or Value)**.
 
-            A triplet is a single, abstracted fact expressed as:  
-            **Subject (Named Entity) — Predicate — Object (Named Entity)**  
-            
-            A triplet is *NOT THE ORIGINAL TEXT*, it is an abstract representation of relationships between entities.
-            
-            
-            Rules for triplets:
+            Think of it this way: you are building a character sheet or a Wikipedia entry, not writing a scene summary. A character sheet says "Character: Klein Moretti, Occupation: Detective", it does not say "Character: Klein Moretti, Action: Cleaned a wound".
 
-            1. **Do not include narrative actions, thoughts, or mundane events.**  
-            - Example to exclude: "Alice picked up a pen", "John walked to the store".  
-            2. **At all costs never include vague pronouns, articles, or undefined entities.**  
-            - Example to exclude: "it", "himself", "this", "the object", "his".
-            - Grammatical clarity does not matter, ensure all entities are resolved at all costs
-            3. **Always perform coreference resolution.**  
-            - Replace pronouns or vague references with the correct named entity.  
-            4. **Only extract triplets with meaningful, knowledge-worthy information.**  
+            ---
+            ### CRITICAL RULE: State vs. Event
 
-            Acceptable triplets include:  
-            - Relationships between named entities (people, organizations, institutions).  
-            - Example: "Maria Gonzalez — member of — World Health Organization"  
-            - Roles, titles, occupations, or official positions.  
-            - Example: "Thomas Clarke — works as — Biochemist"  
-            - Abilities, powers, rituals, supernatural rules, or procedural requirements.  
-            - Example: "Fire Ritual — requires — three sacred leaves from Grynn"  
-            - Important locations, historical facts, or possessions of entities.  
-            - Example: "Alexander Hamilton — founded — Bank of New York"  
-            - Quantifiable or verifiable facts about named entities.  
-            - Example: "Mount Everest — height — 8848 meters"  
+            This is the most important rule. You must distinguish between a **State** (a durable fact) and an **Event** (a temporary action or occurrence).
 
-            === Temporal and Context Labels ===  
+            -   **STATE (Extract These):** Facts about identity, roles, capabilities, ownership, or fundamental relationships. These are things that are true for a sustained period.
+                -   *Example:* `(Maria Gonzalez, member of, World Health Organization)`, `(Mount Everest, height, 8848 meters)`, `(Klein Moretti, possesses, a revolver)`
 
-            Each triplet must be labeled as:  
-            - **Temporal Type:** Static, Dynamic, or Atemporal  
-            - **Statement Type:** Fact, Opinion, Prediction  
-            - **Tense Type:** Past, Present  
-            - **Importance:** 0-100  
+            -   **EVENT (IGNORE THESE):** Actions, temporary conditions, dialogue, thoughts, feelings, or scenes. These are things that happen at a specific moment in the narrative.
+                -   *Example to IGNORE:* "Maria walked to the store", "The mountain was covered in snow", "Klein was suffering from a wound".
 
-            Optional: Add additional propositions for clarity if needed.
+            ---
+            ### Step-by-Step Extraction Process
 
-            === Key Filters ===  
+            Follow this process precisely:
 
-            - Never output generic events or trivial narrative actions, even if they involve named entities.  
-            - Never include abstract, speculative, or rhetorical statements.  
-            - Triplets must be fully understandable **without reading the source text**.  
-            - Only include **knowledge-worthy relationships or attributes**.  
+            1.  **Identify Entities:** First, identify all the key named entities (people, places, organizations, concepts) in the text.
+            2.  **Analyze Relationships:** For each entity, scan the text for statements that describe its nature, role, capabilities, or relationship to other entities.
+            3.  **Apply the State vs. Event Filter:** For each potential fact, ask yourself: "Is this a durable, encyclopedia-worthy fact (a State), or is this just something happening in the moment (an Event)?"
+                -   If it's an **Event**, **discard it immediately**. Do not create a triplet for it.
+                -   If it's a **State**, proceed to the next step.
+            4.  **Coreference Resolution:** Ensure all subjects and objects are specific named entities. Replace pronouns like "he," "she," "it," or vague terms like "the man" with the actual entity's name (e.g., "Klein Moretti").
+            5.  **Construct the Triplet:** Formulate the final triplet with a clear, concise predicate.
+            6.  **Add Metadata:** Assign the required labels to the final, filtered triplet.
 
-            === Extraction Guidelines ===
+            ---
+            ### Examples of What to AVOID
 
-            1. Resolve all pronouns to named entities.  
-            2. Extract only **high-value, concrete facts**.  
-            3. Avoid compound predicates; break multi-fact statements into separate triplets.  
-            4. Include explicit dates, numbers, or qualifiers if available.  
-            5. If a fact is temporary or procedural, label appropriately (Dynamic).  
-            6. Abstract narrative actions into knowledge-worthy facts only if they convey abilities, powers, or roles.
+            Based on the text "Suffering from a grievous wound, Klein Moretti, the detective, quickly cleaned his revolver before Benson installed the new gas lamp."
 
-            === Task ===
+            | Source Text Fragment                          |  BAD Triplet (This is an Event/Temporary State)                  | Why it's BAD                                                               |
+            | --------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------- |
+            | "Suffering from a grievous wound"             | `(Klein Moretti, has attribute, suffering from grievous wound)` | This is a temporary medical condition, not a permanent attribute. IGNORE.  |
+            | "Klein Moretti... cleaned his revolver"       | `(Klein Moretti, participated in, cleaning his revolver)`       | This is a mundane, one-time action. IGNORE.                                |
+            | "Benson installed the new gas lamp"           | `(Benson, participated in, installing gas lamp)`                | This is a narrative action, not a core fact about Benson's identity. IGNORE. |
 
-            Extract **only triplets that meet these criteria**. Ignore everything else.
+            ### Examples of What to EXTRACT
+
+            | Source Text Fragment                          | GOOD Triplet (This is a State/Durable Fact)                | Why it's GOOD                                                     |
+            | --------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+            | "Klein Moretti, the detective..."             | `(Klein Moretti, works as, Detective)`                     | This describes his profession, a durable role.                    |
+            | "...cleaned his revolver..."                  | `(Klein Moretti, possesses, revolver)`                     | The ownership of the revolver is a durable fact about him.        |
+            | "The currency of the Loen Kingdom is the soli"| `(Loen Kingdom, has currency, Soli)`                       | This is a fundamental, static fact about the kingdom.             |
+            | "The ritual requires three sacred leaves"     | `(Luck Enhancement Ritual, requires, three sacred leaves)` | This is a rule or requirement, a piece of knowledge about a system. |
+
+            ---
+            ### Output Metadata Schema
+
+            For each valid triplet you extract, provide these labels:
+
+            -   **Temporal Type:** `Static` (unlikely to change), `Dynamic` (can change, e.g., a job title), or `Atemporal` (a rule or definition).
+            -   **Statement Type:** `Fact`, `Opinion`, or `Prediction`.
+            -   **Tense Type:** `Past` or `Present`.
+            -   **Importance:** A score from `0` to `100` indicating how crucial this fact is to understanding the entity.
+
+            ---
+            ### TASK
+
+            Now, analyze the following text. Following the step-by-step process and all rules, extract only the high-value, encyclopedia-worthy triplets. If no such triplets exist, return an empty list.
 
             {text}
-            """,
+            """),
         )
 
         message = HumanMessage(content=prompt.format(text=state["text"]))

@@ -30,7 +30,7 @@ class IngestionWorkflowFactory:
         Returns:
             Compiled ingestion workflow for use
         """
-        llm_provider: LLMProvider = self.container._get_llm_provider()
+        llm_provider: LLMProvider = self.container.get_llm_provider()
         kg_manager: KnowledgeGraphManager = (
             self.container._get_knowledge_graph_manager()
         )

@@ -19,7 +19,7 @@ async def example_basic_usage():
     container.set_config(config)
 
     # Get LLM provider (automatically handles key rotation)
-    llm_provider: LLMProvider = container._get_llm_provider()
+    llm_provider: LLMProvider = container.get_llm_provider()
 
     # Use the provider for translation
     messages = [HumanMessage(content="Translate this to English: Bonjour le monde")]
@@ -47,7 +47,7 @@ async def example_multiple_requests():
     container = Container()
     container.set_config(config)
 
-    llm_provider = container._get_llm_provider()
+    llm_provider = container.get_llm_provider()
 
     # Make multiple requests to trigger key rotation
     for i in range(5):
@@ -71,7 +71,7 @@ async def example_testing_environment():
     container = Container()
     container.set_config(config)
 
-    llm_provider = container._get_llm_provider()
+    llm_provider = container.get_llm_provider()
 
     # This will use the mock provider
     messages = [HumanMessage(content="This will be mocked")]
@@ -118,7 +118,7 @@ async def example_workflow_integration():
     container.set_config(config)
 
     # Get dependencies
-    llm_provider = container._get_llm_provider()
+    llm_provider = container.get_llm_provider()
     kg_manager = container._get_knowledge_graph_manager()
 
     # This is how your workflow nodes would now work:

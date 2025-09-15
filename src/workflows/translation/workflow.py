@@ -36,7 +36,7 @@ def route_junior_pass(state: TranslationState) -> bool:
     Returns:
         True if translation is approved, False otherwise
     """
-    return "approved response accepted" in state["feedback"]
+    return APPROVED_RESPONSE_MARKER in state["feedback"]
 
 
 def route_increment_exceed(state: TranslationState, container: "Container") -> bool:
@@ -80,8 +80,8 @@ class TranslationWorkflowFactory:
         )
 
     def _create_nodes(self) -> Dict[str, Any]:
-        """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected
-        llm_provider = self.container._get_llm_provider()
+        """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected or use registry
+        llm_provider = self.container.get_llm_provider()
 
         return {
             "style_analyzer": StyleAnalyzer(llm_provider).analyze_style,

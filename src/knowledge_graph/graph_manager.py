@@ -11,9 +11,9 @@ from .database_operations import DatabaseOperations
 class KnowledgeGraphManager:
     """Facade for knowledge graph operations with Neo4j"""
 
-    def __init__(self):
+    def __init__(self, connection: Neo4jConnection):
         """Initialize the knowledge graph manager"""
-        self._connection = Neo4jConnection()
+        self._connection = connection
         self.driver = self._connection.get_driver()
 
         # Initialize operation handlers

@@ -147,7 +147,7 @@ class TestWorkflowNodes(BaseTranslationTest):
         config = ConfigFactory.create_config(env="development")
         container = Container()
         container.set_config(config)
-        llm_provider = container._get_llm_provider()
+        llm_provider = container.get_llm_provider()
         
         workflow = create_translation_workflow(llm_provider)
 
