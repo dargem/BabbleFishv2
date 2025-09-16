@@ -120,11 +120,11 @@ class TripletMetadata:
         props = {"chapter_idx": self.chapter_idx}
 
         if self.temporal_type:
-            props["temporal_type"] = self.temporal_type
+            props["temporal_type"] = self.temporal_type.value
         if self.statement_type:
-            props["statement_type"] = self.statement_type
-        if self.confidence is not None:
-            props["confidence"] = self.confidence
+            props["statement_type"] = self.statement_type.value
+        if self.importance:
+            props["confidence"] = self.importance # fix this mismatch later
         if self.source_text:
             props["source_text"] = self.source_text
 
