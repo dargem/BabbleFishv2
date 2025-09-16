@@ -31,11 +31,16 @@ async def run_translation():
         sample_text = f.read()
     print("Loaded text from file")
 
+    kg = container._get_knowledge_graph_manager()
+    kg.reset_database()
+    print(kg.get_stats())
+
     # Database Ingestion
     state_input = {"text": sample_text}
     result = await ingestion_app.ainvoke(state_input)
 
     print("Ingested entries")
+    print(kg.get_stats())
     for entity in result["entities"]:
         print(entity.strong_names)
 
@@ -45,6 +50,7 @@ async def run_translation():
                 f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
             )
             # print(triplet.metadata.__dict__)
+    print(kg.get_stats())
     exit()
     # Create workflow
     print("Creating translation workflow...")

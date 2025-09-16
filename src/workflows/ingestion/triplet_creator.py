@@ -157,20 +157,20 @@ class TripletCreator:
 
             Based on the text "Suffering from a grievous wound, Klein Moretti, the detective, quickly cleaned his revolver before Benson installed the new gas lamp."
 
-            | Source Text Fragment                          |  BAD Triplet (This is an Event/Temporary State)                  | Why it's BAD                                                               |
-            | --------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------- |
-            | "Suffering from a grievous wound"             | `(Klein Moretti, has attribute, suffering from grievous wound)` | This is a temporary medical condition, not a permanent attribute. IGNORE.  |
-            | "Klein Moretti... cleaned his revolver"       | `(Klein Moretti, participated in, cleaning his revolver)`       | This is a mundane, one-time action. IGNORE.                                |
-            | "Benson installed the new gas lamp"           | `(Benson, participated in, installing gas lamp)`                | This is a narrative action, not a core fact about Benson's identity. IGNORE. |
+            | Source Text Fragment                           |  BAD Triplet (This is an Event/Temporary State)                  | Why it's BAD                                                                |
+            | ---------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------  |
+            | "Suffering from a grievous wound"              | `(Klein Moretti, has attribute, suffering from grievous wound)`  | This is a temporary medical condition, not a permanent attribute. IGNORE.   |
+            | "Klein Moretti... cleaned his revolver"        | `(Klein Moretti, participated in, cleaning his revolver)`        | This is a mundane, one-time action. IGNORE.                                 |
+            | "Benson installed the new gas lamp"            | `(Benson, participated in, installing gas lamp)`                 | This is a narrative action, not a core fact about Benson's identity. IGNORE.|
 
             ### Examples of What to EXTRACT
 
-            | Source Text Fragment                          | GOOD Triplet (This is a State/Durable Fact)                | Why it's GOOD                                                     |
-            | --------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
-            | "Klein Moretti, the detective..."             | `(Klein Moretti, works as, Detective)`                     | This describes his profession, a durable role.                    |
-            | "...cleaned his revolver..."                  | `(Klein Moretti, possesses, revolver)`                     | The ownership of the revolver is a durable fact about him.        |
-            | "The currency of the Loen Kingdom is the soli"| `(Loen Kingdom, has currency, Soli)`                       | This is a fundamental, static fact about the kingdom.             |
-            | "The ritual requires three sacred leaves"     | `(Luck Enhancement Ritual, requires, three sacred leaves)` | This is a rule or requirement, a piece of knowledge about a system. |
+            | Source Text Fragment                           | GOOD Triplet (This is a State/Durable Fact)                 | Why it's GOOD                                                        |
+            | ---------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+            | "Klein Moretti, the detective..."              | `(Klein Moretti, works as, Detective)`                      | This describes his profession, a durable role.                       |
+            | "...cleaned his revolver..."                   | `(Klein Moretti, possesses, revolver)`                      | The ownership of the revolver is a durable fact about him.           |
+            | "The currency of the Loen Kingdom is the soli" | `(Loen Kingdom, has currency, Soli)`                        | This is a fundamental, static fact about the kingdom.                |
+            | "The ritual requires three sacred leaves"      | `(Luck Enhancement Ritual, requires, three sacred leaves)`  | This is a rule or requirement, a piece of knowledge about a system.  |
 
             ---
             ### Output Metadata Schema
@@ -196,5 +196,5 @@ class TripletCreator:
             messages=[message], schema=TripletSchemaList
         )
         parsed_triplets = triplet_schema_decomposer(unparsed_triplets)
-
+        self.kg_manager.add_triplets(parsed_triplets)
         return {"triplets": parsed_triplets}

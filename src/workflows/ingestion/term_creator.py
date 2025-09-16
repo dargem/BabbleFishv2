@@ -11,7 +11,7 @@ from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
 from typing import List, Dict, Set
 from ..states import IngestionState
-from src.core import Entity, NameEntry
+from src.core import Entity, NameEntry, EntityType
 import networkx as nx
 
 
@@ -32,7 +32,7 @@ class EntitySchema(BaseModel):
     name: TermTranslation = Field(
         ..., description="The core name of the entity and its translation."
     )
-    entity_type: str = Field(
+    entity_type: EntityType = Field(
         ...,
         description="The category of the entity, such as Character, Place, or Organization.",
     )
@@ -430,6 +430,6 @@ class EntityCreator:
         )
 
         entities = _entity_schema_decomposer(unparsed_entities)
-
+        self.kg_manager.update_entities(entities)
         # TODO add unification with the database and entity class later
         return {"entities": entities}

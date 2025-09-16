@@ -193,13 +193,14 @@ class EntityOperations:
         tx, new_entity: Entity, existing_entities: List[Dict[str, Any]]
     ) -> None:
         """Merge new entity with existing entities, preserving relationships"""
-        existing_nodes = [record["e"] for record in existing_entities]
+        # Use element IDs instead of Node objects
+        existing_node_ids = [record["e"].element_id for record in existing_entities]
 
         # Collect all relationships from existing entities
-        relationships = EntityOperations._collect_relationships(tx, existing_nodes)
+        relationships = EntityOperations._collect_relationships(tx, existing_node_ids)
 
         # Delete old entities
-        EntityOperations._delete_entities(tx, existing_nodes)
+        EntityOperations._delete_entities(tx, existing_node_ids)
 
         # Create new merged entity
         new_node = EntityOperations._create_merged_entity(tx, new_entity)
@@ -212,22 +213,22 @@ class EntityOperations:
         """Collect all relationships from given nodes"""
         query = """
         MATCH (e:Entity)-[r]-(other)
-        WHERE e IN $nodes
+        WHERE elementId(e) IN $node_ids
         RETURN e, r, other, type(r) AS rel_type, 
-               startNode(r) = e AS is_outgoing,
-               properties(r) AS rel_props
+            startNode(r) = e AS is_outgoing,
+            properties(r) AS rel_props
         """
-        return list(tx.run(query, nodes=nodes))
+        return list(tx.run(query, node_ids=nodes))
 
     @staticmethod
     def _delete_entities(tx, nodes: List[Any]) -> None:
         """Delete entities and their relationships"""
         query = """
         MATCH (e:Entity)
-        WHERE e IN $nodes
+        WHERE elementId(e) IN $node_ids
         DETACH DELETE e
         """
-        tx.run(query, nodes=nodes)
+        tx.run(query, node_ids=nodes)
 
     @staticmethod
     def _create_merged_entity(tx, entity: Entity) -> Any:
