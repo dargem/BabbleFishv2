@@ -16,7 +16,7 @@ class Translator:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def translate(self, state: TranslationState) -> dict:
+    async def translate(self, state: TranslationState) -> dict:
         """Translate text from detected language to English.
 
         Args:
@@ -78,5 +78,5 @@ class Translator:
                 )
             )
 
-        translation = self.llm_provider.invoke([message]).strip()
+        translation = await self.llm_provider.invoke([message]).strip()
         return {"translation": translation}

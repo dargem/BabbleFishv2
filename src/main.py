@@ -57,7 +57,7 @@ async def run_translation():
     # run workflow
     print("Starting translation process...")
     state_input = {"text": sample_text}
-    result = translation_app.invoke(state_input)
+    result = await translation_app.ainvoke(state_input)
 
     # Print results
     print("\n" + "=" * 50)

@@ -4,11 +4,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from src.config import Container
+
 from typing import Dict, Any
 
 # imports
+from src.knowledge_graph import KnowledgeGraphManager
+from src.providers import LLMProvider
 from langgraph.graph import StateGraph, END, START
 from ..states import TranslationState
 
@@ -27,39 +28,18 @@ LANGUAGE_NEEDED = "language needed"
 CONTINUE = "continue"
 
 
-def route_junior_pass(state: TranslationState) -> bool:
-    """Check if junior editor approved the translation.
-
-    Args:
-        state: Current translation state
-
-    Returns:
-        True if translation is approved, False otherwise
-    """
-    return APPROVED_RESPONSE_MARKER in state["feedback"]
-
-
-def route_increment_exceed(state: TranslationState, container: "Container") -> bool:
-    """Check if maximum feedback loops have been exceeded.
-
-    Args:
-        state: Current translation state
-        container: Container instance
-
-    Returns:
-        True if max loops exceeded, False otherwise
-    """
-    return (
-        state["feedback_rout_loops"]
-        >= container.get_stats()["config"]["max_feedback_loops"]
-    )
-
-
 class TranslationWorkflowFactory:
     """Factory for creating translation workflows"""
 
-    def __init__(self, container: "Container"):
-        self.container = container
+    def __init__(
+        self,
+        llm_provider: LLMProvider,
+        kg_manager: KnowledgeGraphManager,
+        max_feedback_loops: int,
+    ):
+        self.llm_provider = llm_provider
+        self.kg_manager = kg_manager
+        self.max_feedback_loops = max_feedback_loops
 
     def create_workflow(self) -> StateGraph:
         """Create the translation workflow with all its specific logic."""
@@ -74,10 +54,7 @@ class TranslationWorkflowFactory:
 
     def _route_increment_exceed(self, state: TranslationState) -> bool:
         """Check if maximum feedback loops have been exceeded."""
-        return (
-            state["feedback_rout_loops"]
-            >= self.container._config.workflow.max_feedback_loops
-        )
+        return state["feedback_rout_loops"] >= self.max_feedback_loops
 
     def _create_nodes(self) -> Dict[str, Any]:
         """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected or use registry
@@ -114,9 +91,20 @@ class TranslationWorkflowFactory:
         # Conditional routing from junior editor
         workflow.add_conditional_edges(
             "junior_editor",
-            route_junior_pass,
+            self._route_junior_pass,
             path_map={True: "fluency_editor", False: "translator"},
         )
 
         # Final edge to end
         workflow.add_edge("fluency_editor", END)
+
+    def _route_junior_pass(self, state: TranslationState) -> bool:
+        """Check if junior editor approved the translation.
+
+        Args:
+            state: Current translation state
+
+        Returns:
+            True if translation is approved, False otherwise
+        """
+        return APPROVED_RESPONSE_MARKER in state["feedback"]

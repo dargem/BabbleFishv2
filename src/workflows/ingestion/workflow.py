@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.providers import LLMProvider
     from src.knowledge_graph import KnowledgeGraphManager
-    from src.config import Container
 
 # imports
 from langgraph.graph import StateGraph, END, START
@@ -21,9 +20,9 @@ from . import (
 class IngestionWorkflowFactory:
     """Factory for creating ingestion workflows"""
 
-    def __init__(self, container: Container):
-        # check if its better to pass graph manger + llm provider
-        self.container = container
+    def __init__(self, llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager):
+        self.llm_provider = llm_provider
+        self.kg_manager = kg_manager
 
     def create_workflow(self):
         """Create and compile the ingestion workflow
@@ -31,14 +30,10 @@ class IngestionWorkflowFactory:
         Returns:
             Compiled ingestion workflow for use
         """
-        llm_provider: LLMProvider = self.container.get_llm_provider()
-        kg_manager: KnowledgeGraphManager = (
-            self.container._get_knowledge_graph_manager()
-        )
 
         # Create nodes with injected dependencies
-        entity_creator = EntityCreator(llm_provider, kg_manager)
-        triplet_creator = TripletCreator(llm_provider, kg_manager)
+        entity_creator = EntityCreator(self.llm_provider, self.kg_manager)
+        triplet_creator = TripletCreator(self.llm_provider, self.kg_manager)
 
         # Add nodes
         workflow = StateGraph(IngestionState)

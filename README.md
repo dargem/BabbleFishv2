@@ -20,7 +20,7 @@ Current pipeline
 - Embeddings with entity descriptions
 - Community clustering
 - Setup phase creates domain specific edge types
-- Node based knowledge
+- Node based knowledge *maybe bad design actually
 - DB query agent for informing translations
 - Integrate in better edge types, Setup phase can create piece specific relationships
 - Get a better prompt so it stops screwing up predicates
@@ -37,3 +37,4 @@ Current pipeline
 - Implement different editorial personas, probably need to abstract nodes using a registry for this
 - Abstract nodes using a registry pattern
 - Fix github workflow
+- 2 fold triplet extraction, one of attributes and one of inter entity relations

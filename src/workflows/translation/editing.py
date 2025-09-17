@@ -17,7 +17,7 @@ class JuniorEditor:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def review_translation(self, state: TranslationState) -> dict:
+    async def review_translation(self, state: TranslationState) -> dict:
         """Evaluate and provide feedback on translation quality.
 
         Args:
@@ -50,7 +50,7 @@ class JuniorEditor:
             content=prompt.format(translation=state["translation"], text=state["text"])
         )
 
-        feedback = self.llm_provider.invoke([message]).strip()
+        feedback = await self.llm_provider.invoke([message]).strip()
         return {"feedback": feedback}
 
 
@@ -60,7 +60,7 @@ class FluencyEditor:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def improve_fluency(self, state: TranslationState) -> dict:
+    async def improve_fluency(self, state: TranslationState) -> dict:
         """Edit translation for improved fluency and flow.
 
         Args:
@@ -110,7 +110,7 @@ class FluencyEditor:
         message = HumanMessage(
             content=prompt.format(tag_formatted_input=tag_formatted_input)
         )
-        unparsed_fluency_fixed_text = self.llm_provider.invoke([message])
+        unparsed_fluency_fixed_text = await self.llm_provider.invoke([message])
 
         # Parse the improved content and merge with original
         improved_content = parse_tagged_content(unparsed_fluency_fixed_text)

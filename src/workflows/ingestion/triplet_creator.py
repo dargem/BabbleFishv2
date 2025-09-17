@@ -162,6 +162,7 @@ class TripletCreator:
             | "Suffering from a grievous wound"              | `(Klein Moretti, has attribute, suffering from grievous wound)`  | This is a temporary medical condition, not a permanent attribute. IGNORE.   |
             | "Klein Moretti... cleaned his revolver"        | `(Klein Moretti, participated in, cleaning his revolver)`        | This is a mundane, one-time action. IGNORE.                                 |
             | "Benson installed the new gas lamp"            | `(Benson, participated in, installing gas lamp)`                 | This is a narrative action, not a core fact about Benson's identity. IGNORE.|
+                                    
 
             ### Examples of What to EXTRACT
 
@@ -170,8 +171,9 @@ class TripletCreator:
             | "Klein Moretti, the detective..."              | `(Klein Moretti, works as, Detective)`                      | This describes his profession, a durable role.                       |
             | "...cleaned his revolver..."                   | `(Klein Moretti, possesses, revolver)`                      | The ownership of the revolver is a durable fact about him.           |
             | "The currency of the Loen Kingdom is the soli" | `(Loen Kingdom, has currency, Soli)`                        | This is a fundamental, static fact about the kingdom.                |
-            | "The ritual requires three sacred leaves"      | `(Luck Enhancement Ritual, requires, three sacred leaves)`  | This is a rule or requirement, a piece of knowledge about a system.  |
-
+            | "The ritual requires three sacred leaves"      | `(Luck Enhancement Ritual, requires, sacred leaves)`        | Piece of knowledge about a system. Metadata would note it needs 3    |
+            | "Benson supported his sister’s dreams"         | `(Benson, supports dreams, Melissa)                         | Both the subject and target are clear entities                       |
+                                     
             ---
             ### Output Metadata Schema
 

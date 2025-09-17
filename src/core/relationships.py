@@ -124,7 +124,7 @@ class TripletMetadata:
         if self.statement_type:
             props["statement_type"] = self.statement_type.value
         if self.importance:
-            props["confidence"] = self.importance # fix this mismatch later
+            props["confidence"] = self.importance  # fix this mismatch later
         if self.source_text:
             props["source_text"] = self.source_text
 

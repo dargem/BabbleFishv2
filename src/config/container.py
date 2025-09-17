@@ -30,8 +30,15 @@ class Container:
         """
         self._config = config
         self._instances.clear()  # Clear existing instances when config changes
-        self._ingestion_workflow_factory = IngestionWorkflowFactory(self)
-        self._translation_workflow_factory = TranslationWorkflowFactory(self)
+        self._ingestion_workflow_factory = IngestionWorkflowFactory(
+            self.get_llm_provider,
+            self._get_knowledge_graph_manager,
+        )
+        self._translation_workflow_factory = TranslationWorkflowFactory(
+            self.get_llm_provider,
+            self._get_knowledge_graph_manager,
+            self.get_stats()["config"]["max_feedback_loops"],
+        )
 
     def _get_api_key_manager(self) -> APIKeyManager:
         """Get or create the API key manager instance."""

@@ -16,7 +16,7 @@ class StyleAnalyzer:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def analyze_style(self, state: TranslationState) -> dict:
+    async def analyze_style(self, state: TranslationState) -> dict:
         """
         Creates a description of the novels style, genre etc for aiding in translation style.
         Args:
@@ -69,5 +69,5 @@ class StyleAnalyzer:
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
 
-        style_guide = self.llm_provider.invoke([message]).strip()
+        style_guide = await self.llm_provider.invoke([message]).strip()
         return {"style_guide": style_guide}
