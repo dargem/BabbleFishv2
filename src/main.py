@@ -19,7 +19,7 @@ async def run_translation():
 
     config = ConfigFactory.create_config(env="development")
     container = Container()
-    container.set_config(config)
+    await container.set_config(config)
     ingestion_app = container.get_ingestion_workflow()
     translation_app = container.get_translation_workflow()
 
@@ -51,6 +51,8 @@ async def run_translation():
             )
             # print(triplet.metadata.__dict__)
     print(kg.get_stats())
+    print(kg.get_all_entities())
+    print(kg.get_entity_relationships())
     exit()
     # Create workflow
     print("Creating translation workflow...")

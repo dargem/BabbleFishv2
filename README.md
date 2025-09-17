@@ -7,9 +7,15 @@ Agentic translation system, an attempted implementation of (Perhaps) Beyond Huma
 - **Feedback Loops**: LLM based feedback loops for reviewing
 - **Workflow Visualization**: Generates Mermaid diagrams of the process
 
-Current pipeline
+## Current pipeline
+Setup Phase:
+- **WIP** Will move styleguide, language detection and create domain specific enums soon
+
+Ingestion Phase:
 - **Entity Extraction** LLM for categorised NER
 - **Triplet Extraction** Temporally and metadata tagged triplet extraction using fixed predicate enums
+
+Translation Phase:
 - **Styleguide Creation** Creates a styleguide for future translation
 - **Language detection** Lingua for detection
 - **Translation** Translation with gemini

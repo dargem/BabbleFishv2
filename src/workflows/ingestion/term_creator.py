@@ -109,8 +109,13 @@ def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     """
     total_strong_names = []
     for entities in entities_list:
+        if not isinstance(entities, List):
+            entity = entities
+            total_strong_names.extend(entity.strong_names)
+            continue
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
+        print(total_strong_names)
         G.add_nodes_from(total_strong_names)
 
 
@@ -123,12 +128,24 @@ def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
         entities_list: List of lists of Entity objects for edges
     """
     for entities in entities_list:
+        # Possibility strong names returned is not a list if connected component is 1 vertex
+        if not isinstance(entities, List):
+            entity = entities
+            for name in entity.strong_names:
+                print(name)
+                mapping[name] = entity
+            continue
+
         for entity in entities:
-            for strong_names in entity.strong_names:
-                # Transitive so can anchor
-                anchor = strong_names[0]
-                for strong_name in strong_names[1:]:
-                    G.add_edge(anchor, strong_name)
+            strong_names = entity.strong_names
+            if not isinstance(strong_names, list):
+                raise ValueError(f"WARNING: strong_names is not a list: {strong_names}")
+                
+            # if a strong name is <= 1 long, extracting the component won't be a list
+            
+            anchor = strong_names[0]
+            for strong_name in strong_names[1:]:
+                G.add_edge(anchor, strong_name)
 
 
 def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
@@ -145,36 +162,38 @@ def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
     for entities in entities_list:
         for entity in entities:
             for name in entity.strong_names:
+                print(name)
                 mapping[name] = entity
     return mapping
 
 
 def _find_related_entities(
     G: nx.Graph, mapping: Dict[str, Entity]
-) -> List[Set[Entity]]:
-    """Creates a list of sets for related entities"""
+) -> List[List[Entity]]:
+    """Creates lists of a list of related entities"""
     related_entities = []
     for component in nx.connected_components(G):
-        connected = set()
+        connected_entities = {} # entities not hashable
+        print(component)
         for name in component:
-            connected.add(mapping[name])  # sets stores unique only
-        related_entities.append(connected)
+            entity = mapping[name] 
+            connected_entities[id(entity)] = entity
+        related_entities.append([value for value in connected_entities.values()])
     return related_entities
 
 
-def _combine_entities(related_entities: List[Set[Entity]]) -> List[Entity]:
+def _combine_entities(related_entities: List[List[Entity]]) -> List[Entity]:
     """
     Creates a list of combined entities through merging sets of Entity objects into one
 
     Args:
-        related_entities: List of sets of Entity, entities in the same set to be merged into 1
+        related_entities: List of List of Entity, entities in the same set to be merged into 1
 
     Returns:
         List of new Entity objects
     """
     new_entities = []
-    for entity_set in related_entities:
-        entity_list = entity_set.toArray()
+    for entity_list in related_entities:
         base_entity: Entity = entity_list[0]
         for entity in entity_list[1:]:
             base_entity.merge_entity(entity)
@@ -211,6 +230,7 @@ class EntityCreator:
         # Extract out
         related_entities = _find_related_entities(G, mapping)
         new_unified_entities = _combine_entities(related_entities)
+        return new_unified_entities
 
     async def create_entities(self, state: IngestionState) -> dict[str, List[Entity]]:
         """
@@ -423,13 +443,13 @@ class EntityCreator:
         prompt = PromptTemplate(input_variables=["text"], template=template)
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
-
         unparsed_entities = await self.llm_provider.schema_invoke(
             messages=[message],
             schema=EntitySchemaList,
         )
 
         entities = _entity_schema_decomposer(unparsed_entities)
-        self.kg_manager.update_entities(entities)
+        new_unified_entities = await self._unify_entities(entities)
+        self.kg_manager.update_entities(new_unified_entities)
         # TODO add unification with the database and entity class later
-        return {"entities": entities}
+        return {"entities": new_unified_entities}

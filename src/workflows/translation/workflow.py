@@ -43,7 +43,6 @@ class TranslationWorkflowFactory:
 
     def create_workflow(self) -> StateGraph:
         """Create the translation workflow with all its specific logic."""
-        # Create nodes with dependencies from container
         nodes = self._create_nodes()
 
         workflow = StateGraph(TranslationState)
@@ -58,14 +57,13 @@ class TranslationWorkflowFactory:
 
     def _create_nodes(self) -> Dict[str, Any]:
         """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected or use registry
-        llm_provider = self.container.get_llm_provider()
 
         return {
-            "style_analyzer": StyleAnalyzer(llm_provider).analyze_style,
+            "style_analyzer": StyleAnalyzer(self.llm_provider).analyze_style,
             "language_detector": LanguageDetector().detect_language,
-            "translator": Translator(llm_provider).translate,
-            "junior_editor": JuniorEditor(llm_provider).review_translation,
-            "fluency_editor": FluencyEditor(llm_provider).improve_fluency,
+            "translator": Translator(self.llm_provider).translate,
+            "junior_editor": JuniorEditor(self.llm_provider).review_translation,
+            "fluency_editor": FluencyEditor(self.llm_provider).improve_fluency,
             "feedback_router": FeedbackRouter().increment_feedback,
         }
 
