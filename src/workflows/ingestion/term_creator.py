@@ -109,10 +109,6 @@ def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     """
     total_strong_names = []
     for entities in entities_list:
-        if not isinstance(entities, List):
-            entity = entities
-            total_strong_names.extend(entity.strong_names)
-            continue
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
         print(total_strong_names)
@@ -129,13 +125,6 @@ def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     """
     for entities in entities_list:
         # Possibility strong names returned is not a list if connected component is 1 vertex
-        if not isinstance(entities, List):
-            entity = entities
-            for name in entity.strong_names:
-                print(name)
-                mapping[name] = entity
-            continue
-
         for entity in entities:
             strong_names = entity.strong_names
             if not isinstance(strong_names, list):
@@ -174,7 +163,6 @@ def _find_related_entities(
     related_entities = []
     for component in nx.connected_components(G):
         connected_entities = {} # entities not hashable
-        print(component)
         for name in component:
             entity = mapping[name] 
             connected_entities[id(entity)] = entity

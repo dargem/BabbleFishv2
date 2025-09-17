@@ -25,7 +25,7 @@ async def run_translation():
 
     # Use absolute path based on script location
     script_dir = Path(__file__).parent.parents
-    file_path = DATA_DIR / "lotm3.txt"
+    file_path = DATA_DIR / "lotm4.txt"
 
     with open(file_path, "r", encoding="UTF-8") as f:
         sample_text = f.read()
@@ -51,8 +51,10 @@ async def run_translation():
             )
             # print(triplet.metadata.__dict__)
     print(kg.get_stats())
-    print(kg.get_all_entities())
-    print(kg.get_entity_relationships())
+    entities = kg.get_all_entities()
+    for entity in entities:
+        print(entity)
+        print(kg.get_entity_relationships(entity.strong_names[0]))
     exit()
     # Create workflow
     print("Creating translation workflow...")
