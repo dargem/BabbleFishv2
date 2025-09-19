@@ -1,7 +1,9 @@
 from typing import List
 
+
 class TranslationOrchestrator:
     """Orchestrator for the loose sequential translation process"""
+
     def __init__(self):
         pass
 

@@ -3,6 +3,7 @@
 from typing import Dict, List
 import enum
 
+
 class ChapterRequirement(enum):
     INGESTION = "Ingestion"
     TRANSLATION = "Translation"
@@ -11,6 +12,7 @@ class ChapterRequirement(enum):
 
 class Chapter:
     """A singular chapter of a novel"""
+
     def __init__(self, original: str):
         self.original: str = original
         self.translation: str | None = None
@@ -29,9 +31,15 @@ class Chapter:
         }
         return [req for req, condition in checks.items() if condition(self)]
 
+
 class Novel:
     """A novel is a list of books"""
-    def __init__(self, chapters_dic: Dict[int: str] = {}, loaded_chapter_dic: Dict[str: Chapter] = {}):
+
+    def __init__(
+        self,
+        chapters_dic: Dict[int:str] = {},
+        loaded_chapter_dic: Dict[str:Chapter] = {},
+    ):
         """
         Takes in and parses chapters
 

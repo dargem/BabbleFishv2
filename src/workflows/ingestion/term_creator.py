@@ -111,7 +111,7 @@ def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     for entities in entities_list:
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
-        #print(total_strong_names)
+        # print(total_strong_names)
         G.add_nodes_from(total_strong_names)
 
 
@@ -129,9 +129,9 @@ def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
             strong_names = entity.strong_names
             if not isinstance(strong_names, list):
                 raise ValueError(f"WARNING: strong_names is not a list: {strong_names}")
-                
+
             # if a strong name is <= 1 long, extracting the component won't be a list
-            
+
             anchor = strong_names[0]
             for strong_name in strong_names[1:]:
                 G.add_edge(anchor, strong_name)
@@ -151,7 +151,7 @@ def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
     for entities in entities_list:
         for entity in entities:
             for name in entity.strong_names:
-                #print(name)
+                # print(name)
                 mapping[name] = entity
     return mapping
 
@@ -162,9 +162,9 @@ def _find_related_entities(
     """Creates lists of a list of related entities"""
     related_entities = []
     for component in nx.connected_components(G):
-        connected_entities = {} # entities not hashable
+        connected_entities = {}  # entities not hashable
         for name in component:
-            entity = mapping[name] 
+            entity = mapping[name]
             connected_entities[id(entity)] = entity
         related_entities.append([value for value in connected_entities.values()])
     return related_entities

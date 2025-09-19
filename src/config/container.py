@@ -141,6 +141,7 @@ class Container:
 
         return stats
 
+
 from typing import Any, Dict, Callable
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
 from src.workflows import IngestionWorkflowFactory, TranslationWorkflowFactory
@@ -191,14 +192,20 @@ class Container:
         stats = await self.get_stats()
 
         self._providers[IngestionWorkflowFactory] = lambda c: IngestionWorkflowFactory(
-            c.get(GoogleLLMProvider) if config.environment != "testing" else c.get(MockLLMProvider),
+            c.get(GoogleLLMProvider)
+            if config.environment != "testing"
+            else c.get(MockLLMProvider),
             c.get(KnowledgeGraphManager),
         )
 
-        self._providers[TranslationWorkflowFactory] = lambda c: TranslationWorkflowFactory(
-            c.get(GoogleLLMProvider) if config.environment != "testing" else c.get(MockLLMProvider),
-            c.get(KnowledgeGraphManager),
-            stats["config"]["max_feedback_loops"],
+        self._providers[TranslationWorkflowFactory] = (
+            lambda c: TranslationWorkflowFactory(
+                c.get(GoogleLLMProvider)
+                if config.environment != "testing"
+                else c.get(MockLLMProvider),
+                c.get(KnowledgeGraphManager),
+                stats["config"]["max_feedback_loops"],
+            )
         )
 
     def get(self, key: Any):
@@ -221,7 +228,9 @@ class Container:
         results = {}
         try:
             provider = self.get(
-                MockLLMProvider if self._config.environment == "testing" else GoogleLLMProvider
+                MockLLMProvider
+                if self._config.environment == "testing"
+                else GoogleLLMProvider
             )
             results["llm_provider"] = await provider.health_check()
         except Exception as e:
@@ -248,7 +257,9 @@ class Container:
 
         try:
             provider = self.get(
-                MockLLMProvider if self._config.environment == "testing" else GoogleLLMProvider
+                MockLLMProvider
+                if self._config.environment == "testing"
+                else GoogleLLMProvider
             )
             if hasattr(provider, "get_stats"):
                 stats["llm_provider"] = await provider.get_stats()
