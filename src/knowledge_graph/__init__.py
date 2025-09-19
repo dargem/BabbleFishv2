@@ -2,7 +2,6 @@
 
 from .graph_manager import KnowledgeGraphManager
 from .query import KnowledgeGraphQuery
-from .example_usage import example_usage
 from .connection import Neo4jConnection
 from .utils import (
     create_entity_from_dict,
@@ -22,8 +21,6 @@ from .utils import (
 )
 
 __all__ = [
-    # Test usage temp
-    "example_usage",
     # Core classes
     "Neo4jConnection",
     "KnowledgeGraphManager",

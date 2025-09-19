@@ -93,7 +93,7 @@ def _entity_schema_decomposer(entity_schema_list: EntitySchemaList) -> List[Enti
                 names=name_entry_list,
                 entity_type=entity_schema.entity_type,
                 description=entity_schema.description,
-                chapter_idx=0,  # TODO Holder
+                chapter_idx=[0],  # TODO Holder
             )
         )
     return entity_list
@@ -111,7 +111,7 @@ def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     for entities in entities_list:
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
-        print(total_strong_names)
+        #print(total_strong_names)
         G.add_nodes_from(total_strong_names)
 
 
@@ -151,7 +151,7 @@ def _map_names(entities_list: List[List[Entity]]) -> Dict[str, Entity]:
     for entities in entities_list:
         for entity in entities:
             for name in entity.strong_names:
-                print(name)
+                #print(name)
                 mapping[name] = entity
     return mapping
 
@@ -208,7 +208,7 @@ class EntityCreator:
             A list of Entity objects, these are all unique from old_entities
         """
         old_entities: List[Entity] = self.kg_manager.get_all_entities()
-
+        print(old_entities)
         # Build graph
         G = nx.Graph()
         mapping = _map_names([old_entities, new_entities])
