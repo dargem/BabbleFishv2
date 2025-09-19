@@ -111,8 +111,8 @@ def _add_nodes(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
     for entities in entities_list:
         for entity in entities:
             total_strong_names.extend(entity.strong_names)
-        # print(total_strong_names)
-        G.add_nodes_from(total_strong_names)
+            # print(total_strong_names)
+    G.add_nodes_from(total_strong_names)
 
 
 def _add_edges(G: nx.Graph, entities_list: List[List[Entity]]) -> None:
@@ -208,7 +208,7 @@ class EntityCreator:
             A list of Entity objects, these are all unique from old_entities
         """
         old_entities: List[Entity] = self.kg_manager.get_all_entities()
-        print(old_entities)
+        # print(old_entities)
         # Build graph
         G = nx.Graph()
         mapping = _map_names([old_entities, new_entities])

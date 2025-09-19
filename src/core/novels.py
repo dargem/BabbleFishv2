@@ -2,8 +2,10 @@
 
 from typing import Dict, List
 import enum
+from dataclasses import dataclass
 
 
+@dataclass
 class ChapterRequirement(enum):
     INGESTION = "Ingestion"
     TRANSLATION = "Translation"
@@ -33,7 +35,7 @@ class Chapter:
 
 
 class Novel:
-    """A novel is a list of books"""
+    """A novel contains chapters"""
 
     def __init__(
         self,
@@ -46,4 +48,7 @@ class Novel:
         Args:
             chapters: A list of chapters the novel has in strings, indexed by chapter idx starting at 0
         """
-        self.chapters = chapters_dic
+        self.chapters = loaded_chapter_dic
+        for index, chapter_str in chapters_dic.keys():
+            if index not in self.chapters:
+                self.chapters[index] = Chapter(chapter_str)

@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 from src.config import ConfigFactory, Container
-
+from src.knowledge_graph import KnowledgeGraphManager
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
@@ -31,7 +31,7 @@ async def run_translation():
         sample_text = f.read()
     print("Loaded text from file")
 
-    kg = container._get_knowledge_graph_manager()
+    kg = container.get(KnowledgeGraphManager)
     kg.reset_database()
     print(kg.get_stats())
 
