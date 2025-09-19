@@ -2,7 +2,7 @@
 # TODO short term memory after database is dealt with
 
 from typing import TypedDict, List
-from src.core import Entity, Triplet
+from src.core import Entity, InputTriplet
 
 
 class IngestionState(TypedDict):
@@ -19,7 +19,7 @@ class IngestionState(TypedDict):
     text: str
     entities: List[Entity]
     new_entities: List[Entity]
-    triplets: List[Triplet]
+    triplets: List[InputTriplet]
 
 
 class TranslationState(TypedDict):

@@ -1,9 +1,9 @@
 """Triplet operations for the knowledge graph"""
 
-from typing import List, Dict, Any
+from typing import List
 from neo4j import Driver
-from src.core import Triplet
-
+from src.core import InputTriplet
+from .utils import create_triplet_from_dict
 
 class TripletOperations:
     """Handles triplet (relationship) operations in the knowledge graph"""
@@ -12,7 +12,7 @@ class TripletOperations:
         """Initialize with Neo4j driver"""
         self.driver = driver
 
-    def add_triplets(self, triplets: List[Triplet]) -> int:
+    def add_triplets(self, triplets: List[InputTriplet]) -> int:
         """
         Add multiple triplets to the knowledge graph
 
@@ -25,7 +25,7 @@ class TripletOperations:
         with self.driver.session() as session:
             return session.execute_write(self._add_triplets_tx, triplets)
 
-    def get_entity_relationships(self, entity_name: str) -> List[Dict[str, Any]]:
+    def get_entity_relationships(self, entity_name: str) -> List[InputTriplet]:
         """
         Get all relationships for an entity
 
@@ -38,7 +38,7 @@ class TripletOperations:
         with self.driver.session() as session:
             return session.execute_read(self._get_entity_relationships_tx, entity_name)
 
-    def get_triplets_by_chapter(self, chapter_idx: int) -> List[Dict[str, Any]]:
+    def get_triplets_by_chapter(self, chapter_idx: int) -> List[InputTriplet]:
         """
         Get all triplets from a specific chapter
 
@@ -54,7 +54,7 @@ class TripletOperations:
     # Transaction methods
 
     @staticmethod
-    def _add_triplets_tx(tx, triplets: List[Triplet]) -> int:
+    def _add_triplets_tx(tx, triplets: List[InputTriplet]) -> int:
         """Transaction to add multiple triplets"""
         query = """
         UNWIND $triplets AS triplet_data
@@ -78,7 +78,7 @@ class TripletOperations:
         return result.single()["created"]
 
     @staticmethod
-    def _get_entity_relationships_tx(tx, entity_name: str) -> List[Dict[str, Any]]:
+    def _get_entity_relationships_tx(tx, entity_name: str) -> List[InputTriplet]:
         """Transaction to get entity relationships"""
         query = """
         MATCH (e:Entity)-[r]-(other:Entity)
@@ -91,10 +91,10 @@ class TripletOperations:
             CASE WHEN startNode(r) = e THEN 'outgoing' ELSE 'incoming' END AS direction
         """
         result = tx.run(query, entity_name=entity_name)
-        return [dict(record) for record in result]
+        return [create_triplet_from_dict(dict(record)) for record in result]
 
     @staticmethod
-    def _get_triplets_by_chapter_tx(tx, chapter_idx: int) -> List[Dict[str, Any]]:
+    def _get_triplets_by_chapter_tx(tx, chapter_idx: int) -> List[InputTriplet]:
         """Transaction to get triplets by chapter"""
         query = """
         MATCH (subject:Entity)-[r:RELATES]->(object:Entity)
@@ -106,4 +106,4 @@ class TripletOperations:
             properties(r) AS metadata
         """
         result = tx.run(query, chapter_idx=chapter_idx)
-        return [dict(record) for record in result]
+        return [create_triplet_from_dict(dict(record)) for record in result]

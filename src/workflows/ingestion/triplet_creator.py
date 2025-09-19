@@ -29,7 +29,7 @@ from src.core import (
     StatementType,
     TenseType,
     PredicateType,
-    Triplet,
+    InputTriplet,
     TripletMetadata,
 )
 from langchain.prompts import PromptTemplate
@@ -93,12 +93,12 @@ def triplet_metadata_decomposer(triplet: TripletSchema) -> TripletMetadata:
     )
 
 
-def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[Triplet]:
+def triplet_schema_decomposer(triplets: TripletSchemaList) -> List[InputTriplet]:
     triplet_list = []
     triplet_schema_list = triplets.triplet_list
     for triplet in triplet_schema_list:
         triplet_list.append(
-            Triplet(
+            InputTriplet(
                 subject_name=triplet.subject,
                 predicate=triplet.predicate,
                 object_name=triplet.object,
@@ -115,7 +115,7 @@ class TripletCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    async def create_triplets(self, state: IngestionState) -> dict[str, List[Triplet]]:
+    async def create_triplets(self, state: IngestionState) -> dict[str, List[InputTriplet]]:
         print("Finding triplets...")
 
         prompt = PromptTemplate(

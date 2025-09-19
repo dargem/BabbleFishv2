@@ -3,7 +3,7 @@
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
-
+from .entities import Entity
 
 from enum import Enum
 
@@ -98,6 +98,9 @@ class TenseType(Enum):
     current = "current"
     past = "past"
 
+class Direction(Enum):
+    INCOMING = "incoming"
+    OUTGOING = "outgoing"
 
 @dataclass
 class TripletMetadata:
@@ -108,7 +111,7 @@ class TripletMetadata:
     statement_type: StatementType  # fact, opinion, prediction
     tense_type: TenseType  # current, future, past
     importance: float
-    source_text: str
+    source_text: Optional[str] = None
     additional_props: Optional[str] = None
 
     def __post_init__(self):
@@ -119,12 +122,10 @@ class TripletMetadata:
         """Convert metadata to Neo4j relationship properties"""
         props = {"chapter_idx": self.chapter_idx}
 
-        if self.temporal_type:
-            props["temporal_type"] = self.temporal_type.value
-        if self.statement_type:
-            props["statement_type"] = self.statement_type.value
-        if self.importance:
-            props["confidence"] = self.importance  # fix this mismatch later
+        props["temporal_type"] = self.temporal_type.value
+        props["statement_type"] = self.statement_type.value
+        props["confidence"] = self.importance  # fix this mismatch later
+        props["tense_type"] = self.tense_type.value
         if self.source_text:
             props["source_text"] = self.source_text
 
@@ -133,15 +134,33 @@ class TripletMetadata:
 
         return props
 
-
 @dataclass
-class Triplet:
-    """A relationship triplet between entities"""
+class InputTriplet:
+    """
+    A relationship triplet between entities used for input into DB
+    One directional, links through strong names
+    """
 
     subject_name: str  # Name of the subject entity
     predicate: str  # The relationship type
     object_name: str  # Name of the object entity
     metadata: TripletMetadata
+
+    def __str__(self):
+        return f"({self.subject_name}) -[{self.predicate}]-> ({self.object_name})"
+    
+@dataclass
+class OutputTriplet:
+    """
+    A relationship triplet between entities used for output
+    Compared to an input it has both direction and links entities rather than strong names
+    """
+
+    subject_name: Entity  # Name of the subject entity
+    predicate: str  # The relationship type
+    object_name: Entity  # Name of the object entity
+    metadata: TripletMetadata
+    direction: Optional[Direction] # used for retrieval but not neo4j input
 
     def __str__(self):
         return f"({self.subject_name}) -[{self.predicate}]-> ({self.object_name})"

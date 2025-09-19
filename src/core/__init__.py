@@ -6,22 +6,24 @@ from .entities import (
     NameEntry,
 )
 from .relationships import (
-    Triplet,
+    InputTriplet,
     TripletMetadata,
     TemporalType,
     StatementType,
     TenseType,
     PredicateType,
+    Direction,
 )
 
 __all__ = [
     "Entity",
     "EntityType",
-    "Triplet",
+    "InputTriplet",
     "TripletMetadata",
     "NameEntry",
     "TemporalType",
     "StatementType",
     "TenseType",
     "PredicateType",
+    "Direction"
 ]

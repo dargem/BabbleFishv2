@@ -3,10 +3,11 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.core import (
     Entity,
-    Triplet,
+    InputTriplet,
     EntityType,
     TripletMetadata,
     NameEntry,
+    Direction
 )
 
 
@@ -162,7 +163,7 @@ def create_entity_from_dict(data: Dict[str, Any]) -> Entity:
     )
 
 
-def create_triplet_from_dict(data: Dict[str, Any]) -> Triplet:
+def create_triplet_from_dict(data: Dict[str, Any]) -> InputTriplet:
     """
     Create a Triplet object from a dictionary
 
@@ -172,22 +173,30 @@ def create_triplet_from_dict(data: Dict[str, Any]) -> Triplet:
     Returns:
         Triplet object
     """
-    metadata_dict = data.get("metadata", {})
+    metadata_dict = data.get("relationship_props", {})
 
     metadata = TripletMetadata(
         chapter_idx=metadata_dict.get("chapter_idx", 0),
         temporal_type=metadata_dict.get("temporal_type"),
         statement_type=metadata_dict.get("statement_type"),
-        confidence=metadata_dict.get("confidence"),
+        importance=metadata_dict.get("confidence"),
+        tense_type=metadata_dict.get("tense_type"),
         source_text=metadata_dict.get("source_text"),
         additional_props=metadata_dict.get("additional_props", {}),
     )
+    if data["direction"] == "outgoing":
+        direction = Direction.OUTGOING
+    elif data["direction"] == "incoming":
+        direction = Direction.INCOMING
+    else:
+        raise ValueError(f"value {data["direction"]} not an option for triplet direction")
 
-    return Triplet(
-        subject_name=data["subject_name"],
-        predicate=data["predicate"],
-        object_name=data["object_name"],
+    return InputTriplet(
+        subject_name=data["entity"],
+        predicate=data["relationship_type"],
+        object_name=data["related_entity"],
         metadata=metadata,
+        direction=direction,
     )
 
 
@@ -237,7 +246,7 @@ def find_entity_name_match(
 
 
 def validate_triplet(
-    triplet: Triplet, available_entities: List[Entity]
+    triplet: InputTriplet, available_entities: List[Entity]
 ) -> Tuple[bool, str]:
     """
     Validate that a triplet's subject and object entities exist
@@ -288,7 +297,7 @@ def group_entities_by_type(entities: List[Entity]) -> Dict[EntityType, List[Enti
     return grouped
 
 
-def group_triplets_by_chapter(triplets: List[Triplet]) -> Dict[int, List[Triplet]]:
+def group_triplets_by_chapter(triplets: List[InputTriplet]) -> Dict[int, List[InputTriplet]]:
     """
     Group triplets by chapter
 
@@ -309,8 +318,8 @@ def group_triplets_by_chapter(triplets: List[Triplet]) -> Dict[int, List[Triplet
 
 
 def filter_triplets_by_confidence(
-    triplets: List[Triplet], min_confidence: float
-) -> List[Triplet]:
+    triplets: List[InputTriplet], min_confidence: float
+) -> List[InputTriplet]:
     """
     Filter triplets by minimum confidence threshold
 
@@ -357,7 +366,7 @@ def get_entity_summary(entity: Entity) -> str:
     return summary
 
 
-def get_triplet_summary(triplet: Triplet) -> str:
+def get_triplet_summary(triplet: InputTriplet) -> str:
     """
     Generate a human-readable summary of a triplet
 
