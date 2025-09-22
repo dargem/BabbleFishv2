@@ -98,9 +98,11 @@ class TenseType(Enum):
     current = "current"
     past = "past"
 
+
 class Direction(Enum):
     INCOMING = "incoming"
     OUTGOING = "outgoing"
+
 
 @dataclass
 class TripletMetadata:
@@ -134,6 +136,7 @@ class TripletMetadata:
 
         return props
 
+
 @dataclass
 class InputTriplet:
     """
@@ -148,7 +151,8 @@ class InputTriplet:
 
     def __str__(self):
         return f"({self.subject_name}) -[{self.predicate}]-> ({self.object_name})"
-    
+
+
 @dataclass
 class OutputTriplet:
     """
@@ -160,7 +164,7 @@ class OutputTriplet:
     predicate: str  # The relationship type
     object_name: Entity  # Name of the object entity
     metadata: TripletMetadata
-    direction: Optional[Direction] # used for retrieval but not neo4j input
+    direction: Optional[Direction]  # used for retrieval but not neo4j input
 
     def __str__(self):
         return f"({self.subject_name}) -[{self.predicate}]-> ({self.object_name})"

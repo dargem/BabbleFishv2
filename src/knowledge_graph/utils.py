@@ -7,7 +7,7 @@ from src.core import (
     EntityType,
     TripletMetadata,
     NameEntry,
-    Direction
+    Direction,
 )
 
 
@@ -189,11 +189,13 @@ def create_triplet_from_dict(data: Dict[str, Any]) -> OutputTriplet:
     elif data["direction"] == "incoming":
         direction = Direction.INCOMING
     else:
-        raise ValueError(f"value {data["direction"]} not an option for triplet direction")
+        raise ValueError(
+            f"value {data['direction']} not an option for triplet direction"
+        )
 
     return OutputTriplet(
         subject_name=data["entity"],
-        predicate=data["relationship_type"],
+        predicate=data["predicate"],
         object_name=data["related_entity"],
         metadata=metadata,
         direction=direction,
@@ -297,7 +299,9 @@ def group_entities_by_type(entities: List[Entity]) -> Dict[EntityType, List[Enti
     return grouped
 
 
-def group_triplets_by_chapter(triplets: List[OutputTriplet]) -> Dict[int, List[OutputTriplet]]:
+def group_triplets_by_chapter(
+    triplets: List[OutputTriplet],
+) -> Dict[int, List[OutputTriplet]]:
     """
     Group triplets by chapter
 

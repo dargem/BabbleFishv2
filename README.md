@@ -29,9 +29,7 @@ Translation Phase:
 - Node based knowledge *maybe bad design actually
 - DB query agent for informing translations
 - Integrate in better edge types, Setup phase can create piece specific relationships
-- Get a better prompt so it stops screwing up predicates
 - Enforce better edge detection and node unification
-- Entity unification
 - change architecture, 3 workflows,
     - setup (get language, style guide etc), 
     - ingestion (get triplets into graphical database with localisations) status: Partially done
@@ -43,4 +41,10 @@ Translation Phase:
 - Implement different editorial personas, probably need to abstract nodes using a registry for this
 - Abstract nodes using a registry pattern
 - Fix github workflow
-- 2 fold triplet extraction, one of attributes and one of inter entity relations
+- 2 fold triplet extraction, also for attribute based triplets (or tuples maybe is more accurate?)
+- Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
+
+## Ticked Off
+- Get a better prompt so it stops screwing up predicates
+- Entity unification
+- Informative relation based triplet extraction

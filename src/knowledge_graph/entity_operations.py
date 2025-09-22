@@ -212,11 +212,11 @@ class EntityOperations:
     def _collect_relationships(tx, nodes: List[Any]) -> List[Dict[str, Any]]:
         """Collect all relationships from given nodes"""
         query = """
-        MATCH (e:Entity)-[r]-(other)
+        MATCH (e:Entity)-[r:RELATES]-(other)
         WHERE elementId(e) IN $node_ids
-        RETURN e, r, other, type(r) AS rel_type, 
-            startNode(r) = e AS is_outgoing,
-            properties(r) AS rel_props
+        RETURN e, r, other, r.predicate AS rel_type, 
+               startNode(r) = e AS is_outgoing,
+               properties(r) AS rel_props
         """
         return list(tx.run(query, node_ids=nodes))
 

@@ -5,6 +5,7 @@ from neo4j import Driver
 from src.core import InputTriplet
 from .utils import create_triplet_from_dict
 
+
 class TripletOperations:
     """Handles triplet (relationship) operations in the knowledge graph"""
 
@@ -81,11 +82,11 @@ class TripletOperations:
     def _get_entity_relationships_tx(tx, entity_name: str) -> List[InputTriplet]:
         """Transaction to get entity relationships"""
         query = """
-        MATCH (e:Entity)-[r]-(other:Entity)
+        MATCH (e:Entity)-[r:RELATES]-(other:Entity)
         WHERE $entity_name IN e.all_names
         RETURN 
             properties(e) AS entity,
-            type(r) AS relationship_type,
+            r.predicate AS predicate,
             properties(r) AS relationship_props,
             properties(other) AS related_entity,
             CASE WHEN startNode(r) = e THEN 'outgoing' ELSE 'incoming' END AS direction

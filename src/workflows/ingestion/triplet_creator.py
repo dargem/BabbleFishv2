@@ -115,7 +115,9 @@ class TripletCreator:
         self.llm_provider = llm_provider
         self.kg_manager = kg_manager
 
-    async def create_triplets(self, state: IngestionState) -> dict[str, List[InputTriplet]]:
+    async def create_triplets(
+        self, state: IngestionState
+    ) -> dict[str, List[InputTriplet]]:
         print("Finding triplets...")
 
         prompt = PromptTemplate(

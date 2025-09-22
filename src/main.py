@@ -31,7 +31,8 @@ async def run_translation():
         sample_text = f.read()
     print("Loaded text from file")
 
-    kg:KnowledgeGraphManager = container.get(KnowledgeGraphManager)
+    kg: KnowledgeGraphManager = container.get(KnowledgeGraphManager)
+
     print(kg.get_stats())
     entities = kg.get_all_entities()
     
@@ -41,10 +42,11 @@ async def run_translation():
         for triplet in triplets:
             if triplet.metadata.importance >= 0:
                 print(
-                   #f"Name: {triplet.subject_name.strong_names[0]}, Predicate: {triplet.predicate}, Object: {triplet.object_name.strong_names[0]}"
+                   f"Name: {triplet.subject_name["strong_names"][0]}, Predicate: {triplet.predicate}, Object: {triplet.object_name["strong_names"][0]}"
                 )
     exit()
     
+
     # Database Ingestion
 
     state_input = {"text": sample_text}

@@ -198,7 +198,7 @@ class KnowledgeGraphQuery:
         WHERE $chapter_idx IN e.chapter_idx
         RETURN properties(e) AS entity
         UNION
-        MATCH (e:Entity)-[r]-()
+        MATCH (e:Entity)-[r:RELATES]-()
         WHERE r.chapter_idx = $chapter_idx
         RETURN DISTINCT properties(e) AS entity
         """
@@ -227,7 +227,7 @@ class KnowledgeGraphQuery:
     def _find_entity_mentions_tx(tx, entity_name: str) -> List[Dict[str, Any]]:
         """Transaction to find entity mentions across chapters"""
         query = """
-        MATCH (e:Entity)-[r]-()
+        MATCH (e:Entity)-[r:RELATES]-()
         WHERE $entity_name IN e.all_names AND r.chapter_idx IS NOT NULL
         RETURN DISTINCT r.chapter_idx AS chapter, COUNT(r) AS mention_count
         ORDER BY chapter
@@ -252,6 +252,7 @@ class KnowledgeGraphQuery:
         RETURN 
             properties(subject) AS subject_entity,
             properties(object) AS object_entity,
+            r.predicate AS predicate,
             properties(r) AS relationship
         """
 
@@ -279,6 +280,7 @@ class KnowledgeGraphQuery:
         RETURN 
             properties(p1) AS person1,
             properties(p2) AS person2,
+            r.predicate AS predicate,
             properties(r) AS interaction
         """
 
@@ -318,6 +320,7 @@ class KnowledgeGraphQuery:
         RETURN 
             properties(subject) AS subject_entity,
             properties(object) AS object_entity,
+            r.predicate AS predicate,
             properties(r) AS relationship
         ORDER BY r.chapter_idx
         """

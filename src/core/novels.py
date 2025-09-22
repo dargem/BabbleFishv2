@@ -4,11 +4,13 @@ from typing import Dict, List
 import enum
 from dataclasses import dataclass
 
+
 @dataclass
 class ChapterRequirement(enum):
     INGESTION = "Ingestion"
     TRANSLATION = "Translation"
     SUMMARY = "Summary"
+
 
 @dataclass
 class Chapter:
@@ -31,6 +33,7 @@ class Chapter:
             ChapterRequirement.INGESTION: lambda c: not c.ingested_status,
         }
         return [req for req, condition in checks.items() if condition(self)]
+
 
 @dataclass
 class Novel:

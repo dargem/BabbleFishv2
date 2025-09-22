@@ -1,7 +1,7 @@
 """Knowledge graph manager for Neo4j operations"""
 
 from typing import List, Dict, Any, Optional
-from src.core import Entity, InputTriplet, EntityType
+from src.core import Entity, OutputTriplet, EntityType
 from .connection import Neo4jConnection
 from .entity_operations import EntityOperations
 from .triplet_operations import TripletOperations
@@ -92,7 +92,7 @@ class KnowledgeGraphManager:
 
     # Triplet operations - delegate to TripletOperations
 
-    def add_triplets(self, triplets: List[InputTriplet]) -> int:
+    def add_triplets(self, triplets: List[OutputTriplet]) -> int:
         """
         Add multiple triplets to the knowledge graph
 
@@ -104,7 +104,7 @@ class KnowledgeGraphManager:
         """
         return self._triplet_ops.add_triplets(triplets)
 
-    def get_entity_relationships(self, entity_name: str) -> List[InputTriplet]:
+    def get_entity_relationships(self, entity_name: str) -> List[OutputTriplet]:
         """
         Get all relationships for an entity
 
@@ -116,7 +116,7 @@ class KnowledgeGraphManager:
         """
         return self._triplet_ops.get_entity_relationships(entity_name)
 
-    def get_triplets_by_chapter(self, chapter_idx: int) -> List[InputTriplet]:
+    def get_triplets_by_chapter(self, chapter_idx: int) -> List[OutputTriplet]:
         """
         Get all triplets from a specific chapter
 

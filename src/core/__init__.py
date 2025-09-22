@@ -27,5 +27,5 @@ __all__ = [
     "StatementType",
     "TenseType",
     "PredicateType",
-    "Direction"
+    "Direction",
 ]
