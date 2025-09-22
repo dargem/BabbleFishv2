@@ -7,6 +7,7 @@ from .entities import (
 )
 from .relationships import (
     InputTriplet,
+    OutputTriplet,
     TripletMetadata,
     TemporalType,
     StatementType,
@@ -19,6 +20,7 @@ __all__ = [
     "Entity",
     "EntityType",
     "InputTriplet",
+    "OutputTriplet",
     "TripletMetadata",
     "NameEntry",
     "TemporalType",

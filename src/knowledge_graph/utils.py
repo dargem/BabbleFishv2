@@ -3,7 +3,7 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.core import (
     Entity,
-    InputTriplet,
+    OutputTriplet,
     EntityType,
     TripletMetadata,
     NameEntry,
@@ -163,7 +163,7 @@ def create_entity_from_dict(data: Dict[str, Any]) -> Entity:
     )
 
 
-def create_triplet_from_dict(data: Dict[str, Any]) -> InputTriplet:
+def create_triplet_from_dict(data: Dict[str, Any]) -> OutputTriplet:
     """
     Create a Triplet object from a dictionary
 
@@ -191,7 +191,7 @@ def create_triplet_from_dict(data: Dict[str, Any]) -> InputTriplet:
     else:
         raise ValueError(f"value {data["direction"]} not an option for triplet direction")
 
-    return InputTriplet(
+    return OutputTriplet(
         subject_name=data["entity"],
         predicate=data["relationship_type"],
         object_name=data["related_entity"],
@@ -246,7 +246,7 @@ def find_entity_name_match(
 
 
 def validate_triplet(
-    triplet: InputTriplet, available_entities: List[Entity]
+    triplet: OutputTriplet, available_entities: List[Entity]
 ) -> Tuple[bool, str]:
     """
     Validate that a triplet's subject and object entities exist
@@ -297,7 +297,7 @@ def group_entities_by_type(entities: List[Entity]) -> Dict[EntityType, List[Enti
     return grouped
 
 
-def group_triplets_by_chapter(triplets: List[InputTriplet]) -> Dict[int, List[InputTriplet]]:
+def group_triplets_by_chapter(triplets: List[OutputTriplet]) -> Dict[int, List[OutputTriplet]]:
     """
     Group triplets by chapter
 
@@ -318,8 +318,8 @@ def group_triplets_by_chapter(triplets: List[InputTriplet]) -> Dict[int, List[In
 
 
 def filter_triplets_by_confidence(
-    triplets: List[InputTriplet], min_confidence: float
-) -> List[InputTriplet]:
+    triplets: List[OutputTriplet], min_confidence: float
+) -> List[OutputTriplet]:
     """
     Filter triplets by minimum confidence threshold
 
@@ -366,7 +366,7 @@ def get_entity_summary(entity: Entity) -> str:
     return summary
 
 
-def get_triplet_summary(triplet: InputTriplet) -> str:
+def get_triplet_summary(triplet: OutputTriplet) -> str:
     """
     Generate a human-readable summary of a triplet
 
