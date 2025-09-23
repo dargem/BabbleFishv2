@@ -194,9 +194,9 @@ def create_triplet_from_dict(data: Dict[str, Any]) -> OutputTriplet:
         )
 
     return OutputTriplet(
-        subject_name=data["entity"],
+        subject_name=create_entity_from_neo4j_data(data["entity"]),
         predicate=data["predicate"],
-        object_name=data["related_entity"],
+        object_name=create_entity_from_neo4j_data(data["related_entity"]),
         metadata=metadata,
         direction=direction,
     )

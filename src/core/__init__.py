@@ -5,6 +5,7 @@ from .entities import (
     EntityType,
     NameEntry,
 )
+
 from .relationships import (
     InputTriplet,
     OutputTriplet,
@@ -14,6 +15,11 @@ from .relationships import (
     TenseType,
     PredicateType,
     Direction,
+)
+
+from .novels import (
+    Novel,
+    Chapter
 )
 
 __all__ = [
@@ -28,4 +34,6 @@ __all__ = [
     "TenseType",
     "PredicateType",
     "Direction",
+    "Novel",
+    "Chapter"
 ]

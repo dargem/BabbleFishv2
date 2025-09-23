@@ -30,9 +30,10 @@ Translation Phase:
 - DB query agent for informing translations
 - Integrate in better edge types, Setup phase can create piece specific relationships
 - Enforce better edge detection and node unification
-- change architecture, 3 workflows,
+- change architecture, 4 workflows,
     - setup (get language, style guide etc), 
     - ingestion (get triplets into graphical database with localisations) status: Partially done
+    - annotation (annotate the base text with references like translations etc)
     - translation (generic translation workflow with feedback loops etc) status: Partially done
 - agent profiles 
 - langsmith or similar for some evaluations on unit tests

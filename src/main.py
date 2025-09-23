@@ -42,7 +42,7 @@ async def run_translation():
         for triplet in triplets:
             if triplet.metadata.importance >= 0:
                 print(
-                   f"Name: {triplet.subject_name["strong_names"][0]}, Predicate: {triplet.predicate}, Object: {triplet.object_name["strong_names"][0]}"
+                   f"Name: {triplet.subject_name.strong_names[0]}, Predicate: {triplet.predicate}, Object: {triplet.object_name.strong_names[0]}"
                 )
     exit()
     

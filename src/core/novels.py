@@ -1,12 +1,28 @@
 """Data models for books"""
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import enum
 from dataclasses import dataclass
+from lingua import Language
+
+@dataclass
+class Language(enum):
+    """Subset of lingua's Language mapped to string"""
+    Language.ENGLISH = "English"
+    Language.CHINESE = "Chinese"
+    Language.JAPANESE = "Japanese"
+    Language.KOREAN = "Korean"
+    Language.SPANISH = "Spanish"
+    Language.FRENCH = "French"
 
 
 @dataclass
-class ChapterRequirement(enum):
+class Requirement(enum):
+    # Novel Based
+    STYLE_GUIDE = "Style Guide"
+
+    # Chapter Based
+    ANNOTATION = "Annotation"
     INGESTION = "Ingestion"
     TRANSLATION = "Translation"
     SUMMARY = "Summary"
@@ -20,17 +36,20 @@ class Chapter:
         self.original: str = original
         self.translation: str | None = None
         self.summary: str | None = None
+        self.annotated_status: bool = False
         self.ingested_status: bool = False
 
-    def get_requirements(self) -> List[ChapterRequirement]:
+    def get_requirements(self) -> List[Requirement]:
         """
         returns:
             List of enums representing required processing
         """
+        # Insertion order is maintained in 3.7+, prioritises the first check first
         checks = {
-            ChapterRequirement.TRANSLATION: lambda c: c.translation is None,
-            ChapterRequirement.SUMMARY: lambda c: c.summary is None,
-            ChapterRequirement.INGESTION: lambda c: not c.ingested_status,
+            Requirement.SUMMARY: lambda c: c.summary is None,
+            Requirement.INGESTION: lambda c: not c.ingested_status,
+            Requirement.ANNOTATION: lambda c: not c.annotated_status,
+            Requirement.TRANSLATION: lambda c: c.translation is None,
         }
         return [req for req, condition in checks.items() if condition(self)]
 
@@ -39,18 +58,67 @@ class Chapter:
 class Novel:
     """A novel contains chapters"""
 
-    def __init__(
-        self,
-        chapters_dic: Dict[int:str] = {},
-        loaded_chapter_dic: Dict[str:Chapter] = {},
-    ):
+    def __init__(self):
+        self.indexed_chapters: Dict[int, Chapter] = {}
+        self.style_guide: str = None
+        self.language: str = None
+    
+    def add_chapters(self, indexed_chapters: Dict[int, str]):
         """
-        Takes in and parses chapters
+        Converts incoming strings into chapter objects and adds to chapters
 
         Args:
-            chapters: A list of chapters the novel has in strings, indexed by chapter idx starting at 0
+            indexed_chapters: strings of chapters indexed by integer
         """
-        self.chapters = loaded_chapter_dic
-        for index, chapter_str in chapters_dic.keys():
-            if index not in self.chapters:
-                self.chapters[index] = Chapter(chapter_str)
+        indexed_chapters = self._filter_existing(indexed_chapters)
+
+        # add the chapters, maybe should be done with dependency injection? feels fine to couple this tho
+        for index, chapter_str in indexed_chapters.items():
+            chapter = Chapter(
+                original=chapter_str
+            )
+            self.indexed_chapters[index] = chapter
+        
+    def get_task(self) -> Tuple[int, str, Requirement] | None:
+        """
+        Identifies the next task needed for novel processing.
+        
+        Returns:
+            Tuple of (chapter_index, chapter_original_text, required_task) 
+            or None if no tasks are pending
+        """
+
+        for index, chapter in self.indexed_chapters.items():
+            requirements = chapter.get_requirements()
+            if requirements:
+                # Return the first requirement found
+                return (index, chapter.original, requirements[0])
+            # passes through otherwise
+        return None
+        
+
+    def _filter_existing(self, indexed_chapters: Dict[int,str]) -> Dict[int,str]:
+        """
+        Filters out chapter indexes that are already existing in self.chapters
+
+        Args:
+            indexed_chapters: strings of chapters indexed by integer
+
+        Returns:
+            A dictionary of unique from stored chapter dictionary entries
+        """
+        new_chapters = {}
+        for index, chapter_str in indexed_chapters.items():
+            if index not in self.indexed_chapters:
+                new_chapters[index] = chapter_str
+        return new_chapters
+    
+    def _get_requirements(self) -> List[Requirement]:
+        checks = {
+            Requirement.SUMMARY: lambda c: c.summary is None,
+            Requirement.INGESTION: lambda c: not c.ingested_status,
+            Requirement.ANNOTATION: lambda c: not c.annotated_status,
+            Requirement.TRANSLATION: lambda c: c.translation is None,
+        }
+        return [req for req, condition in checks.items() if condition(self)]
+
