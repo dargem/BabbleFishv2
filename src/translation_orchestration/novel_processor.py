@@ -1,6 +1,7 @@
 from typing import List, Dict
 from src.core import Novel
 
+
 class NovelTranslator:
     """Orchestrator for the loose sequential translation process of a Novel object"""
 
@@ -14,7 +15,7 @@ class NovelTranslator:
         if novel:
             self.novel = novel
         else:
-            self.novel = Novel() # maybe just do dependency injection of an empty novel? Probably better architecturally
+            self.novel = Novel()  # maybe just do dependency injection of an empty novel? Probably better architecturally
 
     def add_chapters(self, indexed_chapters: Dict[int, str]):
         """
@@ -25,12 +26,7 @@ class NovelTranslator:
         """
         self.novel.add_chapters(indexed_chapters)
 
-
     def translate_book(chapters: List[str]) -> List[str]:
         """
         Translates a series of chapters sequentially
         """
-
-
-    
-

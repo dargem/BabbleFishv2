@@ -67,7 +67,16 @@ class Container:
         )
 
     def get(self, key: Any):
-        """Generic resolver with caching."""
+        """
+        Generic resolver with caching
+
+        Args:
+            key: The requested class
+
+        Returns:
+            An initialized object of key (the requested class)
+        """
+
         if key in self._instances:
             return self._instances[key]
         if key not in self._providers:
@@ -83,6 +92,12 @@ class Container:
         return self.get(TranslationWorkflowFactory).create_workflow()
 
     async def health_check(self):
+        """
+        Checks for expired API keys and if the database is working
+
+        Returns:
+            Dict of test result
+        """
         results = {}
         try:
             provider = self.get(
@@ -96,6 +111,9 @@ class Container:
             results["llm_provider_error"] = str(e)
 
         try:
+            kg: KnowledgeGraphManager = self.get(KnowledgeGraphManager)
+            # send a query, if connection fails it will crash not hang
+            kg.get_stats()
             results["knowledge_graph"] = True
         except Exception as e:
             results["knowledge_graph"] = False

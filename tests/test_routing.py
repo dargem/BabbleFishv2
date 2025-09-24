@@ -2,7 +2,7 @@
 
 import unittest
 
-from src.workflows.translation.workflow import (
+from workflows.translation.workflow_factory import (
     route_preloads,
     route_junior_pass,
     route_increment_exceed,

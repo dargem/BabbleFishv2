@@ -19,7 +19,9 @@ from .relationships import (
 
 from .novels import (
     Novel,
-    Chapter
+    Chapter,
+    Genre,
+    Requirement,
 )
 
 __all__ = [
@@ -35,5 +37,7 @@ __all__ = [
     "PredicateType",
     "Direction",
     "Novel",
-    "Chapter"
+    "Chapter",
+    "Genre",
+    "Requirement",
 ]

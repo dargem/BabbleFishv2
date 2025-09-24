@@ -5,15 +5,18 @@ from enum import Enum
 from dataclasses import dataclass
 from lingua import Language
 
+
 @dataclass
 class Language(Enum):
     """Subset of lingua's Language mapped to string"""
+
     Language.ENGLISH = "English"
     Language.CHINESE = "Chinese"
     Language.JAPANESE = "Japanese"
     Language.KOREAN = "Korean"
     Language.SPANISH = "Spanish"
     Language.FRENCH = "French"
+
 
 class Genre(Enum):
     ACTION = "Action"
@@ -91,7 +94,7 @@ class Novel:
         self.style_guide: str = None
         self.genres: List[Genre] = None
         self.language: str = None
-    
+
     def add_chapters(self, indexed_chapters: Dict[int, str]):
         """
         Converts incoming strings into chapter objects and adds to chapters
@@ -103,17 +106,15 @@ class Novel:
 
         # add the chapters, maybe should be done with dependency injection? feels fine to couple this tho
         for index, chapter_str in indexed_chapters.items():
-            chapter = Chapter(
-                original=chapter_str
-            )
+            chapter = Chapter(original=chapter_str)
             self.indexed_chapters[index] = chapter
-        
+
     def get_task(self) -> Tuple[int, str, Requirement] | None:
         """
         Identifies the next task needed for novel processing.
-        
+
         Returns:
-            Tuple of (chapter_index, chapter_original_text, required_task) 
+            Tuple of (chapter_index, chapter_original_text, required_task)
             or None if no tasks are pending
         """
 
@@ -124,9 +125,8 @@ class Novel:
                 return (index, chapter.original, requirements[0])
             # passes through otherwise
         return None
-        
 
-    def _filter_existing(self, indexed_chapters: Dict[int,str]) -> Dict[int,str]:
+    def _filter_existing(self, indexed_chapters: Dict[int, str]) -> Dict[int, str]:
         """
         Filters out chapter indexes that are already existing in self.chapters
 
@@ -141,11 +141,10 @@ class Novel:
             if index not in self.indexed_chapters:
                 new_chapters[index] = chapter_str
         return new_chapters
-    
+
     def _get_requirements(self) -> List[Requirement]:
         checks = {
             Requirement.STYLE_GUIDE: lambda c: c.style_guide is None,
             Requirement.GENRES: lambda c: c.genres is None,
         }
         return [req for req, condition in checks.items() if condition(self)]
-

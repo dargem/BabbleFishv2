@@ -2,7 +2,20 @@
 # TODO short term memory after database is dealt with
 
 from typing import TypedDict, List
-from src.core import Entity, InputTriplet
+from src.core import Entity, InputTriplet, Genre
+
+
+class SetupState(TypedDict):
+    """
+    State object for ingestion workflow
+
+    Attributes:
+        text:
+    """
+
+    text: str
+    genres: List[Genre] = None
+    style: str = None
 
 
 class IngestionState(TypedDict):

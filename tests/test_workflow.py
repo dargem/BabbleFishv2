@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch, Mock
 import os
 
-from src.workflows.translation.workflow import create_translation_workflow
+from workflows.translation.workflow_factory import create_translation_workflow
 from tests.base import BaseTranslationTest
 from tests.fixtures import CHINESE_SAMPLE_TEXT
 
@@ -143,12 +143,12 @@ class TestWorkflowNodes(BaseTranslationTest):
     def test_full_workflow_integration(self):
         """Full integration test with real LLM (expensive - skipped by default)."""
         from src.config import ConfigFactory, Container
-        
+
         config = ConfigFactory.create_config(env="development")
         container = Container()
         container.set_config(config)
         llm_provider = container.get_llm_provider()
-        
+
         workflow = create_translation_workflow(llm_provider)
 
         initial_state = {"text": "你好，世界！这是一个测试。"}  # Simple Chinese text
