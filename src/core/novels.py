@@ -1,12 +1,12 @@
 """Data models for books"""
 
 from typing import Dict, List, Tuple
-import enum
+from enum import Enum
 from dataclasses import dataclass
 from lingua import Language
 
 @dataclass
-class Language(enum):
+class Language(Enum):
     """Subset of lingua's Language mapped to string"""
     Language.ENGLISH = "English"
     Language.CHINESE = "Chinese"
@@ -15,12 +15,40 @@ class Language(enum):
     Language.SPANISH = "Spanish"
     Language.FRENCH = "French"
 
+class Genre(Enum):
+    ACTION = "Action"
+    ADVENTURE = "Adventure"
+    COMEDY = "Comedy"
+    DRAMA = "Drama"
+    FANTASY = "Fantasy"
+    POST_APOCALYPTIC = "Post Apocalyptic"
+    MAGICAL_REALISM = "Magical Realism"
+    THRILLER = "Thriller"
+    HISTORICAL = "Historical"
+    HORROR = "Horror"
+    MARTIAL_ARTS = "Martial Arts"
+    MATURE = "Mature"
+    MECHA = "Mecha"
+    MYSTERY = "Mystery"
+    PSYCHOLOGICAL = "Psychological"
+    ROMANCE = "Romance"
+    SCHOOL_LIFE = "School Life"
+    SCI_FI = "Sci-Fi"
+    SLICE_OF_LIFE = "Slice of Life"
+    SPORTS = "Sports"
+    SUPERNATURAL = "Supernatural"
+    TRAGEDY = "Tragedy"
+    WUXIA = "Wuxia"
+    XIANXIA = "Xianxia"
+    XUANHUAN = "Xuanhuan"
+    DYSTOPIAN = "Dystopian"
+
 
 @dataclass
-class Requirement(enum):
+class Requirement(Enum):
     # Novel Based
     STYLE_GUIDE = "Style Guide"
-
+    GENRES = "Genres"
     # Chapter Based
     ANNOTATION = "Annotation"
     INGESTION = "Ingestion"
@@ -61,6 +89,7 @@ class Novel:
     def __init__(self):
         self.indexed_chapters: Dict[int, Chapter] = {}
         self.style_guide: str = None
+        self.genres: List[Genre] = None
         self.language: str = None
     
     def add_chapters(self, indexed_chapters: Dict[int, str]):
@@ -115,10 +144,8 @@ class Novel:
     
     def _get_requirements(self) -> List[Requirement]:
         checks = {
-            Requirement.SUMMARY: lambda c: c.summary is None,
-            Requirement.INGESTION: lambda c: not c.ingested_status,
-            Requirement.ANNOTATION: lambda c: not c.annotated_status,
-            Requirement.TRANSLATION: lambda c: c.translation is None,
+            Requirement.STYLE_GUIDE: lambda c: c.style_guide is None,
+            Requirement.GENRES: lambda c: c.genres is None,
         }
         return [req for req, condition in checks.items() if condition(self)]
 

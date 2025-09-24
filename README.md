@@ -23,10 +23,11 @@ Translation Phase:
 - **Fluency Editor**: Base text blind index based editing for fluency
 
 ## TODO
+- Translation Orchestrator
+- Registry for the translation orchestrator
 - Embeddings with entity descriptions
-- Community clustering
+- More database queries BM25, community clustering, etc
 - Setup phase creates domain specific edge types
-- Node based knowledge *maybe bad design actually
 - DB query agent for informing translations
 - Integrate in better edge types, Setup phase can create piece specific relationships
 - Enforce better edge detection and node unification
