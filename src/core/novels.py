@@ -6,16 +6,15 @@ from dataclasses import dataclass
 from lingua import Language
 
 
-@dataclass
-class Language(Enum):
-    """Subset of lingua's Language mapped to string"""
+class LanguageType(Enum):
+    """Subset of lingua's Language objects"""
 
-    Language.ENGLISH = "English"
-    Language.CHINESE = "Chinese"
-    Language.JAPANESE = "Japanese"
-    Language.KOREAN = "Korean"
-    Language.SPANISH = "Spanish"
-    Language.FRENCH = "French"
+    ENGLISH = Language.ENGLISH
+    CHINESE = Language.CHINESE
+    JAPANESE = Language.JAPANESE
+    KOREAN = Language.KOREAN
+    SPANISH = Language.SPANISH
+    FRENCH = Language.FRENCH
 
 
 class Genre(Enum):

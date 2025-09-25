@@ -6,20 +6,17 @@ from __future__ import annotations
 # imports
 from ..states import TranslationState
 from lingua import LanguageDetectorBuilder, Language
+from src.core import LanguageType
 
 
 class LanguageDetector:
     """Detects the language of input text"""
 
     def __init__(self):
-        self.languages_mapped = {
-            Language.ENGLISH: "English",
-            Language.CHINESE: "Chinese",
-            Language.JAPANESE: "Japanese",
-            Language.KOREAN: "Korean",
-            Language.SPANISH: "Spanish",
-            Language.FRENCH: "French",
-        }
+        print("loaded detector")
+
+        self.languages_mapped = {lang.value: lang.name for lang in LanguageType}
+
         self.detector = LanguageDetectorBuilder.from_languages(
             *self.languages_mapped.keys()
         ).build()

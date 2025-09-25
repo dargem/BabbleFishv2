@@ -22,6 +22,7 @@ from .novels import (
     Chapter,
     Genre,
     Requirement,
+    LanguageType,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     "Chapter",
     "Genre",
     "Requirement",
+    "LanguageType",
 ]
