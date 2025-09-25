@@ -1,10 +1,10 @@
 """Translation workflow nodes."""
 
-from .language_detection import LanguageDetector
+from ..setup.language_detection import LanguageDetector
 from .translator import Translator
 from .editing import JuniorEditor, FluencyEditor
 from .routing import FeedbackRouter
-from .style import StyleAnalyzer
+from ..setup.style import StyleAnalyzer
 
 __all__ = [
     "LanguageDetector",

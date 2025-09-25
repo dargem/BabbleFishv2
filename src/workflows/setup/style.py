@@ -8,7 +8,7 @@ from src.providers import LLMProvider
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import TranslationState
-
+from textwrap import dedent
 
 class StyleAnalyzer:
     """Analyzes and generates style guides for text"""
@@ -27,7 +27,7 @@ class StyleAnalyzer:
         """
         print("Generating style guide...")
 
-        template = """
+        template = dedent("""
         You are a highly experienced literary analyst and editor. Your task is to provide a detailed style guide for a fiction text, which will be used to ensure consistency and fidelity during translation.
 
         Following is a sample of the text, from it you are tasked to build the style guide. 
@@ -63,7 +63,7 @@ class StyleAnalyzer:
         ---
         **Text to Analyze:**
         {text}
-        """
+        """)
 
         prompt = PromptTemplate(input_variables=["text"], template=template)
 

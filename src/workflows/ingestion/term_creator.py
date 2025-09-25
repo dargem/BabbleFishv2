@@ -13,7 +13,7 @@ from typing import List, Dict, Set
 from ..states import IngestionState
 from src.core import Entity, NameEntry, EntityType
 import networkx as nx
-
+from textwrap import dedent
 
 class TermTranslation(BaseModel):
     """Sub schema for a terms translation"""
@@ -230,7 +230,7 @@ class EntityCreator:
         """
         print("Finding terms...")
 
-        template = """
+        template = dedent("""
         You are a translator tasked with Named Entity Reconition, identifying named terms in the following text.
         This will be later used to build a glossary so ensure unique domain specific terms are always included.
         Entities that are also likely recurring and you believe should be *consistently* translated should be added.
@@ -426,7 +426,7 @@ class EntityCreator:
         Do not include anything except json form output.
 
         Text: {text}
-        """
+        """)
 
         prompt = PromptTemplate(input_variables=["text"], template=template)
 

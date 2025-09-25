@@ -8,7 +8,7 @@ from src.providers import LLMProvider
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import TranslationState
-
+from textwrap import dedent
 
 class Translator:
     """Translates text from detected language to English"""
@@ -27,26 +27,26 @@ class Translator:
         """
         print("Translating text...")
 
-        base_template = """
+        base_template = dedent("""
         You are a professional translator specialising in fiction. 
         You work with {language} to English translations and are highly proficient in localisation.
         Prioritise fluency while maintaining semantic meaning.
         Translate the following {language} text to English.
         Text: {text}
-        """
+        """)
 
         # Check if this is a feedback iteration
         if "translation" in state and state.get("translation"):
             template = (
                 base_template
-                + """
+                + dedent("""
             Your prior translation was: 
             {translation}
             Your feedback was: 
             {feedback}
             With this feedback incorporated, create a richer response.
             Your updated translation, incorporating feedback:
-            """
+            """)
             )
 
             prompt = PromptTemplate(

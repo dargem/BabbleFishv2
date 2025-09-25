@@ -17,7 +17,7 @@ class SetupWorkflowFactory:
         self.llm_provider = llm_provider
 
     def create_workflow(
-        self, state: SetupState, requirements: List[Requirement]
+        self, requirements: List[Requirement]
     ) -> StateGraph:
         nodes = []
 
@@ -27,6 +27,8 @@ class SetupWorkflowFactory:
                 case Requirement.STYLE_GUIDE:
                     pass
                 case Requirement.GENRES:
+                    pass
+                case Requirement.LANGUAGE:
                     pass
                 case _:
                     raise NotImplementedError(

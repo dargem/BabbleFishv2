@@ -9,7 +9,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import TranslationState
 from src.utils import parse_tagged_content, format_text_with_tags, reconstruct_text
-
+from textwrap import dedent
 
 class JuniorEditor:
     """Evaluates and provides feedback on translation quality"""
@@ -30,7 +30,7 @@ class JuniorEditor:
 
         prompt = PromptTemplate(
             input_variables=["text", "translation"],
-            template="""
+            template=dedent("""
             Evaluate the quality of the following translation for the text.
             Be highly critical in your evaluation, you only want the very best.
             Be harsh but reasonable.
@@ -43,7 +43,7 @@ class JuniorEditor:
             Produce a list of specific errors/suggestions with justifications and avoid a general conclusion.
             Original Text: {text}
             Translation for assessment: {translation}
-            """,
+            """),
         )
 
         message = HumanMessage(
@@ -77,7 +77,7 @@ class FluencyEditor:
         tag_formatted_input = format_text_with_tags(keyed_text)
 
         prompt = PromptTemplate(
-            template="""
+            template=dedent("""
             You are a professional proofreader. 
             Your job is to read for rhythm, voice, and narrative flow.
             You'll focus on the lyrical quality of the prose, ensuring the story unfolds with a natural, compelling pace.
@@ -104,7 +104,7 @@ class FluencyEditor:
             
             The input of tagged text for proofreading is below, output in formatting described above:
             {tag_formatted_input}
-            """
+            """)
         )
 
         message = HumanMessage(

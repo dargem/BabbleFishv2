@@ -51,6 +51,7 @@ class Requirement(Enum):
     # Novel Based
     STYLE_GUIDE = "Style Guide"
     GENRES = "Genres"
+    LANGUAGE = "Language"
     # Chapter Based
     ANNOTATION = "Annotation"
     INGESTION = "Ingestion"
@@ -145,5 +146,6 @@ class Novel:
         checks = {
             Requirement.STYLE_GUIDE: lambda c: c.style_guide is None,
             Requirement.GENRES: lambda c: c.genres is None,
+            Requirement.LANGUAGE: lambda c: c.language is None,
         }
         return [req for req, condition in checks.items() if condition(self)]
