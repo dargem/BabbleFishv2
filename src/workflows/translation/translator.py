@@ -10,6 +10,7 @@ from langchain.schema import HumanMessage
 from ..states import TranslationState
 from textwrap import dedent
 
+
 class Translator:
     """Translates text from detected language to English"""
 
@@ -37,9 +38,7 @@ class Translator:
 
         # Check if this is a feedback iteration
         if "translation" in state and state.get("translation"):
-            template = (
-                base_template
-                + dedent("""
+            template = base_template + dedent("""
             Your prior translation was: 
             {translation}
             Your feedback was: 
@@ -47,7 +46,6 @@ class Translator:
             With this feedback incorporated, create a richer response.
             Your updated translation, incorporating feedback:
             """)
-            )
 
             prompt = PromptTemplate(
                 input_variables=["text", "language", "feedback", "translation"],

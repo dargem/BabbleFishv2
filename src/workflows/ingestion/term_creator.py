@@ -15,6 +15,7 @@ from src.core import Entity, NameEntry, EntityType
 import networkx as nx
 from textwrap import dedent
 
+
 class TermTranslation(BaseModel):
     """Sub schema for a terms translation"""
 

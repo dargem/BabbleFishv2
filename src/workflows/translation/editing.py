@@ -11,6 +11,7 @@ from ..states import TranslationState
 from src.utils import parse_tagged_content, format_text_with_tags, reconstruct_text
 from textwrap import dedent
 
+
 class JuniorEditor:
     """Evaluates and provides feedback on translation quality"""
 

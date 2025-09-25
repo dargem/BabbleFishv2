@@ -10,6 +10,7 @@ from langchain.schema import HumanMessage
 from ..states import TranslationState
 from textwrap import dedent
 
+
 class StyleAnalyzer:
     """Analyzes and generates style guides for text"""
 
@@ -69,5 +70,5 @@ class StyleAnalyzer:
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
 
-        style_guide = await self.llm_provider.invoke([message]).strip()
-        return {"style_guide": style_guide}
+        style_guide = await self.llm_provider.invoke([message])
+        return {"style_guide": style_guide.strip()}

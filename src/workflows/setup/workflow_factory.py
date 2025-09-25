@@ -16,9 +16,7 @@ class SetupWorkflowFactory:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def create_workflow(
-        self, requirements: List[Requirement]
-    ) -> StateGraph:
+    def create_workflow(self, requirements: List[Requirement]) -> StateGraph:
         nodes = []
 
         for requirement in requirement:
