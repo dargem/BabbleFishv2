@@ -163,6 +163,21 @@ def create_entity_from_dict(data: Dict[str, Any]) -> Entity:
     )
 
 
+def check_not_incoming(triplet_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Filters out ingoing relations
+    e.g.bob possesses revolver allowed, cuts out resolver possesses bob
+
+    Args:
+        triplet_data: dictionaries containing triplet data
+
+    Retruns:
+        Boolean if ingoing
+    """
+    print(triplet_data["direction"])
+    return triplet_data["direction"] != "incoming"
+
+
 def create_triplet_from_dict(data: Dict[str, Any]) -> OutputTriplet:
     """
     Create a Triplet object from a dictionary
@@ -184,21 +199,12 @@ def create_triplet_from_dict(data: Dict[str, Any]) -> OutputTriplet:
         source_text=metadata_dict.get("source_text"),
         additional_props=metadata_dict.get("additional_props", {}),
     )
-    if data["direction"] == "outgoing":
-        direction = Direction.OUTGOING
-    elif data["direction"] == "incoming":
-        direction = Direction.INCOMING
-    else:
-        raise ValueError(
-            f"value {data['direction']} not an option for triplet direction"
-        )
 
     return OutputTriplet(
         subject_name=create_entity_from_neo4j_data(data["entity"]),
         predicate=data["predicate"],
         object_name=create_entity_from_neo4j_data(data["related_entity"]),
         metadata=metadata,
-        direction=direction,
     )
 
 

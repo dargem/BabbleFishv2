@@ -3,7 +3,7 @@
 from typing import List
 from neo4j import Driver
 from src.core import InputTriplet
-from .utils import create_triplet_from_dict
+from .utils import create_triplet_from_dict, check_not_incoming
 
 
 class TripletOperations:
@@ -92,7 +92,10 @@ class TripletOperations:
             CASE WHEN startNode(r) = e THEN 'outgoing' ELSE 'incoming' END AS direction
         """
         result = tx.run(query, entity_name=entity_name)
-        return [create_triplet_from_dict(dict(record)) for record in result]
+        dict_list_rel = [
+            dict(record) for record in result if check_not_incoming(dict(record))
+        ]
+        return [create_triplet_from_dict(dic) for dic in dict_list_rel]
 
     @staticmethod
     def _get_triplets_by_chapter_tx(tx, chapter_idx: int) -> List[InputTriplet]:
@@ -107,4 +110,7 @@ class TripletOperations:
             properties(r) AS metadata
         """
         result = tx.run(query, chapter_idx=chapter_idx)
-        return [create_triplet_from_dict(dict(record)) for record in result]
+        filtered_result = [
+            dict(record) for record in result if check_not_incoming(dict(record))
+        ]
+        return [create_triplet_from_dict(dict(record)) for record in filtered_result]
