@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 # imports
-from ..states import TranslationState
+from ..states import SetupState
 from lingua import LanguageDetectorBuilder, Language
 from src.core import LanguageType
 
@@ -21,7 +21,7 @@ class LanguageDetector:
             *self.languages_mapped.keys()
         ).build()
 
-    def detect_language(self, state: TranslationState) -> dict:
+    def detect_language(self, state: SetupState) -> dict:
         """Detect the language of the input text.
 
         Args:

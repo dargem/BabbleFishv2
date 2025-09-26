@@ -23,7 +23,8 @@ Translation Phase:
 - **Fluency Editor**: Base text blind index based editing for fluency
 
 ## TODO
-- Some kindof non llm based topic modelling, maybe like latent dirichlet allocation?
+- Novel factory, takes in text dicts to produce them
+- Some kindof non llm based topic modelling, maybe like latent dirichlet allocation? Should work for long texts
 - Maybe change the nodes to all be an implementation of an abstract class
 - Translation Orchestrator
 - Registry for the translation orchestrator

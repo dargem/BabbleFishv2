@@ -20,7 +20,7 @@ class GenreDetector:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def find_genres(self, state: SetupState) -> Dict[str, List[Genre]]:
+    async def find_genres(self, state: SetupState) -> Dict[str, List[Genre]]:
         """
         Finds the genres of the novel
 
@@ -45,8 +45,8 @@ class GenreDetector:
 
         message = HumanMessage(content=prompt.format(text=state["text"]))
 
-        genres: List[Genre] = self.llm_provider.schema_invoke(
-            message, schema=GenreSchema
+        genres: GenreSchema = await self.llm_provider.schema_invoke(
+            [message], schema=GenreSchema
         )
 
-        return {"genres": genres}
+        return {"genres": genres.genre_list}

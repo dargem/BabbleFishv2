@@ -7,7 +7,7 @@ from src.providers import LLMProvider
 # imports
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from ..states import TranslationState
+from ..states import SetupState
 from textwrap import dedent
 
 
@@ -17,7 +17,7 @@ class StyleAnalyzer:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    async def analyze_style(self, state: TranslationState) -> dict:
+    async def analyze_style(self, state: SetupState) -> dict:
         """
         Creates a description of the novels style, genre etc for aiding in translation style.
         Args:

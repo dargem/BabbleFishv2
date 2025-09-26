@@ -76,5 +76,5 @@ class Translator:
                 )
             )
 
-        translation = await self.llm_provider.invoke([message]).strip()
-        return {"translation": translation}
+        translation = await self.llm_provider.invoke([message])
+        return {"translation": translation.strip()}

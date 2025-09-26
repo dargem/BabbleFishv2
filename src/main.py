@@ -8,97 +8,89 @@ import asyncio
 from pathlib import Path
 from src.config import ConfigFactory, Container
 from src.knowledge_graph import KnowledgeGraphManager
+from src.translation_orchestration.novel_processor import NovelTranslator
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 
-async def run_translation():
-    """Main function to run the translation workflow."""
+async def run_step_by_step_translation():
+    """Example of running step-by-step translation using the task-based approach."""
 
+    # Initialize container
     config = ConfigFactory.create_config(env="development")
     container = Container()
     await container.set_config(config)
-    ingestion_app = container.get_ingestion_workflow()
-    translation_app = container.get_translation_workflow()
 
-    # Use absolute path based on script location
-    script_dir = Path(__file__).parent.parents
-    file_path = DATA_DIR / "lotm4.txt"
+    novel_translator = container.get_novel_translator()
+
+    # Load a chapter, should have another class for this later
+    file_path = DATA_DIR / "lotm1.txt"
+    if not file_path.exists():
+        print("No test file found")
+        return
 
     with open(file_path, "r", encoding="UTF-8") as f:
-        sample_text = f.read()
-    print("Loaded text from file")
+        chapter_text = f.read()
 
-    kg: KnowledgeGraphManager = container.get(KnowledgeGraphManager)
+    # Add chapter
+    novel_translator.add_chapters({1: chapter_text})
 
-    print(kg.get_stats())
-    entities = kg.get_all_entities()
-
-    for entity in entities:
-        print(entity.strong_names)
-        triplets = kg.get_entity_relationships(entity.strong_names[0])
-        for triplet in triplets:
-            if triplet.metadata.importance >= 0:
-                print(
-                    f"Name: {triplet.subject_name.strong_names[0]}, Predicate: {triplet.predicate}, Object: {triplet.object_name.strong_names[0]}"
-                )
-    exit()
-
-    # Database Ingestion
-
-    state_input = {"text": sample_text}
-    result = await ingestion_app.ainvoke(state_input)
-
-    print("Ingested entries")
-    print(kg.get_stats())
-    for entity in result["entities"]:
-        print(entity.strong_names)
-
-    for triplet in result["triplets"]:
-        if triplet.metadata.importance >= 0:
-            print(
-                f"Name: {triplet.subject_name}, Predicate: {triplet.predicate}, Object: {triplet.object_name}"
-            )
-            # print(triplet.metadata.__dict__)
-    print(kg.get_stats())
-    entities = kg.get_all_entities()
-    for entity in entities:
-        print(entity)
-        print(kg.get_entity_relationships(entity.strong_names[0]))
-    exit()
-    # Create workflow
-    print("Creating translation workflow...")
-    # run workflow
-    print("Starting translation process...")
-    state_input = {"text": sample_text}
-    result = await translation_app.ainvoke(state_input)
-
-    # Print results
-    print("\n" + "=" * 50)
-    print("TRANSLATION RESULTS")
+    print("=" * 50)
+    print("STEP-BY-STEP TRANSLATION")
     print("=" * 50)
 
-    for key in result:
-        if isinstance(result[key], str) and result[key].strip():
-            print(f"\n{key.upper()}:")
-            print("-" * len(key))
-            # print(result[key])
+    # Process tasks one by one
+    task_count = 0
+    while True:
+        task = await novel_translator.get_next_task()
+        if not task:
+            print("\nAll tasks completed!")
+            break
 
-    # Generate workflow visualization
-    try:
-        mermaid_code = translation_app.get_graph().draw_mermaid()
-        md_content = (
-            f"""# Translation Workflow Graph\n\n```mermaid\n{mermaid_code}\n```\n"""
-        )
-        output_path = script_dir / "workflow_graph.md"
-        with open(output_path, "w") as f:
-            f.write(md_content)
-        print(f"\nWorkflow diagram saved to {output_path}")
-    except Exception as e:
-        print(f"Error generating workflow diagram: {e}")
+        task_count += 1
+        chapter_idx, chapter_text, requirement = task
 
+        print(f"\nTask {task_count}: {requirement.value} for chapter {chapter_idx}")
+
+        try:
+            result = await novel_translator.process_next_task(sample_text=chapter_text)
+            print(f"{requirement.value} completed successfully")
+
+            # Show brief result summary
+            if isinstance(result, dict):
+                if "style_guide" in result:
+                    print(
+                        f"  Generated style guide ({len(result['style_guide'])} characters)"
+                    )
+                if "language" in result:
+                    print(f"  Detected language: {result['language']}")
+                if "genres" in result:
+                    print(f"  Detected genres: {result['genres']}")
+                if "entities" in result:
+                    print(f"  Extracted {len(result.get('entities', []))} entities")
+                if "translation" in result or "fluent_translation" in result:
+                    translation = result.get("fluent_translation") or result.get(
+                        "translation", ""
+                    )
+                    print(f"  Translation generated ({len(translation)} characters)")
+
+        except Exception as e:
+            print(f"✗ {requirement.value} failed: {e}")
+
+    # Show final status
+    status = novel_translator.get_novel_status()
+    print(f"\n" + "=" * 40)
+    print("FINAL STATUS")
+    print("=" * 40)
+    print(f"Setup complete: {status['setup_complete']}")
+    print(
+        f"Chapters ingested: {status['ingested_chapters']}/{status['total_chapters']}"
+    )
+    print(
+        f"Chapters translated: {status['translated_chapters']}/{status['total_chapters']}"
+    )
 
 if __name__ == "__main__":
-    asyncio.run(run_translation())
+    asyncio.run(run_step_by_step_translation())

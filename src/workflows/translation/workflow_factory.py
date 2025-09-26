@@ -14,8 +14,6 @@ from langgraph.graph import StateGraph, END, START
 from ..states import TranslationState
 
 from . import (
-    StyleAnalyzer,
-    LanguageDetector,
     Translator,
     JuniorEditor,
     FluencyEditor,
@@ -59,8 +57,6 @@ class TranslationWorkflowFactory:
         """Create all translation nodes"""  # possibly abstract this out later, have nodes get injected or use registry
 
         return {
-            "style_analyzer": StyleAnalyzer(self.llm_provider).analyze_style,
-            "language_detector": LanguageDetector().detect_language,
             "translator": Translator(self.llm_provider).translate,
             "junior_editor": JuniorEditor(self.llm_provider).review_translation,
             "fluency_editor": FluencyEditor(self.llm_provider).improve_fluency,
@@ -74,9 +70,7 @@ class TranslationWorkflowFactory:
 
     def _add_routing(self, workflow: StateGraph):
         # Add edges
-        workflow.add_edge(START, "style_analyzer")
-        workflow.add_edge("style_analyzer", "language_detector")
-        workflow.add_edge("language_detector", "translator")
+        workflow.add_edge(START, "translator")
         workflow.add_edge("translator", "feedback_router")
 
         # Conditional routing from feedback increment

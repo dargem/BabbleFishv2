@@ -51,8 +51,8 @@ class JuniorEditor:
             content=prompt.format(translation=state["translation"], text=state["text"])
         )
 
-        feedback = await self.llm_provider.invoke([message]).strip()
-        return {"feedback": feedback}
+        feedback = await self.llm_provider.invoke([message])
+        return {"feedback": feedback.strip()}
 
 
 class FluencyEditor:

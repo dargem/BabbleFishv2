@@ -2,7 +2,11 @@
 
 from typing import Any, Dict, Callable
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
-from src.workflows import IngestionWorkflowFactory, TranslationWorkflowFactory
+from src.workflows import (
+    IngestionWorkflowFactory,
+    TranslationWorkflowFactory,
+    SetupWorkflowFactory,
+)
 from src.knowledge_graph import KnowledgeGraphManager, Neo4jConnection
 from .schemas import AppConfig
 
@@ -66,6 +70,30 @@ class Container:
             )
         )
 
+        self._providers[SetupWorkflowFactory] = lambda c: SetupWorkflowFactory(
+            c.get(GoogleLLMProvider)
+            if config.environment != "testing"
+            else c.get(MockLLMProvider),
+        )
+
+        # Register NovelTranslator with proper dependency injection
+        from src.translation_orchestration.novel_processor import NovelTranslator
+
+        self._providers[NovelTranslator] = lambda c: NovelTranslator(
+            setup_workflow_factory=c.get(SetupWorkflowFactory),
+            ingestion_workflow_factory=c.get(IngestionWorkflowFactory),
+            translation_workflow_factory=c.get(TranslationWorkflowFactory),
+        )
+
+        # Register WorkflowRegistry with proper dependency injection
+        from src.translation_orchestration.workflow_registry import WorkflowRegistry
+
+        self._providers[WorkflowRegistry] = lambda c: WorkflowRegistry(
+            setup_factory=c.get(SetupWorkflowFactory),
+            ingestion_factory=c.get(IngestionWorkflowFactory),
+            translation_factory=c.get(TranslationWorkflowFactory),
+        )
+
     def get(self, key: Any):
         """
         Generic resolver with caching
@@ -85,11 +113,23 @@ class Container:
         self._instances[key] = instance
         return instance
 
+    def get_setup_workflow(self, requirements):
+        return self.get(SetupWorkflowFactory).create_workflow(requirements)
+
     def get_ingestion_workflow(self):
         return self.get(IngestionWorkflowFactory).create_workflow()
 
     def get_translation_workflow(self):
         return self.get(TranslationWorkflowFactory).create_workflow()
+
+    def get_novel_translator(self, novel=None):
+        """Get a NovelTranslator instance with optional novel"""
+        from src.translation_orchestration.novel_processor import NovelTranslator
+
+        translator = self.get(NovelTranslator)
+        if novel:
+            translator.novel = novel
+        return translator
 
     async def health_check(self):
         """
