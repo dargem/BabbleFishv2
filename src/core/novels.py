@@ -111,7 +111,7 @@ class Novel:
     def get_task(self) -> Tuple[int, str, Requirement] | None:
         """
         Identifies the next task needed for novel processing.
-
+        
         Priority order:
         1. Novel-level requirements (style guide, genres, language) - these must be done first
         2. Chapter-level requirements (ingestion, translation) - done per chapter
@@ -119,29 +119,31 @@ class Novel:
         Returns:
             Tuple of (chapter_index, chapter_original_text, required_task)
             or None if no tasks are pending
-
+            
             For novel-level requirements, chapter_index will be -1 to indicate it's novel-wide
         """
-
+        
         # Check novel-level requirements first
         novel_requirements = self.get_novel_requirements()
         if novel_requirements:
             # Use first chapter text as sample for novel-level analysis
             if self.indexed_chapters:
-                first_chapter_idx = min(self.indexed_chapters.keys())
+                # Get the first chapter (by key order, not by assuming positive indices)
+                first_chapter_idx = sorted(self.indexed_chapters.keys())[0]
                 first_chapter_text = self.indexed_chapters[first_chapter_idx].original
                 return (-1, first_chapter_text, novel_requirements[0])
             else:
                 # No chapters loaded yet
                 return None
 
-        # Then check chapter-level requirements
-        for index, chapter in self.indexed_chapters.items():
+        # Then check chapter-level requirements (sorted by chapter index for consistent ordering)
+        for index in sorted(self.indexed_chapters.keys()):
+            chapter = self.indexed_chapters[index]
             requirements = chapter.get_requirements()
             if requirements:
                 # Return the first requirement found
                 return (index, chapter.original, requirements[0])
-
+                
         # No tasks pending
         return None
 

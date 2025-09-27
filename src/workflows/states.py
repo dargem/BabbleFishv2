@@ -14,8 +14,9 @@ class SetupState(TypedDict):
     """
 
     text: str
+    language: str
     genres: List[Genre] = None
-    style: str = None
+    style_guide: str = None
 
 
 class IngestionState(TypedDict):

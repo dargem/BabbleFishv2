@@ -54,7 +54,7 @@ class NovelTranslator:
         Returns:
             Dictionary containing setup results
         """
-        # Use Novel's built-in requirements system for looser coupling
+        
         requirements = self.novel.get_novel_requirements()
 
         if not requirements:
@@ -64,16 +64,25 @@ class NovelTranslator:
                 "language": self.novel.language,
             }
 
-        # Create and run setup workflow
-        setup_workflow = self._get_or_create_setup_workflow(requirements)
-        setup_state = SetupState(text=text)
+        # Process requirements one at a time to ensure proper state updates
+        all_results = {}
+        
+        for requirement in requirements:
+            print(f"Processing setup requirement: {requirement.value}")
+            setup_workflow = self._get_or_create_setup_workflow([requirement])
+            setup_state = SetupState(text=text)
 
-        result = await setup_workflow.ainvoke(setup_state)
+            result = await setup_workflow.ainvoke(setup_state)
+            
+            # Update novel state immediately for this requirement
+            self._update_novel_from_setup_result(result)
+            
+            # Merge results
+            all_results.update(result)
+            
+            print(f"✓ Completed {requirement.value}")
 
-        # Update novel with results to keep requirements system in sync
-        self._update_novel_from_setup_result(result)
-
-        return result
+        return all_results
 
     def _update_novel_from_setup_result(self, result: Dict[str, any]):
         """
@@ -82,12 +91,29 @@ class NovelTranslator:
         Args:
             result: Dictionary containing setup results
         """
-        if "style_guide" in result and result["style_guide"]:
-            self.novel.style_guide = result["style_guide"]
+        updated = False
+        
+        if "style_guide" in result and result["style_guide"] and result["style_guide"].strip():
+            self.novel.style_guide = result["style_guide"].strip()
+            print(f"✓ Updated style_guide: {len(self.novel.style_guide)} characters")
+            updated = True
+            
         if "genres" in result and result["genres"]:
             self.novel.genres = result["genres"]
-        if "language" in result and result["language"]:
-            self.novel.language = result["language"]
+            print(f"✓ Updated genres: {self.novel.genres}")
+            updated = True
+            
+        if "language" in result and result["language"] and result["language"].strip():
+            self.novel.language = result["language"].strip()
+            print(f"✓ Updated language: {self.novel.language}")
+            updated = True
+            
+        if updated:
+            # Verify the requirements are now satisfied
+            remaining_reqs = self.novel.get_novel_requirements()
+            print(f"Remaining novel requirements: {[req.value for req in remaining_reqs]}")
+        else:
+            print("⚠️ No valid updates from setup result:", result)
 
     async def ingest_chapter(
         self, chapter_index: int, chapter_text: str
@@ -237,7 +263,8 @@ class NovelTranslator:
                 Requirement.GENRES,
                 Requirement.LANGUAGE,
             ]:
-                return await self.setup_novel(text_to_use)
+                # Process single requirement to avoid getting stuck
+                return await self.process_single_setup_requirement(text_to_use, requirement)
             else:
                 raise NotImplementedError(
                     f"Novel-level task type {requirement.value} not implemented"
@@ -358,6 +385,36 @@ class NovelTranslator:
             "cached_workflows": len(self._workflow_cache),
             "cache_keys": list(self._workflow_cache.keys()),
         }
+
+    async def process_single_setup_requirement(self, text: str, requirement: Requirement) -> Dict[str, any]:
+        """
+        Process a single setup requirement
+        
+        Args:
+            text: Sample text for analysis
+            requirement: The specific requirement to process
+            
+        Returns:
+            Dictionary containing the setup result for this requirement
+        """
+        print(f"Processing single setup requirement: {requirement.value}")
+        
+        setup_workflow = self._get_or_create_setup_workflow([requirement])
+        setup_state = {
+            "text": text,
+            "style_guide": None,
+            "genres": None, 
+            "language": None
+        }
+        
+        print(f"🔍 Input state: {setup_state}")
+        
+        result = await setup_workflow.ainvoke(setup_state)
+        
+        # Update novel state immediately
+        self._update_novel_from_setup_result(result)
+        
+        return result
 
     def get_all_pending_requirements(self) -> Dict[str, List[Requirement]]:
         """
