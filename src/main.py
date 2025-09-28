@@ -1,4 +1,4 @@
-"""Main application module for BabbleFish Translation System."""
+"""Entry point for translator"""
 
 # type hints
 from __future__ import annotations
@@ -7,25 +7,23 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 from src.config import ConfigFactory, Container
-from src.knowledge_graph import KnowledgeGraphManager
-from src.translation_orchestration.novel_processor import NovelTranslator
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 
-async def run_step_by_step_translation():
-    """Example of running step-by-step translation using the task-based approach."""
-
+async def run_complete_translation():
+    """Simple loop: get requirement -> fulfill -> update -> repeat until done."""
+    
     # Initialize container
     config = ConfigFactory.create_config(env="development")
     container = Container()
     await container.set_config(config)
 
-    novel_translator = container.get_novel_translator()
+    novel_processor = container.get_novel_translator()
 
-    # Load a chapter, should have another class for this later
+    # Load a chapter
     file_path = DATA_DIR / "lotm1.txt"
     if not file_path.exists():
         print("No test file found")
@@ -34,64 +32,44 @@ async def run_step_by_step_translation():
     with open(file_path, "r", encoding="UTF-8") as f:
         chapter_text = f.read()
 
-    # Add chapter
-    novel_translator.add_chapters({1: chapter_text})
+    # Add chapter to novel
+    novel_processor.add_chapters({1: chapter_text})
 
     print("=" * 50)
-    print("STEP-BY-STEP TRANSLATION")
+    print("NOVEL PROCESSING - SIMPLE LOOP")
     print("=" * 50)
 
-    # Process tasks one by one
+    # Simple loop: get requirement -> fulfill -> update -> repeat
     task_count = 0
     while True:
-        task = await novel_translator.get_next_task()
-        if not task:
-            print("\nAll tasks completed!")
+        # Get next requirement from novel
+        requirement = novel_processor.get_next_requirement()
+        if not requirement:
+            print("All requirements completed!")
             break
-
+            
         task_count += 1
-        chapter_idx, chapter_text, requirement = task
-
-        print(f"\nTask {task_count}: {requirement.value} for chapter {chapter_idx}")
-
+        chapter_index, chapter_text, requirement_type = requirement
+        
+        print(f"\nTask {task_count}: {requirement_type.value}")
+        if chapter_index == -1:
+            print("Novel-level requirement")
+        else:
+            print(f"Chapter {chapter_index} requirement")
+        
+        # Fulfill the requirement
         try:
-            result = await novel_translator.process_next_task(sample_text=chapter_text)
-            print(f"{requirement.value} completed successfully")
-
-            # Show brief result summary
-            if isinstance(result, dict):
-                if "style_guide" in result:
-                    print(
-                        f"  Generated style guide ({len(result['style_guide'])} characters)"
-                    )
-                if "language" in result:
-                    print(f"  Detected language: {result['language']}")
-                if "genres" in result:
-                    print(f"  Detected genres: {result['genres']}")
-                if "entities" in result:
-                    print(f"  Extracted {len(result.get('entities', []))} entities")
-                if "translation" in result or "fluent_translation" in result:
-                    translation = result.get("fluent_translation") or result.get(
-                        "translation", ""
-                    )
-                    print(f"  Translation generated ({len(translation)} characters)")
-
+            result = await novel_processor.fulfill_requirement(requirement)
+            print(f"Completed: {requirement_type.value}")
         except Exception as e:
-            print(f"{requirement.value} failed: {e}")
-
+            print(f"Failed: {e}")
+            break
+    
     # Show final status
-    status = novel_translator.get_novel_status()
-    print(f"\n" + "=" * 40)
-    print("FINAL STATUS")
-    print("=" * 40)
-    print(f"Setup complete: {status['setup_complete']}")
-    print(
-        f"Chapters ingested: {status['ingested_chapters']}/{status['total_chapters']}"
-    )
-    print(
-        f"Chapters translated: {status['translated_chapters']}/{status['total_chapters']}"
-    )
+    print(f"\nProcessed {task_count} requirements total")
+    novel_processor.print_status()
 
 
 if __name__ == "__main__":
-    asyncio.run(run_step_by_step_translation())
+    # Run complete translation - change to run_step_by_step_translation() for step-by-step mode
+    asyncio.run(run_complete_translation())

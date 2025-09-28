@@ -28,7 +28,6 @@ Translation Phase:
 - **Fluency Editor**: Base text blind index based editing for fluency
 
 ## TODO
-- Architecturally novel processor feels like a mess, remake it
 - Novel factory, takes in text dicts to produce them, probably abstracts loading from epub, txt etc
 - Some kindof non llm based topic modelling, maybe like latent dirichlet allocation? Should work for long texts
 - Maybe change the nodes to all be an implementation of an abstract class for more consistency
@@ -47,6 +46,7 @@ Translation Phase:
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
 
 ## Ticked Off
+- Architecturally novel processor feels like a mess, remake it
 - Translation Orchestrator
 - Get a better prompt so it stops screwing up predicates
 - Entity unification

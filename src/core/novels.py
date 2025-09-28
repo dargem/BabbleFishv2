@@ -110,17 +110,13 @@ class Novel:
 
     def get_task(self) -> Tuple[int, str, Requirement] | None:
         """
-        Identifies the next task needed for novel processing.
-
-        Priority order:
-        1. Novel-level requirements (style guide, genres, language) - these must be done first
-        2. Chapter-level requirements (ingestion, translation) - done per chapter
+        Gets the next requirement that needs to be fulfilled.
+        
+        Simple priority: novel-level requirements first, then chapter-level requirements.
 
         Returns:
-            Tuple of (chapter_index, chapter_original_text, required_task)
-            or None if no tasks are pending
-
-            For novel-level requirements, chapter_index will be -1 to indicate it's novel-wide
+            Tuple of (chapter_index, chapter_text, requirement_type) or None if done
+            chapter_index = -1 for novel-level requirements
         """
 
         # Check novel-level requirements first
@@ -176,3 +172,12 @@ class Novel:
             Requirement.LANGUAGE: lambda n: n.language is None,
         }
         return [req for req, condition in checks.items() if condition(self)]
+
+    def is_complete(self) -> bool:
+        """
+        Check if all requirements for the novel are completed
+        
+        Returns:
+            True if no more requirements remain, False otherwise
+        """
+        return self.get_task() is None
