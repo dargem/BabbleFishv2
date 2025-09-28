@@ -440,5 +440,4 @@ class EntityCreator:
         entities = _entity_schema_decomposer(unparsed_entities)
         new_unified_entities = await self._unify_entities(entities)
         self.kg_manager.update_entities(new_unified_entities)
-        # TODO add unification with the database and entity class later
         return {"entities": new_unified_entities}

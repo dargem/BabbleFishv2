@@ -5,12 +5,31 @@ from typing import TypedDict, List
 from src.core import Entity, InputTriplet, Genre
 
 
+class AnnotationState(TypedDict):
+    """
+    State object for the annotation workflow
+
+    Attributes:
+        text: The original text for annotation
+        text_translation_tagged: The original text with translation name tags inside
+        text_database_tagged: Translation tagged text with translation tags inside
+        header: A header for a chapter informing translation
+    """
+
+    text: str
+    text_translation_tagged: str
+    text_database_tagged: str
+    header: str
+
 class SetupState(TypedDict):
     """
     State object for ingestion workflow
 
     Attributes:
-        text:
+        text: The original text for classification
+        language: Language of the text
+        genres: List of genres of the text
+        style_guide: Description of what a translators style should be
     """
 
     text: str
@@ -42,7 +61,6 @@ class TranslationState(TypedDict):
 
     Attributes:
         text: The original text to be translated
-        language: The detected language of the original text
         translation: The current translation
         fluent_translation: The final fluency-optimized translation
         feedback: Feedback from the junior editor
@@ -50,8 +68,6 @@ class TranslationState(TypedDict):
     """
 
     text: str
-    style_guide: str
-    language: str
     translation: str
     fluent_translation: str
     feedback: str

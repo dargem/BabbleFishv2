@@ -35,9 +35,9 @@ async def run_complete_translation():
     # Add chapter to novel
     novel_processor.add_chapters({1: chapter_text})
 
-    print("=" * 50)
-    print("NOVEL PROCESSING - SIMPLE LOOP")
-    print("=" * 50)
+    print("=" * 30)
+    print("Starting Translation")
+    print("=" *30)
 
     # Simple loop: get requirement -> fulfill -> update -> repeat
     task_count = 0
@@ -45,7 +45,7 @@ async def run_complete_translation():
         # Get next requirement from novel
         requirement = novel_processor.get_next_requirement()
         if not requirement:
-            print("All requirements completed!")
+            print("All requirements completed")
             break
             
         task_count += 1
@@ -65,11 +65,9 @@ async def run_complete_translation():
             print(f"Failed: {e}")
             break
     
-    # Show final status
     print(f"\nProcessed {task_count} requirements total")
     novel_processor.print_status()
 
 
 if __name__ == "__main__":
-    # Run complete translation - change to run_step_by_step_translation() for step-by-step mode
     asyncio.run(run_complete_translation())

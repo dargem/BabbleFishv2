@@ -1,1 +1,1 @@
-"""Test package for BabbleFishv2 translation system."""
+"""Tests for translation system."""
