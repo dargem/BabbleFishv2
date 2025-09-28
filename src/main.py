@@ -77,7 +77,7 @@ async def run_step_by_step_translation():
                     print(f"  Translation generated ({len(translation)} characters)")
 
         except Exception as e:
-            print(f"✗ {requirement.value} failed: {e}")
+            print(f"{requirement.value} failed: {e}")
 
     # Show final status
     status = novel_translator.get_novel_status()
@@ -91,6 +91,7 @@ async def run_step_by_step_translation():
     print(
         f"Chapters translated: {status['translated_chapters']}/{status['total_chapters']}"
     )
+
 
 if __name__ == "__main__":
     asyncio.run(run_step_by_step_translation())
