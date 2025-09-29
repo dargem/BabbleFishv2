@@ -20,6 +20,7 @@ Ingestion Phase:
 - **TODO Tuple Extraction** For tuples since relations may be with themselves, e.g. traits
 
 Annotation Phase:
+- **Entity Replacer** Tags a recognised entity in the text with its match in translation memory
 - **WIP** Add an agent with some tool use for the database
 
 Translation Phase:
@@ -46,6 +47,7 @@ Translation Phase:
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
 
 ## Ticked Off
+- Entity replacer to substitute in Translation Memory Joshua -> Joshua \[Translation Memory 约书亚\]
 - Architecturally novel processor feels like a mess, remake it
 - Translation Orchestrator
 - Get a better prompt so it stops screwing up predicates

@@ -17,7 +17,7 @@ class AnnotationState(TypedDict):
     """
 
     text: str
-    text_translation_tagged: str
+    keyword_replaced_text: str
     text_database_tagged: str
     header: str
 
