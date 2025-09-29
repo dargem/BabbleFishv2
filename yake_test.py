@@ -6,13 +6,13 @@ with open("data/raw/lotm_files/lotm3.txt") as f:
 
 # With custom parameters
 custom_kw_extractor = yake.KeywordExtractor(
-    lan="en",              # language
-    n=1,                   # ngram size
-    dedupLim=0.9,          # deduplication threshold
-    dedupFunc='seqm',      # deduplication function
-    windowsSize=100,         # context window
-    top=10,                # number of keywords to extract
-    features=None          # custom features
+    lan="en",  # language
+    n=1,  # ngram size
+    dedupLim=0.9,  # deduplication threshold
+    dedupFunc="seqm",  # deduplication function
+    windowsSize=100,  # context window
+    top=10,  # number of keywords to extract
+    features=None,  # custom features
 )
 
 keywords = custom_kw_extractor.extract_keywords(text)

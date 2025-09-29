@@ -1,5 +1,3 @@
 """Annotates input text"""
 
-__all__ = [
-    
-]
+__all__ = []

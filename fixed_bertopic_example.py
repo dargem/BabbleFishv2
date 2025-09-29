@@ -1,6 +1,7 @@
 """
 Simple fix for the original BERTopic segmentation fault
 """
+
 import os
 import warnings
 
@@ -31,14 +32,14 @@ docs = [
     "Romance books always make me feel emotional and happy.",
     "Tennis tournament features top ranked players this year.",
     "Government officials announced infrastructure spending plans today.",
-    "Love story movies are perfect for weekend entertainment."
+    "Love story movies are perfect for weekend entertainment.",
 ]
 
 # Your original seed topics
 seed_topic_list = [
-    ["football", "basketball", "sports", "game", "league"],   
-    ["election", "parliament", "politics", "government"],     
-    ["romance", "love", "relationship", "novel", "movie"],    
+    ["football", "basketball", "sports", "game", "league"],
+    ["election", "parliament", "politics", "government"],
+    ["romance", "love", "relationship", "novel", "movie"],
 ]
 
 print("Loading embedding model...")
@@ -51,7 +52,7 @@ topic_model = BERTopic(
     seed_topic_list=seed_topic_list,
     verbose=True,
     calculate_probabilities=False,  # Disable to reduce memory/crash issues
-    low_memory=True,               # Enable low memory mode
+    low_memory=True,  # Enable low memory mode
 )
 
 print("Fitting model...")

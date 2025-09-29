@@ -1,7 +1,6 @@
 from transformers import pipeline
 
-classifier = pipeline("zero-shot-classification",
-                      model="facebook/bart-large-mnli")
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
 
 with open("data/raw/lotm_files/lotm2.txt") as f:
@@ -34,7 +33,7 @@ tags = [
     "science experiments",
     "romance comedy",
     "sports",
-    "futuristic technology"
+    "futuristic technology",
 ]
 
 
@@ -43,7 +42,7 @@ result = classifier(text, tags)
 
 print(result)
 
-for i in range(len(result['scores'])-1):
+for i in range(len(result["scores"]) - 1):
     print("-----tag------")
-    print(result['labels'][i])
-    print(result['scores'][i])
+    print(result["labels"][i])
+    print(result["scores"][i])

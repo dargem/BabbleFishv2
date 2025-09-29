@@ -21,6 +21,7 @@ class AnnotationState(TypedDict):
     text_database_tagged: str
     header: str
 
+
 class SetupState(TypedDict):
     """
     State object for ingestion workflow

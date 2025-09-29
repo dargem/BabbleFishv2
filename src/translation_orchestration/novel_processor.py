@@ -65,77 +65,95 @@ class NovelTranslator:
         # Handle novel-level requirements
         if chapter_index == -1:
             return await self._fulfill_novel_requirement(chapter_text, requirement_type)
-        
-        # Handle chapter-level requirements  
-        return await self._fulfill_chapter_requirement(chapter_index, chapter_text, requirement_type)
 
-    async def _fulfill_novel_requirement(self, sample_text: str, requirement_type: Requirement) -> Dict[str, any]:
+        # Handle chapter-level requirements
+        return await self._fulfill_chapter_requirement(
+            chapter_index, chapter_text, requirement_type
+        )
+
+    async def _fulfill_novel_requirement(
+        self, sample_text: str, requirement_type: Requirement
+    ) -> Dict[str, any]:
         """Fulfill a novel-level requirement (style guide, genres, language)"""
         setup_workflow = self.setup_workflow_factory.create_workflow([requirement_type])
         setup_state = SetupState(text=sample_text)
-        
+
         result = await setup_workflow.ainvoke(setup_state)
-        
+
         # Update novel with result
         if "style_guide" in result and result["style_guide"]:
             self.novel.style_guide = result["style_guide"].strip()
         if "genres" in result and result["genres"]:
-            self.novel.genres = result["genres"]  
+            self.novel.genres = result["genres"]
         if "language" in result and result["language"]:
             self.novel.language = result["language"].strip()
-            
+
         return result
 
-    async def _fulfill_chapter_requirement(self, chapter_index: int, chapter_text: str, requirement_type: Requirement) -> Dict[str, any]:
+    async def _fulfill_chapter_requirement(
+        self, chapter_index: int, chapter_text: str, requirement_type: Requirement
+    ) -> Dict[str, any]:
         """Fulfill a chapter-level requirement (ingestion, translation, etc.)"""
         chapter = self.novel.indexed_chapters[chapter_index]
-        
+
         match requirement_type:
             case Requirement.SUMMARY:
-                chapter.summary = "Generated summary placeholder"  
+                chapter.summary = "Generated summary placeholder"
                 return {"summary": chapter.summary}
-                
+
             case Requirement.INGESTION:
                 ingestion_workflow = self.ingestion_workflow_factory.create_workflow()
-                ingestion_state = IngestionState(text=chapter_text, entities=[], new_entities=[], triplets=[])
+                ingestion_state = IngestionState(
+                    text=chapter_text, entities=[], new_entities=[], triplets=[]
+                )
                 result = await ingestion_workflow.ainvoke(ingestion_state)
                 chapter.ingested_status = True
                 return result
-                
+
             case Requirement.ANNOTATION:
                 chapter.annotated_status = True
                 return {"annotation": "completed"}
-                
+
             case Requirement.TRANSLATION:
-                translation_workflow = self.translation_workflow_factory.create_workflow()
+                translation_workflow = (
+                    self.translation_workflow_factory.create_workflow()
+                )
                 translation_state = TranslationState(
                     text=chapter_text,
                     style_guide=self.novel.style_guide or "",
                     language=self.novel.language or "",
                     translation="",
-                    fluent_translation="", 
+                    fluent_translation="",
                     feedback="",
                     feedback_rout_loops=0,
                 )
                 result = await translation_workflow.ainvoke(translation_state)
-                chapter.translation = result.get("fluent_translation", result.get("translation", ""))
+                chapter.translation = result.get(
+                    "fluent_translation", result.get("translation", "")
+                )
                 return result
-                
+
             case _:
-                raise NotImplementedError(f"Requirement type {requirement_type.value} not implemented")
+                raise NotImplementedError(
+                    f"Requirement type {requirement_type.value} not implemented"
+                )
 
     def print_status(self):
         """Print current novel processing status"""
         total_chapters = len(self.novel.indexed_chapters)
-        ingested = sum(1 for ch in self.novel.indexed_chapters.values() if ch.ingested_status)
-        translated = sum(1 for ch in self.novel.indexed_chapters.values() if ch.translation is not None)
-        
+        ingested = sum(
+            1 for ch in self.novel.indexed_chapters.values() if ch.ingested_status
+        )
+        translated = sum(
+            1
+            for ch in self.novel.indexed_chapters.values()
+            if ch.translation is not None
+        )
+
         print(f"\nFINAL STATUS:")
         print(f"Setup complete: {len(self.novel.get_novel_requirements()) == 0}")
         print(f"Style guide: {'Complete' if self.novel.style_guide else 'Failed'}")
-        print(f"Genres: {self.novel.genres if self.novel.genres else 'Failed'}")  
+        print(f"Genres: {self.novel.genres if self.novel.genres else 'Failed'}")
         print(f"Language: {self.novel.language if self.novel.language else 'Failed'}")
         print(f"Chapters ingested: {ingested}/{total_chapters}")
         print(f"Chapters translated: {translated}/{total_chapters}")
-
-

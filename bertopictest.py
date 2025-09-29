@@ -13,9 +13,9 @@ docs = [
 
 # Define seed topics with guiding words
 seed_topic_list = [
-    ["football", "basketball", "sports", "game", "league"],   # Sports theme
-    ["election", "parliament", "politics", "government"],     # Politics theme
-    ["romance", "love", "relationship", "novel", "movie"],    # Romance theme
+    ["football", "basketball", "sports", "game", "league"],  # Sports theme
+    ["election", "parliament", "politics", "government"],  # Politics theme
+    ["romance", "love", "relationship", "novel", "movie"],  # Romance theme
 ]
 
 # Embedding model (fast + small)
@@ -23,9 +23,7 @@ embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Build BERTopic model with seed guidance
 topic_model = BERTopic(
-    embedding_model=embedding_model,
-    seed_topic_list=seed_topic_list,
-    verbose=True
+    embedding_model=embedding_model, seed_topic_list=seed_topic_list, verbose=True
 )
 
 topics, probs = topic_model.fit_transform(docs)

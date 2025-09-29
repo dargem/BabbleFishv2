@@ -111,7 +111,7 @@ class Novel:
     def get_task(self) -> Tuple[int, str, Requirement] | None:
         """
         Gets the next requirement that needs to be fulfilled.
-        
+
         Simple priority: novel-level requirements first, then chapter-level requirements.
 
         Returns:
@@ -176,7 +176,7 @@ class Novel:
     def is_complete(self) -> bool:
         """
         Check if all requirements for the novel are completed
-        
+
         Returns:
             True if no more requirements remain, False otherwise
         """

@@ -15,7 +15,7 @@ DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 async def run_complete_translation():
     """Simple loop: get requirement -> fulfill -> update -> repeat until done."""
-    
+
     # Initialize container
     config = ConfigFactory.create_config(env="development")
     container = Container()
@@ -37,9 +37,9 @@ async def run_complete_translation():
 
     print("=" * 30)
     print("Starting Translation")
-    print("=" *30)
+    print("=" * 30)
 
-    # Simple loop: get requirement -> fulfill -> update -> repeat
+    # get requirement -> fulfill -> update -> repeat
     task_count = 0
     while True:
         # Get next requirement from novel
@@ -47,16 +47,16 @@ async def run_complete_translation():
         if not requirement:
             print("All requirements completed")
             break
-            
+
         task_count += 1
         chapter_index, chapter_text, requirement_type = requirement
-        
+
         print(f"\nTask {task_count}: {requirement_type.value}")
         if chapter_index == -1:
             print("Novel-level requirement")
         else:
             print(f"Chapter {chapter_index} requirement")
-        
+
         # Fulfill the requirement
         try:
             result = await novel_processor.fulfill_requirement(requirement)
@@ -64,7 +64,7 @@ async def run_complete_translation():
         except Exception as e:
             print(f"Failed: {e}")
             break
-    
+
     print(f"\nProcessed {task_count} requirements total")
     novel_processor.print_status()
 
