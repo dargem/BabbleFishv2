@@ -11,7 +11,7 @@ class AnnotationState(TypedDict):
 
     Attributes:
         text: The original text for annotation
-        text_translation_tagged: The original text with translation name tags inside
+        keyword_replaced_text: The original text with translation name tags inside
         text_database_tagged: Translation tagged text with translation tags inside
         header: A header for a chapter informing translation
     """
