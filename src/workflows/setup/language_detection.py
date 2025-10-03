@@ -13,7 +13,7 @@ class LanguageDetector:
     """Detects the language of input text"""
 
     def __init__(self):
-        print("loaded detector")
+        print("Loading detector")
 
         self.languages_mapped = {lang.value: lang.name for lang in LanguageType}
 

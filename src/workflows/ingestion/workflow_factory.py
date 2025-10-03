@@ -1,14 +1,7 @@
 """Factory for creating Ingestion Workflows"""
 
-# type hints
-from __future__ import annotations
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.providers import LLMProvider
-    from src.knowledge_graph import KnowledgeGraphManager
-
-# imports
+from src.providers import LLMProvider
+from src.knowledge_graph import KnowledgeGraphManager
 from langgraph.graph import StateGraph, END, START
 from ..states import IngestionState
 from . import (

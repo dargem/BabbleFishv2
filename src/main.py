@@ -35,9 +35,9 @@ async def run_complete_translation():
     # Add chapter to novel
     novel_processor.add_chapters({1: chapter_text})
 
-    print("=" * 30)
+    print("=" * 20)
     print("Starting Translation")
-    print("=" * 30)
+    print("=" * 20)
 
     # get requirement -> fulfill -> update -> repeat
     task_count = 0

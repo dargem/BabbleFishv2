@@ -62,6 +62,7 @@ class TranslationState(TypedDict):
 
     Attributes:
         text: The original text to be translated
+        language: The original texts language
         translation: The current translation
         fluent_translation: The final fluency-optimized translation
         feedback: Feedback from the junior editor
@@ -69,6 +70,7 @@ class TranslationState(TypedDict):
     """
 
     text: str
+    language: str
     translation: str
     fluent_translation: str
     feedback: str

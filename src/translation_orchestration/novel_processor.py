@@ -118,6 +118,7 @@ class NovelTranslator:
                 translation_workflow = (
                     self.translation_workflow_factory.create_workflow()
                 )
+                print(self.novel.language)
                 translation_state = TranslationState(
                     text=chapter_text,
                     style_guide=self.novel.style_guide or "",
