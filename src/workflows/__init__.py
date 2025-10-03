@@ -1,9 +1,11 @@
 """Workflow orchestration and state management"""
 
 from .states import TranslationState, IngestionState, SetupState, AnnotationState
-from .translation.workflow_factory import TranslationWorkflowFactory
-from .ingestion.workflow_factory import IngestionWorkflowFactory
-from .setup.workflow_factory import SetupWorkflowFactory
+from .workflow_factory import (
+    TranslationWorkflowFactory,
+    IngestionWorkflowFactory,
+    SetupWorkflowFactory,
+)
 
 __all__ = [
     "TranslationState",

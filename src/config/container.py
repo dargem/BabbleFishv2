@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Callable
 from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
-from src.workflows import (
+from src.workflows.workflow_factory import (
     IngestionWorkflowFactory,
     TranslationWorkflowFactory,
     SetupWorkflowFactory,

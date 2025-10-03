@@ -2,12 +2,12 @@
 
 import unittest
 
-from workflows.translation.workflow_factory import (
+from workflows.workflow_factory.translation_workflow_factory import (
     route_preloads,
     route_junior_pass,
     route_increment_exceed,
 )
-from src.workflows.translation.routing import inc_translate_feedback_node
+from src.workflows.translation_nodes.routing import inc_translate_feedback_node
 from tests.base import BaseTranslationTest
 
 

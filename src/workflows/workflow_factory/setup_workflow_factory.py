@@ -7,11 +7,11 @@ from typing import List
 from src.providers import LLMProvider
 from langgraph.graph import StateGraph, END, START
 from src.core import Requirement
-from . import LanguageDetector, StyleAnalyzer, GenreDetector
+from ..setup_nodes import LanguageDetector, StyleAnalyzer, GenreDetector
 from src.workflows import SetupState
+from . import AbstractWorkflowFactory
 
-
-class SetupWorkflowFactory:
+class SetupWorkflowFactory(AbstractWorkflowFactory):
     """Factory for creating flexible setup workflows"""
 
     def __init__(self, llm_provider: LLMProvider):

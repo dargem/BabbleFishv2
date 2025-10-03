@@ -3,14 +3,14 @@
 from src.providers import LLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 from langgraph.graph import StateGraph, END, START
-from ..states import IngestionState
-from . import (
+from src.workflows.states import IngestionState
+from src.workflows.ingestion_nodes import (
     EntityCreator,
     TripletCreator,
 )
+from . import AbstractWorkflowFactory
 
-
-class IngestionWorkflowFactory:
+class IngestionWorkflowFactory(AbstractWorkflowFactory):
     """Factory for creating ingestion workflows"""
 
     def __init__(self, llm_provider: LLMProvider, kg_manager: KnowledgeGraphManager):

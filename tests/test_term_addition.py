@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from workflows.ingestion.term_creator import entity_addition_node
+from workflows.ingestion_nodes.term_creator import entity_addition_node
 from tests.base import MockLLMTestCase
 from tests.fixtures import CHINESE_SAMPLE_TEXT
 

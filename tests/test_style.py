@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from workflows.setup.style import style_node
+from workflows.setup_nodes.style import style_node
 from tests.base import MockLLMTestCase
 from tests.fixtures import CHINESE_SAMPLE_TEXT, MOCK_STYLE_GUIDE
 

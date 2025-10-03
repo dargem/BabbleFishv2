@@ -3,12 +3,13 @@ from src.providers import LLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 from langgraph.graph import StateGraph, START, END
 from src.workflows import AnnotationState
-from . import (
+from src.workflows.annotation_nodes import (
     EntityAnnotator, 
     HeaderCreator,
 )
+from . import AbstractWorkflowFactory
 
-class AnnotationWorkflowFactory:
+class AnnotationWorkflowFactory(AbstractWorkflowFactory):
     """
     Creates annotation workflows
     """
@@ -44,7 +45,3 @@ class AnnotationWorkflowFactory:
         workflow.add_edge("header_creator", END)
 
         return workflow.compile()
-
-
-
-

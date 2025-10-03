@@ -11,7 +11,7 @@ Agentic translation system, an attempted implementation of (Perhaps) Beyond Huma
 Setup Phase:
 - **Language detection** Lingua for detection
 - **Styleguide Creation** Creates a styleguide for future translation
-- **Genre Tagging** Tags text with choices from the genre enum
+- **Genre Tagging** Tags text with choices from the set genre enum
 - **TODO Topic Tags** Use some topic modelling approach
 
 Ingestion Phase:
@@ -47,6 +47,7 @@ Translation Phase:
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
 
 ## Ticked Off
+- Abstract class workflow factories inherit from
 - Entity replacer to substitute in Translation Memory Joshua -> Joshua \[Translation Memory 约书亚\]
 - Architecturally novel processor feels like a mess, remake it
 - Translation Orchestrator

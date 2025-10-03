@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch, Mock
 import os
 
-from workflows.translation.workflow_factory import create_translation_workflow
+from workflows.workflow_factory.translation_workflow_factory import create_translation_workflow
 from tests.base import BaseTranslationTest
 from tests.fixtures import CHINESE_SAMPLE_TEXT
 

@@ -12,8 +12,9 @@ from src.knowledge_graph import KnowledgeGraphManager
 from src.providers import LLMProvider
 from langgraph.graph import StateGraph, END, START
 from ..states import TranslationState
+from . import AbstractWorkflowFactory
 
-from . import (
+from ..translation_nodes import (
     Translator,
     JuniorEditor,
     FluencyEditor,
@@ -26,7 +27,7 @@ LANGUAGE_NEEDED = "language needed"
 CONTINUE = "continue"
 
 
-class TranslationWorkflowFactory:
+class TranslationWorkflowFactory(AbstractWorkflowFactory):
     """Factory for creating translation workflows"""
 
     def __init__(
