@@ -79,9 +79,7 @@ class Container:
 
 
         self._providers[NovelTranslator] = lambda c: NovelTranslator(
-            setup_workflow_factory=c.get(SetupWorkflowFactory),
-            ingestion_workflow_factory=c.get(IngestionWorkflowFactory),
-            translation_workflow_factory=c.get(TranslationWorkflowFactory),
+            workflow_registry=c.get(WorkflowRegistry),
         )
 
 
@@ -118,6 +116,10 @@ class Container:
         if novel:
             translator.novel = novel
         return translator
+
+    def get_workflow_registry(self):
+        """Get a WorkflowRegistry instance"""
+        return self.get(WorkflowRegistry)
 
     async def health_check(self):
         """

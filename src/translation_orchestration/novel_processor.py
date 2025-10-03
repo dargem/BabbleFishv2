@@ -1,35 +1,24 @@
-from typing import List, Dict, Optional, Callable, Any
+from typing import Dict, Optional, Any
 from src.core import Novel, Requirement
-from src.workflows.states import SetupState, IngestionState, TranslationState
-from src.workflows import (
-    SetupWorkflowFactory,
-    IngestionWorkflowFactory,
-    TranslationWorkflowFactory,
-)
+from src.translation_orchestration.workflow_registry import WorkflowRegistry, RequirementExecutionContext
 
 
 class NovelTranslator:
-    """Simple orchestrator: get requirement -> fulfill -> update -> repeat until done"""
+    """Simplified orchestrator using workflow registry: get requirement -> fulfill -> update -> repeat until done"""
 
     def __init__(
         self,
-        setup_workflow_factory: SetupWorkflowFactory,
-        ingestion_workflow_factory: IngestionWorkflowFactory,
-        translation_workflow_factory: TranslationWorkflowFactory,
+        workflow_registry: WorkflowRegistry,
         novel: Optional[Novel] = None,
     ):
         """
-        Constructor with proper dependency injection
+        Constructor with workflow registry dependency injection
 
         Args:
-            setup_workflow_factory: Factory for creating setup workflows
-            ingestion_workflow_factory: Factory for creating ingestion workflows
-            translation_workflow_factory: Factory for creating translation workflows
+            workflow_registry: Registry for managing and executing workflows
             novel: Optional preloaded novel object to continue translation on
         """
-        self.setup_workflow_factory = setup_workflow_factory
-        self.ingestion_workflow_factory = ingestion_workflow_factory
-        self.translation_workflow_factory = translation_workflow_factory
+        self.workflow_registry = workflow_registry
         self.novel = novel if novel else Novel()
 
     def add_chapters(self, indexed_chapters: Dict[int, str]):
@@ -52,7 +41,7 @@ class NovelTranslator:
 
     async def fulfill_requirement(self, requirement: tuple) -> Dict[str, any]:
         """
-        Fulfills a single requirement and updates the novel accordingly
+        Fulfills a single requirement using the workflow registry
 
         Args:
             requirement: Tuple of (chapter_index, chapter_text, requirement_type)
@@ -62,82 +51,61 @@ class NovelTranslator:
         """
         chapter_index, chapter_text, requirement_type = requirement
 
-        # Handle novel-level requirements
-        if chapter_index == -1:
-            return await self._fulfill_novel_requirement(chapter_text, requirement_type)
-
-        # Handle chapter-level requirements
-        return await self._fulfill_chapter_requirement(
-            chapter_index, chapter_text, requirement_type
+        # Create execution context with novel context for chapter-level requirements
+        novel_context = {
+            "style_guide": self.novel.style_guide,
+            "genres": self.novel.genres,
+            "language": self.novel.language,
+        }
+        
+        context = RequirementExecutionContext(
+            chapter_index=chapter_index,
+            chapter_text=chapter_text,
+            requirement_type=requirement_type,
+            novel_context=novel_context
         )
 
-    async def _fulfill_novel_requirement(
-        self, sample_text: str, requirement_type: Requirement
-    ) -> Dict[str, any]:
-        """Fulfill a novel-level requirement (style guide, genres, language)"""
-        setup_workflow = self.setup_workflow_factory.create_workflow([requirement_type])
-        setup_state = SetupState(text=sample_text)
+        # Execute using workflow registry
+        result = await self.workflow_registry.execute_requirement(context)
 
-        result = await setup_workflow.ainvoke(setup_state)
-
-        # Update novel with result
-        if "style_guide" in result and result["style_guide"]:
-            self.novel.style_guide = result["style_guide"].strip()
-        if "genres" in result and result["genres"]:
-            self.novel.genres = result["genres"]
-        if "language" in result and result["language"]:
-            self.novel.language = result["language"].strip()
+        # Update novel state based on requirement type and result
+        await self._update_novel_state(chapter_index, requirement_type, result)
 
         return result
 
-    async def _fulfill_chapter_requirement(
-        self, chapter_index: int, chapter_text: str, requirement_type: Requirement
-    ) -> Dict[str, any]:
-        """Fulfill a chapter-level requirement (ingestion, translation, etc.)"""
-        chapter = self.novel.indexed_chapters[chapter_index]
+    async def _update_novel_state(self, chapter_index: int, requirement_type: Requirement, result: Dict[str, Any]) -> None:
+        """
+        Update the novel state based on the requirement execution result
 
+        Args:
+            chapter_index: Index of the chapter (-1 for novel-level)
+            requirement_type: Type of requirement that was fulfilled
+            result: Result from requirement execution
+        """
+        # Handle novel-level requirements
+        if chapter_index == -1:
+            if requirement_type == Requirement.STYLE_GUIDE and "style_guide" in result:
+                self.novel.style_guide = result["style_guide"].strip() if result["style_guide"] else None
+            elif requirement_type == Requirement.GENRES and "genres" in result:
+                self.novel.genres = result["genres"]
+            elif requirement_type == Requirement.LANGUAGE and "language" in result:
+                self.novel.language = result["language"].strip() if result["language"] else None
+            return
+
+        # Handle chapter-level requirements
+        chapter = self.novel.indexed_chapters[chapter_index]
+        
         match requirement_type:
             case Requirement.SUMMARY:
-                chapter.summary = "Generated summary placeholder"
-                return {"summary": chapter.summary}
-
+                chapter.summary = result.get("summary")
             case Requirement.INGESTION:
-                ingestion_workflow = self.ingestion_workflow_factory.create_workflow()
-                ingestion_state = IngestionState(
-                    text=chapter_text, entities=[], new_entities=[], triplets=[]
-                )
-                result = await ingestion_workflow.ainvoke(ingestion_state)
                 chapter.ingested_status = True
-                return result
-
             case Requirement.ANNOTATION:
                 chapter.annotated_status = True
-                return {"annotation": "completed"}
-
             case Requirement.TRANSLATION:
-                translation_workflow = (
-                    self.translation_workflow_factory.create_workflow()
-                )
-                print(self.novel.language)
-                translation_state = TranslationState(
-                    text=chapter_text,
-                    style_guide=self.novel.style_guide or "",
-                    language=self.novel.language or "",
-                    translation="",
-                    fluent_translation="",
-                    feedback="",
-                    feedback_rout_loops=0,
-                )
-                result = await translation_workflow.ainvoke(translation_state)
-                chapter.translation = result.get(
-                    "fluent_translation", result.get("translation", "")
-                )
-                return result
-
+                chapter.translation = result.get("fluent_translation", result.get("translation", ""))
             case _:
-                raise NotImplementedError(
-                    f"Requirement type {requirement_type.value} not implemented"
-                )
+                pass  # Unknown requirement type, no state update needed
 
     def print_status(self):
         """Print current novel processing status"""
