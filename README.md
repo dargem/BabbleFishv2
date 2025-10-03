@@ -32,6 +32,7 @@ Translation Phase:
 - Novel factory, takes in text dicts to produce them, probably abstracts loading from epub, txt etc
 - Some kindof non llm based topic modelling, maybe like latent dirichlet allocation? Should work for long texts
 - Maybe change the nodes to all be an implementation of an abstract class for more consistency
+- Change workflow factories to maybe use a registry to collate them all together or have them all inherit from a abstract class at least
 - Embeddings with entity descriptions
 - More database queries BM25, community clustering, etc
 - Setup phase creates domain specific edge types
@@ -41,7 +42,6 @@ Translation Phase:
 - Include batch processing capabilities
 - Add metrics and monitoring
 - Implement different editorial personas, probably need to abstract nodes using a registry for this
-- Abstract nodes using a registry pattern
 - Fix github workflow
 - 2 fold triplet extraction, also for attribute based triplets (or tuples maybe is more accurate?)
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A

@@ -18,7 +18,8 @@ class IngestionWorkflowFactory:
         self.kg_manager = kg_manager
 
     def create_workflow(self):
-        """Create and compile the ingestion workflow
+        """
+        Create and compile the ingestion workflow
 
         Returns:
             Compiled ingestion workflow for use

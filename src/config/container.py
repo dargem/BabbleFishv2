@@ -9,7 +9,8 @@ from src.workflows import (
 )
 from src.knowledge_graph import KnowledgeGraphManager, Neo4jConnection
 from .schemas import AppConfig
-
+from src.translation_orchestration.novel_processor import NovelTranslator
+from src.translation_orchestration.workflow_registry import WorkflowRegistry
 
 class Container:
     """Dependency injection container using a registry of providers."""
@@ -76,8 +77,6 @@ class Container:
             else c.get(MockLLMProvider),
         )
 
-        # Register NovelTranslator with proper dependency injection
-        from src.translation_orchestration.novel_processor import NovelTranslator
 
         self._providers[NovelTranslator] = lambda c: NovelTranslator(
             setup_workflow_factory=c.get(SetupWorkflowFactory),
@@ -85,8 +84,6 @@ class Container:
             translation_workflow_factory=c.get(TranslationWorkflowFactory),
         )
 
-        # Register WorkflowRegistry with proper dependency injection
-        from src.translation_orchestration.workflow_registry import WorkflowRegistry
 
         self._providers[WorkflowRegistry] = lambda c: WorkflowRegistry(
             setup_factory=c.get(SetupWorkflowFactory),
@@ -112,15 +109,6 @@ class Container:
         instance = self._providers[key](self)
         self._instances[key] = instance
         return instance
-
-    def get_setup_workflow(self, requirements):
-        return self.get(SetupWorkflowFactory).create_workflow(requirements)
-
-    def get_ingestion_workflow(self):
-        return self.get(IngestionWorkflowFactory).create_workflow()
-
-    def get_translation_workflow(self):
-        return self.get(TranslationWorkflowFactory).create_workflow()
 
     def get_novel_translator(self, novel=None):
         """Get a NovelTranslator instance with optional novel"""

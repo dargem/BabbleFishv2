@@ -120,7 +120,7 @@ class TripletMetadata:
         if self.additional_props is None:
             self.additional_props = {}
 
-    def to_neo4j_props(self) -> Dict[str, Any]:  # TODO add metadata !
+    def to_neo4j_props(self) -> Dict[str, Any]:
         """Convert metadata to Neo4j relationship properties"""
         props = {"chapter_idx": self.chapter_idx}
 
