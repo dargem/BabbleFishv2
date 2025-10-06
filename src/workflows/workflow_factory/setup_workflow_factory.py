@@ -1,51 +1,41 @@
 """Factory for creating setup workflows"""
 
-# maybe doesn't need to be factory prob one and done possibly
-from typing import List
-
 # imports
 from src.providers import LLMProvider
 from langgraph.graph import StateGraph, END, START
-from src.core import Requirement
 from ..setup_nodes import LanguageDetector, StyleAnalyzer, GenreDetector
 from src.workflows import SetupState
 from . import AbstractWorkflowFactory
 
 class SetupWorkflowFactory(AbstractWorkflowFactory):
-    """Factory for creating flexible setup workflows"""
+    """Factory for creating setup workflows that perform all setup tasks"""
 
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
 
-    def create_workflow(self, requirements: List[Requirement]) -> StateGraph:
+    def create_workflow(self) -> StateGraph:
+        """
+        Create a complete setup workflow that analyzes language, style, and genres
+        
+        Returns:
+            Compiled setup workflow that performs all setup requirements
+        """
         workflow = StateGraph(SetupState)
 
-        # adds needed nodes according to requirements
-        nodes = {}
-        for requirement in requirements:
-            # matches auto break in python
-            match requirement:
-                case Requirement.STYLE_GUIDE:
-                    nodes["style_analyzer"] = StyleAnalyzer(
-                        self.llm_provider
-                    ).analyze_style
-                case Requirement.GENRES:
-                    nodes["genre_detector"] = GenreDetector(
-                        self.llm_provider
-                    ).find_genres
-                case Requirement.LANGUAGE:
-                    nodes["language_detector"] = LanguageDetector().detect_language
-                case _:
-                    raise NotImplementedError(
-                        f"The requirement {requirement.value} is not found"
-                    )
+        # Create all setup nodes - we do everything in setup
+        language_detector = LanguageDetector()
+        style_analyzer = StyleAnalyzer(self.llm_provider)
+        genre_detector = GenreDetector(self.llm_provider)
 
-        last_reference = START
-        # Generates a simple path
-        for reference, function in nodes.items():
-            workflow.add_node(reference, function)
-            workflow.add_edge(last_reference, reference)
-            last_reference = reference
-        workflow.add_edge(last_reference, END)
+        # Add nodes
+        workflow.add_node("language_detector", language_detector.detect_language)
+        workflow.add_node("style_analyzer", style_analyzer.analyze_style)
+        workflow.add_node("genre_detector", genre_detector.find_genres)
+
+        # Create sequential flow: language -> style -> genres
+        workflow.add_edge(START, "language_detector")
+        workflow.add_edge("language_detector", "style_analyzer")
+        workflow.add_edge("style_analyzer", "genre_detector")
+        workflow.add_edge("genre_detector", END)
 
         return workflow.compile()

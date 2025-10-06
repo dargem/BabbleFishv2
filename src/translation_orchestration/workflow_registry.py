@@ -60,9 +60,7 @@ class WorkflowRegistry:
         
         # Define requirement-to-workflow mapping
         self._requirement_workflow_map = {
-            Requirement.STYLE_GUIDE: WorkflowType.SETUP,
-            Requirement.GENRES: WorkflowType.SETUP,
-            Requirement.LANGUAGE: WorkflowType.SETUP,
+            Requirement.SETUP: WorkflowType.SETUP,
             Requirement.INGESTION: WorkflowType.INGESTION,
             Requirement.TRANSLATION: WorkflowType.TRANSLATION,
             Requirement.ANNOTATION: WorkflowType.ANNOTATION,
@@ -117,7 +115,7 @@ class WorkflowRegistry:
         if workflow_type != WorkflowType.SETUP:
             raise ValueError(f"Novel-level requirements must use SETUP workflow, got {workflow_type}")
         
-        workflow = self.get_workflow(WorkflowType.SETUP, requirements=[context.requirement_type])
+        workflow = self.get_workflow(WorkflowType.SETUP)
         state = SetupState(text=context.chapter_text)
         
         return await workflow.ainvoke(state)
@@ -189,8 +187,7 @@ class WorkflowRegistry:
         """
         match workflow_type:
             case WorkflowType.SETUP:
-                requirements = kwargs.get("requirements", [])
-                return self.setup_factory.create_workflow(requirements)
+                return self.setup_factory.create_workflow()
 
             case WorkflowType.INGESTION:
                 return self.ingestion_factory.create_workflow()
@@ -231,19 +228,13 @@ class WorkflowRegistry:
 
         Args:
             workflow_type: Type of workflow
-            **kwargs: Additional parameters
+            **kwargs: Additional parameters (currently unused)
 
         Returns:
             Cache key string
         """
-        key_parts = [workflow_type.value]
-
-        if workflow_type == WorkflowType.SETUP and "requirements" in kwargs:
-            # Sort requirements for consistent cache keys
-            req_names = sorted([req.value for req in kwargs["requirements"]])
-            key_parts.extend(req_names)
-
-        return "|".join(key_parts)
+        # Since all workflows now take no parameters, cache key is just the workflow type
+        return workflow_type.value
 
     def clear_cache(self):
         """Clear the workflow cache"""
@@ -271,10 +262,8 @@ class WorkflowRegistry:
         results = {}
 
         try:
-            # Test setup workflow with minimal requirements
-            setup_wf = self.get_workflow(
-                WorkflowType.SETUP, requirements=[Requirement.LANGUAGE]
-            )
+            # Test setup workflow
+            setup_wf = self.get_workflow(WorkflowType.SETUP)
             results[WorkflowType.SETUP.value] = setup_wf is not None
         except Exception:
             results[WorkflowType.SETUP.value] = False

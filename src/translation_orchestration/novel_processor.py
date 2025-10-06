@@ -84,12 +84,9 @@ class NovelTranslator:
         """
         # Handle novel-level requirements
         if chapter_index == -1:
-            if requirement_type == Requirement.STYLE_GUIDE and "style_guide" in result:
-                self.novel.style_guide = result["style_guide"].strip() if result["style_guide"] else None
-            elif requirement_type == Requirement.GENRES and "genres" in result:
-                self.novel.genres = result["genres"]
-            elif requirement_type == Requirement.LANGUAGE and "language" in result:
-                self.novel.language = result["language"].strip() if result["language"] else None
+            self.novel.style_guide = result["style_guide"].strip() if result["style_guide"] else None
+            self.novel.genres = result["genres"]
+            self.novel.language = result["language"].strip() if result["language"] else None
             return
 
         # Handle chapter-level requirements
@@ -120,7 +117,7 @@ class NovelTranslator:
         )
 
         print(f"\nFINAL STATUS:")
-        print(f"Setup complete: {len(self.novel.get_novel_requirements()) == 0}")
+        print(f"Setup complete: {True if self.novel._get_novel_requirements() else False}")
         print(f"Style guide: {'Complete' if self.novel.style_guide else 'Failed'}")
         print(f"Genres: {self.novel.genres if self.novel.genres else 'Failed'}")
         print(f"Language: {self.novel.language if self.novel.language else 'Failed'}")

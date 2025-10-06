@@ -48,9 +48,7 @@ class Genre(Enum):
 
 class Requirement(Enum):
     # Novel Based
-    STYLE_GUIDE = "Style Guide"
-    GENRES = "Genres"
-    LANGUAGE = "Language"
+    SETUP = "Setup"
     # Chapter Based
     ANNOTATION = "Annotation"
     INGESTION = "Ingestion"
@@ -74,6 +72,7 @@ class Chapter:
         returns:
             List of enums representing required processing
         """
+
         # Insertion order is maintained in 3.7+, prioritises the first check first
         checks = {
             Requirement.SUMMARY: lambda c: c.summary is None,
@@ -120,14 +119,14 @@ class Novel:
         """
 
         # Check novel-level requirements first
-        novel_requirements = self.get_novel_requirements()
-        if novel_requirements:
+        novel_requirement = self._get_novel_requirements()
+        if novel_requirement:
             # Use first chapter text as sample for novel-level analysis
             if self.indexed_chapters:
                 # Get the first chapter (by key order, not by assuming positive indices)
                 first_chapter_idx = sorted(self.indexed_chapters.keys())[0]
                 first_chapter_text = self.indexed_chapters[first_chapter_idx].original
-                return (-1, first_chapter_text, novel_requirements[0])
+                return (-1, first_chapter_text, novel_requirement)
             else:
                 # No chapters loaded yet
                 return None
@@ -159,7 +158,7 @@ class Novel:
                 new_chapters[index] = chapter_str
         return new_chapters
 
-    def get_novel_requirements(self) -> List[Requirement]:
+    def _get_novel_requirements(self) -> List[Requirement]:
         """
         Get the novel-level requirements (style guide, genres, language)
 
@@ -167,11 +166,14 @@ class Novel:
             List of novel-level requirements that are not yet completed
         """
         checks = {
-            Requirement.STYLE_GUIDE: lambda n: n.style_guide is None,
-            Requirement.GENRES: lambda n: n.genres is None,
-            Requirement.LANGUAGE: lambda n: n.language is None,
+            lambda n: n.style_guide is None,
+            lambda n: n.genres is None,
+            lambda n: n.language is None,
         }
-        return [req for req, condition in checks.items() if condition(self)]
+        for condition in checks:
+            if condition(self):
+                return Requirement.SETUP
+        return False
 
     def is_complete(self) -> bool:
         """
