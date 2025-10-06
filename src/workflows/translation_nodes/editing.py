@@ -5,11 +5,14 @@ from __future__ import annotations
 from src.providers import LLMProvider
 
 # imports
+import logging
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import TranslationState
 from src.utils import parse_tagged_content, format_text_with_tags, reconstruct_text
 from textwrap import dedent
+
+logger = logging.getLogger(__name__)
 
 
 class JuniorEditor:
@@ -27,7 +30,7 @@ class JuniorEditor:
         Returns:
             Dictionary with feedback
         """
-        print("Junior editor reviewing...")
+        logger.debug("Junior editor reviewing translation")
 
         prompt = PromptTemplate(
             input_variables=["text", "translation"],
@@ -70,7 +73,7 @@ class FluencyEditor:
         Returns:
             Dictionary with fluent translation
         """
-        print("Improving fluency...")
+        logger.debug("Improving translation fluency")
 
         # Split text into paragraphs and create indexed format
         split_text = state["translation"].split("\n\n")

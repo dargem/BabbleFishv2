@@ -23,7 +23,10 @@ from src.providers import LLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 
 # imports
+import logging
 from ..states import IngestionState
+
+logger = logging.getLogger(__name__)
 from src.core import (
     TemporalType,
     StatementType,
@@ -118,7 +121,7 @@ class TripletCreator:
     async def create_triplets(
         self, state: IngestionState
     ) -> dict[str, List[InputTriplet]]:
-        print("Finding triplets...")
+        logger.debug("Extracting triplets from text")
 
         prompt = PromptTemplate(
             input_variables=["text"],

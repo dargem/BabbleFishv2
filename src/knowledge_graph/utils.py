@@ -1,14 +1,10 @@
-"""Utilities for knowledge graph operations"""
+"""Utility functions for knowledge graph operations"""
 
-from typing import List, Dict, Any, Tuple, Optional
-from src.core import (
-    Entity,
-    OutputTriplet,
-    EntityType,
-    TripletMetadata,
-    NameEntry,
-    Direction,
-)
+import logging
+from typing import List, Dict, Any, Optional, Tuple
+from src.core import Entity, OutputTriplet, EntityType, NameEntry, TripletMetadata
+
+logger = logging.getLogger(__name__)
 
 
 def create_entity_from_neo4j_data(data: Dict[str, Any]) -> Entity:
@@ -103,22 +99,17 @@ def get_name_translations_from_neo4j_data(data: Dict[str, Any]) -> Dict[str, str
     return {}
 
 
-def print_entity_with_translations(entity: Entity) -> None:
-    """
-    Print an entity with all its name-translation pairs
-
-    Args:
-        entity: Entity to print
-    """
-    print(f"\n{entity.entity_type.value}: {entity.description}")
-    print("Names and translations:")
+def print_entity_details(entity: Entity) -> None:
+    """Print detailed information about an entity for debugging"""
+    logger.info("%s: %s", entity.entity_type.value, entity.description)
+    logger.info("Names and translations:")
     for name_entry in entity.names:
         status = "weak" if name_entry.is_weak else "strong"
-        print(f"  '{name_entry.name}' → '{name_entry.translation}' ({status})")
-
+        logger.info("  '%s' → '%s' (%s)", name_entry.name, name_entry.translation, status)
+    
     if entity.chapter_idx:
-        chapters = ", ".join(map(str, entity.chapter_idx))
-        print(f"Appears in chapters: {chapters}")
+        chapters = ", ".join(map(str, sorted(entity.chapter_idx)))
+        logger.info("Appears in chapters: %s", chapters)
 
 
 def create_entity_from_dict(data: Dict[str, Any]) -> Entity:
@@ -174,7 +165,7 @@ def check_not_incoming(triplet_data: Dict[str, Any]) -> Dict[str, Any]:
     Retruns:
         Boolean if ingoing
     """
-    print(triplet_data["direction"])
+    logger.debug("Triplet direction: %s", triplet_data["direction"])
     return triplet_data["direction"] != "incoming"
 
 

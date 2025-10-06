@@ -1,6 +1,9 @@
+import logging
 from typing import Dict, Optional, Any
 from src.core import Novel, Requirement
 from src.translation_orchestration.workflow_registry import WorkflowRegistry, RequirementExecutionContext
+
+logger = logging.getLogger(__name__)
 
 
 class NovelTranslator:
@@ -105,7 +108,7 @@ class NovelTranslator:
                 pass  # Unknown requirement type, no state update needed
 
     def print_status(self):
-        """Print current novel processing status"""
+        """Log current novel processing status"""
         total_chapters = len(self.novel.indexed_chapters)
         ingested = sum(
             1 for ch in self.novel.indexed_chapters.values() if ch.ingested_status
@@ -116,10 +119,10 @@ class NovelTranslator:
             if ch.translation is not None
         )
 
-        print(f"\nFINAL STATUS:")
-        print(f"Setup complete: {True if self.novel._get_novel_requirements() else False}")
-        print(f"Style guide: {'Complete' if self.novel.style_guide else 'Failed'}")
-        print(f"Genres: {self.novel.genres if self.novel.genres else 'Failed'}")
-        print(f"Language: {self.novel.language if self.novel.language else 'Failed'}")
-        print(f"Chapters ingested: {ingested}/{total_chapters}")
-        print(f"Chapters translated: {translated}/{total_chapters}")
+        logger.info("FINAL STATUS:")
+        logger.info("Setup complete: %s", True if self.novel._get_novel_requirements() else False)
+        logger.info("Style guide: %s", 'Complete' if self.novel.style_guide else 'Failed')
+        logger.info("Genres: %s", self.novel.genres if self.novel.genres else 'Failed')
+        logger.info("Language: %s", self.novel.language if self.novel.language else 'Failed')
+        logger.info("Chapters ingested: %d/%d", ingested, total_chapters)
+        logger.info("Chapters translated: %d/%d", translated, total_chapters)

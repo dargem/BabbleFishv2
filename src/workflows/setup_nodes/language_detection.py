@@ -4,16 +4,19 @@
 from __future__ import annotations
 
 # imports
+import logging
 from ..states import SetupState
 from lingua import LanguageDetectorBuilder, Language
 from src.core import LanguageType
+
+logger = logging.getLogger(__name__)
 
 
 class LanguageDetector:
     """Detects the language of input text"""
 
     def __init__(self):
-        print("Loading detector")
+        logger.debug("Initializing language detector")
 
         self.languages_mapped = {lang.value: lang.name for lang in LanguageType}
 
@@ -30,7 +33,7 @@ class LanguageDetector:
         Returns:
             Dictionary with detected language
         """
-        print("Detecting language...")
+        logger.debug("Detecting language for text of length %d", len(state["text"]))
 
         detected = self.detector.detect_language_of(state["text"])
         return {"language": self.languages_mapped[detected]}

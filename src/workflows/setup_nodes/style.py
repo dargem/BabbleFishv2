@@ -5,10 +5,13 @@ from __future__ import annotations
 from src.providers import LLMProvider
 
 # imports
+import logging
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import SetupState
 from textwrap import dedent
+
+logger = logging.getLogger(__name__)
 
 
 class StyleAnalyzer:
@@ -26,7 +29,7 @@ class StyleAnalyzer:
         Returns:
             Dictionary with style guide
         """
-        print("Generating style guide...")
+        logger.debug("Generating style guide for text of length %d", len(state["text"]))
 
         template = dedent("""
         You are a highly experienced literary analyst and editor. Your task is to provide a detailed style guide for a fiction text, which will be used to ensure consistency and fidelity during translation.

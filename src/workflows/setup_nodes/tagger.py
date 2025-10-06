@@ -1,5 +1,6 @@
 """Creates tags for a novels input"""
 
+import logging
 import numpy as np
 import scipy.sparse as ss
 import matplotlib.pyplot as plt
@@ -11,11 +12,13 @@ from src.providers import LLMProvider
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 
+logger = logging.getLogger(__name__)
+
 
 class Tagger:
     def __init__(self, llm_provider: LLMProvider):
         self.llm_provider = llm_provider
-        print("loading spacy....")
+        logger.debug("Loading spaCy model")
         self.nlp = spacy.load("en_core_web_sm")
 
     def tag_text(self, chapters: List[str]) -> List[str]:
@@ -41,33 +44,33 @@ class Tagger:
         doc_word = vectorizer.fit_transform(documents_nouns_only)
         doc_word = ss.csr_matrix(doc_word)
 
-        print(f"Document-term matrix shape: {doc_word.shape}")  # n_docs x m_words
+        logger.debug("Document-term matrix shape: %s", doc_word.shape)  # n_docs x m_words
 
         # Get words that label the columns (needed to extract readable topics and make anchoring easier)
         words = list(np.asarray(vectorizer.get_feature_names_out()))
-        print(f"Total vocabulary size (nouns): {len(words)}")
-        print(f"Sample nouns in vocabulary: {words[:20]}")
+        logger.debug("Total vocabulary size (nouns): %d", len(words))
+        logger.debug("Sample nouns in vocabulary: %s", words[:20])
 
         # Count noun frequency across all documents to see most common nouns
-        print(f"\nMost common nouns across all documents:")
+        logger.debug("Most common nouns across all documents:")
         all_nouns_text = " ".join(documents_nouns_only)
         noun_counts = Counter(all_nouns_text.split())
         for noun, count in noun_counts.most_common(15):
             if len(noun) >= 3:  # Only show substantial words
-                print(f"  {noun}: {count} occurrences")
+                logger.debug("  %s: %d occurrences", noun, count)
 
         not_digit_inds = [ind for ind, word in enumerate(words) if not word.isdigit()]
         doc_word = doc_word[:, not_digit_inds]
         words = [word for word in words.values() if not word.isdigit()]
 
-        print(f"shape is n_docs x m_words: {doc_word.shape}")
+        logger.debug("Document-term matrix shape: %s", doc_word.shape)
 
-        print("training model...")
+        logger.debug("Training topic model...")
         topic_model = ct.Corex(
             n_hidden=50, words=words, max_iter=200, verbose=False, seed=1
         )
         topic_model.fit(doc_word, words=words)
-        print(topic_model.get_topics(topic=1, n_words=10))
+        logger.debug("Topic model results: %s", topic_model.get_topics(topic=1, n_words=10))
 
         # Print all topics from the CorEx topic model
         text = ""
@@ -77,9 +80,9 @@ class Tagger:
                 topic_words, _, _ = zip(*topic)
                 for word in topic_words:
                     text += word + " "
-                print("{}: ".format(n) + ", ".join(topic_words))
+                logger.debug("Topic %d: %s", n, ", ".join(topic_words))
             else:
-                print("{}: (empty topic)".format(n))
+                logger.debug("Topic %d: (empty topic)", n)
 
     def _extract_nouns_from_text(self, text: str, max_length=15) -> str:
         """

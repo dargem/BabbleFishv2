@@ -5,10 +5,13 @@ from __future__ import annotations
 from src.providers import LLMProvider
 
 # imports
+import logging
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from ..states import TranslationState
 from textwrap import dedent
+
+logger = logging.getLogger(__name__)
 
 
 class Translator:
@@ -26,7 +29,7 @@ class Translator:
         Returns:
             Dictionary with the translation
         """
-        print("Translating text...")
+        logger.debug("Translating text from %s to English", state["language"])
 
         base_template = dedent("""
         You are a professional translator specialising in fiction. 

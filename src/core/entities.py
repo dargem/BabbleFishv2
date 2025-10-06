@@ -1,8 +1,11 @@
 """Node based data models"""
 
+import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 
 class EntityType(Enum):
@@ -88,7 +91,7 @@ class Entity:
 
     def merge_entity(self, entity: "Entity"):
         """Combines another entity with itself"""
-        print(f"merging entity {entity.names[0].name} with {self.names[0].name}")
+        logger.debug("Merging entity %s with %s", entity.names[0].name, self.names[0].name)
         current_names = {name_entry.name for name_entry in self.names}
         for name_entry in entity.names:
             if name_entry.name not in current_names:

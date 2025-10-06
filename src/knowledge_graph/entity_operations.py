@@ -288,16 +288,20 @@ class EntityOperations:
         if rel_info["outgoing"]:
             # Use dynamic query construction for relationship type
             query = f"""
-            MATCH (new_e:Entity), (other)
-            WHERE elementId(new_e) = $new_id AND elementId(other) = $other_id
+            MATCH (new_e:Entity)
+            WHERE elementId(new_e) = $new_id
+            MATCH (other)
+            WHERE elementId(other) = $other_id
             CREATE (new_e)-[r:`{rel_type}`]->(other)
             SET r = $rel_props
             RETURN r
             """
         else:
             query = f"""
-            MATCH (new_e:Entity), (other)
-            WHERE elementId(new_e) = $new_id AND elementId(other) = $other_id
+            MATCH (new_e:Entity)
+            WHERE elementId(new_e) = $new_id
+            MATCH (other)
+            WHERE elementId(other) = $other_id
             CREATE (other)-[r:`{rel_type}`]->(new_e)
             SET r = $rel_props
             RETURN r

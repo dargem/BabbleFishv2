@@ -17,7 +17,7 @@ from .utils import (
     get_triplet_summary,
     detect_potential_duplicates,
     get_name_translations_from_neo4j_data,
-    print_entity_with_translations,
+    print_entity_details,
 )
 
 __all__ = [
@@ -39,5 +39,5 @@ __all__ = [
     "get_triplet_summary",
     "detect_potential_duplicates",
     "get_name_translations_from_neo4j_data",
-    "print_entity_with_translations",
+    "print_entity_details",
 ]

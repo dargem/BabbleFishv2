@@ -1,19 +1,26 @@
-"""entity addition node for the translation workflow"""
+"""Entity creation for ingestion workflow"""
 
 # type hints
 from __future__ import annotations
-from src.providers import LLMProvider
-from src.knowledge_graph import KnowledgeGraphManager
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    pass
 
 # imports
+import logging
+import networkx as nx
+from typing import List, Dict, Optional
+from src.providers import LLMProvider
+from src.knowledge_graph import KnowledgeGraphManager
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
-from typing import List, Dict, Set
-from ..states import IngestionState
-from src.core import Entity, NameEntry, EntityType
-import networkx as nx
+from src.core import Entity, EntityType, NameEntry
+from src.workflows.states import IngestionState
 from textwrap import dedent
+
+logger = logging.getLogger(__name__)
 
 
 class TermTranslation(BaseModel):
@@ -229,7 +236,7 @@ class EntityCreator:
         Returns:
             Dictionary with nodes + reasoning
         """
-        print("Finding terms...")
+        logger.debug("Extracting entities from text")
 
         template = dedent("""
         You are a translator tasked with Named Entity Reconition, identifying named terms in the following text.
