@@ -7,6 +7,7 @@ from ..setup_nodes import LanguageDetector, StyleAnalyzer, GenreDetector
 from src.workflows import SetupState
 from . import AbstractWorkflowFactory
 
+
 class SetupWorkflowFactory(AbstractWorkflowFactory):
     """Factory for creating setup workflows that perform all setup tasks"""
 
@@ -16,7 +17,7 @@ class SetupWorkflowFactory(AbstractWorkflowFactory):
     def create_workflow(self) -> StateGraph:
         """
         Create a complete setup workflow that analyzes language, style, and genres
-        
+
         Returns:
             Compiled setup workflow that performs all setup requirements
         """

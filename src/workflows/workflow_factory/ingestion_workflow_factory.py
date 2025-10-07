@@ -10,6 +10,7 @@ from src.workflows.ingestion_nodes import (
 )
 from . import AbstractWorkflowFactory
 
+
 class IngestionWorkflowFactory(AbstractWorkflowFactory):
     """Factory for creating ingestion workflows"""
 

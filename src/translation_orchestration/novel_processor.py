@@ -1,7 +1,10 @@
 import logging
 from typing import Dict, Optional, Any
 from src.core import Novel, Requirement
-from src.translation_orchestration.workflow_registry import WorkflowRegistry, RequirementExecutionContext
+from src.translation_orchestration.workflow_registry import (
+    WorkflowRegistry,
+    RequirementExecutionContext,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +63,12 @@ class NovelTranslator:
             "genres": self.novel.genres,
             "language": self.novel.language,
         }
-        
+
         context = RequirementExecutionContext(
             chapter_index=chapter_index,
             chapter_text=chapter_text,
             requirement_type=requirement_type,
-            novel_context=novel_context
+            novel_context=novel_context,
         )
 
         # Execute using workflow registry
@@ -76,7 +79,9 @@ class NovelTranslator:
 
         return result
 
-    async def _update_novel_state(self, chapter_index: int, requirement_type: Requirement, result: Dict[str, Any]) -> None:
+    async def _update_novel_state(
+        self, chapter_index: int, requirement_type: Requirement, result: Dict[str, Any]
+    ) -> None:
         """
         Update the novel state based on the requirement execution result
 
@@ -87,14 +92,21 @@ class NovelTranslator:
         """
         # Handle novel-level requirements
         if chapter_index == -1:
-            self.novel.style_guide = result["style_guide"].strip() if result["style_guide"] else None
+            self.novel.style_guide = (
+                result["style_guide"].strip() if result["style_guide"] else None
+            )
+            logger.info(self.novel.style_guide)
             self.novel.genres = result["genres"]
-            self.novel.language = result["language"].strip() if result["language"] else None
+            logger.info(self.novel.genres)
+            self.novel.language = (
+                result["language"].strip() if result["language"] else None
+            )
+            logger.info(self.novel.language)
             return
 
         # Handle chapter-level requirements
         chapter = self.novel.indexed_chapters[chapter_index]
-        
+
         match requirement_type:
             case Requirement.SUMMARY:
                 chapter.summary = result.get("summary")
@@ -103,7 +115,9 @@ class NovelTranslator:
             case Requirement.ANNOTATION:
                 chapter.annotated_status = True
             case Requirement.TRANSLATION:
-                chapter.translation = result.get("fluent_translation", result.get("translation", ""))
+                chapter.translation = result.get(
+                    "fluent_translation", result.get("translation", "")
+                )
             case _:
                 pass  # Unknown requirement type, no state update needed
 
@@ -120,9 +134,15 @@ class NovelTranslator:
         )
 
         logger.info("FINAL STATUS:")
-        logger.info("Setup complete: %s", True if self.novel._get_novel_requirements() else False)
-        logger.info("Style guide: %s", 'Complete' if self.novel.style_guide else 'Failed')
-        logger.info("Genres: %s", self.novel.genres if self.novel.genres else 'Failed')
-        logger.info("Language: %s", self.novel.language if self.novel.language else 'Failed')
+        logger.info(
+            "Setup complete: %s", False if self.novel.get_novel_requirements() else True
+        )
+        logger.info(
+            "Style guide: %s", "Complete" if self.novel.style_guide else "Failed"
+        )
+        logger.info("Genres: %s", self.novel.genres if self.novel.genres else "Failed")
+        logger.info(
+            "Language: %s", self.novel.language if self.novel.language else "Failed"
+        )
         logger.info("Chapters ingested: %d/%d", ingested, total_chapters)
         logger.info("Chapters translated: %d/%d", translated, total_chapters)

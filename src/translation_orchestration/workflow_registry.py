@@ -22,13 +22,13 @@ class WorkflowType(Enum):
 
 class RequirementExecutionContext:
     """Context object containing information needed to execute a requirement"""
-    
+
     def __init__(
         self,
         chapter_index: int,
         chapter_text: str,
         requirement_type: Requirement,
-        novel_context: Optional[Dict[str, Any]] = None
+        novel_context: Optional[Dict[str, Any]] = None,
     ):
         self.chapter_index = chapter_index
         self.chapter_text = chapter_text
@@ -57,7 +57,7 @@ class WorkflowRegistry:
         self.ingestion_factory = ingestion_factory
         self.translation_factory = translation_factory
         self._workflow_cache: Dict[str, Any] = {}
-        
+
         # Define requirement-to-workflow mapping
         self._requirement_workflow_map = {
             Requirement.SETUP: WorkflowType.SETUP,
@@ -67,7 +67,9 @@ class WorkflowRegistry:
             Requirement.SUMMARY: None,  # Handled directly, no workflow needed
         }
 
-    def get_workflow_for_requirement(self, requirement: Requirement) -> Optional[WorkflowType]:
+    def get_workflow_for_requirement(
+        self, requirement: Requirement
+    ) -> Optional[WorkflowType]:
         """
         Get the workflow type needed for a specific requirement
 
@@ -79,7 +81,9 @@ class WorkflowRegistry:
         """
         return self._requirement_workflow_map.get(requirement)
 
-    async def execute_requirement(self, context: RequirementExecutionContext) -> Dict[str, Any]:
+    async def execute_requirement(
+        self, context: RequirementExecutionContext
+    ) -> Dict[str, Any]:
         """
         Execute a requirement using the appropriate workflow
 
@@ -90,49 +94,56 @@ class WorkflowRegistry:
             Dictionary containing the execution result
         """
         workflow_type = self.get_workflow_for_requirement(context.requirement_type)
-        
+
         if workflow_type is None:
             # Handle requirements that don't need workflows (like SUMMARY)
             return await self._handle_direct_requirement(context)
-        
+
         # Handle novel-level vs chapter-level requirements
         if context.chapter_index == -1:
             return await self._execute_novel_requirement(context, workflow_type)
         else:
             return await self._execute_chapter_requirement(context, workflow_type)
 
-    async def _handle_direct_requirement(self, context: RequirementExecutionContext) -> Dict[str, Any]:
+    async def _handle_direct_requirement(
+        self, context: RequirementExecutionContext
+    ) -> Dict[str, Any]:
         """Handle requirements that don't need a workflow"""
         if context.requirement_type == Requirement.SUMMARY:
             return {"summary": "Generated summary placeholder"}
         elif context.requirement_type == Requirement.ANNOTATION:
             return {"annotation": "completed"}
         else:
-            raise NotImplementedError(f"Direct requirement handling for {context.requirement_type.value} not implemented")
+            raise NotImplementedError(
+                f"Direct requirement handling for {context.requirement_type.value} not implemented"
+            )
 
-    async def _execute_novel_requirement(self, context: RequirementExecutionContext, workflow_type: WorkflowType) -> Dict[str, Any]:
+    async def _execute_novel_requirement(
+        self, context: RequirementExecutionContext, workflow_type: WorkflowType
+    ) -> Dict[str, Any]:
         """Execute a novel-level requirement"""
         if workflow_type != WorkflowType.SETUP:
-            raise ValueError(f"Novel-level requirements must use SETUP workflow, got {workflow_type}")
-        
+            raise ValueError(
+                f"Novel-level requirements must use SETUP workflow, got {workflow_type}"
+            )
+
         workflow = self.get_workflow(WorkflowType.SETUP)
         state = SetupState(text=context.chapter_text)
-        
+
         return await workflow.ainvoke(state)
 
-    async def _execute_chapter_requirement(self, context: RequirementExecutionContext, workflow_type: WorkflowType) -> Dict[str, Any]:
+    async def _execute_chapter_requirement(
+        self, context: RequirementExecutionContext, workflow_type: WorkflowType
+    ) -> Dict[str, Any]:
         """Execute a chapter-level requirement"""
         match workflow_type:
             case WorkflowType.INGESTION:
                 workflow = self.get_workflow(WorkflowType.INGESTION)
                 state = IngestionState(
-                    text=context.chapter_text,
-                    entities=[],
-                    new_entities=[],
-                    triplets=[]
+                    text=context.chapter_text, entities=[], new_entities=[], triplets=[]
                 )
                 return await workflow.ainvoke(state)
-                
+
             case WorkflowType.TRANSLATION:
                 workflow = self.get_workflow(WorkflowType.TRANSLATION)
                 state = TranslationState(
@@ -145,13 +156,15 @@ class WorkflowRegistry:
                     feedback_rout_loops=0,
                 )
                 return await workflow.ainvoke(state)
-                
+
             case WorkflowType.ANNOTATION:
                 # TODO: Implement annotation workflow when factory is available
                 return {"annotation": "completed"}
-                
+
             case _:
-                raise ValueError(f"Unknown workflow type for chapter requirement: {workflow_type}")
+                raise ValueError(
+                    f"Unknown workflow type for chapter requirement: {workflow_type}"
+                )
 
     def get_workflow(self, workflow_type: WorkflowType, **kwargs) -> Any:
         """
@@ -202,7 +215,9 @@ class WorkflowRegistry:
             case _:
                 raise ValueError(f"Unknown workflow type: {workflow_type}")
 
-    def get_requirements_for_workflow(self, workflow_type: WorkflowType) -> List[Requirement]:
+    def get_requirements_for_workflow(
+        self, workflow_type: WorkflowType
+    ) -> List[Requirement]:
         """
         Get all requirements that use a specific workflow type
 
@@ -212,7 +227,11 @@ class WorkflowRegistry:
         Returns:
             List of requirements that use this workflow
         """
-        return [req for req, wf_type in self._requirement_workflow_map.items() if wf_type == workflow_type]
+        return [
+            req
+            for req, wf_type in self._requirement_workflow_map.items()
+            if wf_type == workflow_type
+        ]
 
     def get_all_workflow_types(self) -> List[WorkflowType]:
         """Get all available workflow types"""

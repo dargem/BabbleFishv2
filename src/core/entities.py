@@ -91,7 +91,9 @@ class Entity:
 
     def merge_entity(self, entity: "Entity"):
         """Combines another entity with itself"""
-        logger.debug("Merging entity %s with %s", entity.names[0].name, self.names[0].name)
+        logger.debug(
+            "Merging entity %s with %s", entity.names[0].name, self.names[0].name
+        )
         current_names = {name_entry.name for name_entry in self.names}
         for name_entry in entity.names:
             if name_entry.name not in current_names:

@@ -59,9 +59,10 @@ class TripletOperations:
         """Transaction to add multiple triplets"""
         query = """
         UNWIND $triplets AS triplet_data
-        MATCH (subject:Entity), (object:Entity)
-        WHERE triplet_data.subject_name IN subject.all_names 
-        AND triplet_data.object_name IN object.all_names
+        MATCH (subject:Entity)
+        WHERE triplet_data.subject_name IN subject.all_names
+        MATCH (object:Entity)
+        WHERE triplet_data.object_name IN object.all_names
         MERGE (subject)-[r:RELATES {predicate: triplet_data.predicate}]->(object)
         ON CREATE SET r += triplet_data.metadata
         RETURN COUNT(r) AS created

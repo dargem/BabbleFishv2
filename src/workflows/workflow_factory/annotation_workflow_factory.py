@@ -1,18 +1,21 @@
 """Factory for annotation workflows"""
+
 from src.providers import LLMProvider
 from src.knowledge_graph import KnowledgeGraphManager
 from langgraph.graph import StateGraph, START, END
 from src.workflows import AnnotationState
 from src.workflows.annotation_nodes import (
-    EntityAnnotator, 
+    EntityAnnotator,
     HeaderCreator,
 )
 from . import AbstractWorkflowFactory
+
 
 class AnnotationWorkflowFactory(AbstractWorkflowFactory):
     """
     Creates annotation workflows
     """
+
     def __init__(self, llm_provider: LLMProvider, kg: KnowledgeGraphManager):
         """
         Args:
@@ -36,7 +39,10 @@ class AnnotationWorkflowFactory(AbstractWorkflowFactory):
         workflow = StateGraph(AnnotationState)
 
         # Add nodes
-        workflow.add_node("entity_translation_annotator", self.entity_annotator.inject_entity_translations)
+        workflow.add_node(
+            "entity_translation_annotator",
+            self.entity_annotator.inject_entity_translations,
+        )
         workflow.add_node("header_creator", self.header_creator.create_header)
 
         # Link nodes

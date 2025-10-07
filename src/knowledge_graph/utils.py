@@ -105,8 +105,10 @@ def print_entity_details(entity: Entity) -> None:
     logger.info("Names and translations:")
     for name_entry in entity.names:
         status = "weak" if name_entry.is_weak else "strong"
-        logger.info("  '%s' → '%s' (%s)", name_entry.name, name_entry.translation, status)
-    
+        logger.info(
+            "  '%s' → '%s' (%s)", name_entry.name, name_entry.translation, status
+        )
+
     if entity.chapter_idx:
         chapters = ", ".join(map(str, sorted(entity.chapter_idx)))
         logger.info("Appears in chapters: %s", chapters)

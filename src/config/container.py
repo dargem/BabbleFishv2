@@ -12,6 +12,7 @@ from .schemas import AppConfig
 from src.translation_orchestration.novel_processor import NovelTranslator
 from src.translation_orchestration.workflow_registry import WorkflowRegistry
 
+
 class Container:
     """Dependency injection container using a registry of providers."""
 
@@ -77,11 +78,9 @@ class Container:
             else c.get(MockLLMProvider),
         )
 
-
         self._providers[NovelTranslator] = lambda c: NovelTranslator(
             workflow_registry=c.get(WorkflowRegistry),
         )
-
 
         self._providers[WorkflowRegistry] = lambda c: WorkflowRegistry(
             setup_factory=c.get(SetupWorkflowFactory),

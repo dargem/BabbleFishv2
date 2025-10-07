@@ -10,7 +10,7 @@ from pathlib import Path
 from src.config import ConfigFactory, Container
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
@@ -64,7 +64,9 @@ async def run_complete_translation():
             result = await novel_processor.fulfill_requirement(requirement)
             logger.info("Completed: %s", requirement_type.value)
         except Exception as e:
-            logger.error("Failed to process requirement %s: %s", requirement_type.value, e)
+            logger.error(
+                "Failed to process requirement %s: %s", requirement_type.value, e
+            )
             break
 
     logger.info("Processed %d requirements total", task_count)

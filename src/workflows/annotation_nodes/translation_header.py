@@ -8,11 +8,14 @@ from src.workflows.states import AnnotationState
 from typing import Dict, List
 from flashtext import KeywordProcessor
 
+
 class HeaderCreator:
     def __init__(self, kg: KnowledgeGraphManager):
         self.kg = kg
-    
-    def _get_matches(self, entity_name_lists: List[List[str]], text:str) -> Dict[str,List[str]]:
+
+    def _get_matches(
+        self, entity_name_lists: List[List[str]], text: str
+    ) -> Dict[str, List[str]]:
         """
         Args:
             kp: Keyword processor object
@@ -36,15 +39,14 @@ class HeaderCreator:
                 output_dic[name_based[match]] = []
             output_dic[name_based[match]].append(match)
         return output_dic
-        
 
-    def create_header(self, state: AnnotationState) -> Dict[str,str]:
+    def create_header(self, state: AnnotationState) -> Dict[str, str]:
         """
         Creates a header for the translation incorporating the graphical knowledge-bases info
 
         Args:
             state: Current state of the translation
-        
+
         Returns:
             Dict containing the header all in one value, entity info + relation info inside it
         """

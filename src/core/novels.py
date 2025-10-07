@@ -119,7 +119,7 @@ class Novel:
         """
 
         # Check novel-level requirements first
-        novel_requirement = self._get_novel_requirements()
+        novel_requirement = self.get_novel_requirements()
         if novel_requirement:
             # Use first chapter text as sample for novel-level analysis
             if self.indexed_chapters:
@@ -158,7 +158,7 @@ class Novel:
                 new_chapters[index] = chapter_str
         return new_chapters
 
-    def _get_novel_requirements(self) -> List[Requirement]:
+    def get_novel_requirements(self) -> List[Requirement]:
         """
         Get the novel-level requirements (style guide, genres, language)
 

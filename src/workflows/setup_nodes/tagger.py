@@ -44,7 +44,9 @@ class Tagger:
         doc_word = vectorizer.fit_transform(documents_nouns_only)
         doc_word = ss.csr_matrix(doc_word)
 
-        logger.debug("Document-term matrix shape: %s", doc_word.shape)  # n_docs x m_words
+        logger.debug(
+            "Document-term matrix shape: %s", doc_word.shape
+        )  # n_docs x m_words
 
         # Get words that label the columns (needed to extract readable topics and make anchoring easier)
         words = list(np.asarray(vectorizer.get_feature_names_out()))
@@ -70,7 +72,9 @@ class Tagger:
             n_hidden=50, words=words, max_iter=200, verbose=False, seed=1
         )
         topic_model.fit(doc_word, words=words)
-        logger.debug("Topic model results: %s", topic_model.get_topics(topic=1, n_words=10))
+        logger.debug(
+            "Topic model results: %s", topic_model.get_topics(topic=1, n_words=10)
+        )
 
         # Print all topics from the CorEx topic model
         text = ""
