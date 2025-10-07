@@ -21,7 +21,7 @@ class Tagger:
         self.nlp_provider = nlp_provider
         logger.debug("Tagger initialized with shared NLP provider")
 
-    def tag_text(self, state: SetupState) -> List[str]:
+    def _tag_text(self, state: SetupState) -> List[str]:
         """
         Args:
             state: Current setup state
@@ -145,10 +145,9 @@ class Tagger:
             return state
         
         # Use the tag_text method which expects the full state
-        tags = self.tag_text(state)
-        state["tags"] = tags
+        tags = self._tag_text(state)
         logger.info("Added %d tags to setup state", len(tags))
-        return state
+        return {"tags": tags}
 
     def _extract_nouns_from_text(self, text: str, max_length=15) -> str:
         """

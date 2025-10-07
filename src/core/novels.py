@@ -16,7 +16,6 @@ class LanguageType(Enum):
     SPANISH = Language.SPANISH
     FRENCH = Language.FRENCH
 
-
 class Genre(Enum):
     ACTION = "Action"
     ADVENTURE = "Adventure"

@@ -4,7 +4,9 @@ import threading
 import logging
 from typing import Dict, Any
 import spacy
+from src.core import LanguageType
 from spacy.language import Language
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +21,58 @@ class NLPProvider:
     """
     
     def __init__(self):
-        self._models: Dict[str, Language] = {}
+        self._models: Dict[LanguageType, Language] = {}
         self._lock = threading.Lock()
         logger.debug("NLPProvider initialized")
     
-    def get_model(self, model_name: str = "en_core_web_sm") -> Language:
+    def _load_model(self, language: LanguageType):
+        """
+        Called when the NLP Provider doesn't have a model for the needed language
+
+        Args:
+            language: Language enum that the provider needs a model for
+        """
+
+        LANGUAGE_CODE_MAP = {
+            LanguageType.ENGLISH: "en",
+            LanguageType.CHINESE: "zh",
+            LanguageType.JAPANESE: "ja",
+            LanguageType.KOREAN: "ko",
+            LanguageType.SPANISH: "es",
+            LanguageType.FRENCH: "fr",
+        }
+
+
+    def lemmatize_text(self, text_list: List[str], language: LanguageType) -> List[str]:
+        """
+        Lemmatises inputted list of str
+
+        Args:
+            text_list: List of strings for processing
+            language: LanguageType enum to determine language for needed model
+
+        Returns:
+            List of lemmatised input strings
+        """
+        pass
+
+    def extract_nouns(self, text_list: List[str], language: LanguageType) -> List[str]:
+        """
+        Extracts only nouns from the inputted list of str
+
+        Args:
+            text_list: List of strings for processing
+            language: LanguageType enum to determine language for needed model
+
+        Returns:
+            List of only nouns from input strings
+        """
+        pass
+
+
+
+
+    def get_model(self, language: LanguageType) -> Language:
         """Get a spaCy model, loading it if necessary.
         
         Args:
@@ -35,13 +84,13 @@ class NLPProvider:
         Raises:
             OSError: If the model cannot be loaded
         """
-        if model_name not in self._models:
+        if language not in self._models:
             with self._lock:
                 # Double-check pattern to avoid race conditions
-                if model_name not in self._models:
-                    logger.info(f"Loading spaCy model: {model_name}")
+                if language not in self._models:
+                    logger.info(f"Loading spaCy model: {language}")
                     try:
-                        self._models[model_name] = spacy.load(model_name)
+                        self._models[language] = spacy.load(model_name)
                         logger.debug(f"Successfully loaded spaCy model: {model_name}")
                     except OSError as e:
                         logger.error(f"Failed to load spaCy model {model_name}: {e}")
