@@ -71,6 +71,11 @@ class NovelTranslator:
             novel_context=novel_context,
         )
 
+        if context.chapter_index == -1:
+            # This is a novel level requirement, needs full text
+            # temp solution should change to something better later
+            context.all_chapters = self.novel.all_chapter_text
+    
         # Execute using workflow registry
         result = await self.workflow_registry.execute_requirement(context)
 
@@ -95,7 +100,7 @@ class NovelTranslator:
             self.novel.style_guide = (
                 result["style_guide"].strip() if result["style_guide"] else None
             )
-            logger.info(self.novel.style_guide)
+            logger.info(self.novel.style_guide[0:100] + "...")
             self.novel.genres = result["genres"]
             logger.info(self.novel.genres)
             self.novel.language = (

@@ -183,3 +183,11 @@ class Novel:
             True if no more requirements remain, False otherwise
         """
         return self.get_task() is None
+
+    @property
+    def all_chapter_text(self) -> List[str]:
+        """
+        Returns:
+            text from all chapters
+        """
+        return [chapter.original for chapter in self.indexed_chapters.values()]

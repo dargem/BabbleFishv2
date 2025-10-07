@@ -30,7 +30,9 @@ Translation Phase:
 
 ## TODO
 - Novel factory, takes in text dicts to produce them, probably abstracts loading from epub, txt etc
-- Some kindof non llm based topic modelling, maybe like latent dirichlet allocation? Should work for long texts
+- Create nlp provider which does language configurable POS tagging, lemmatisation etc for preprocessing
+- Tagging using corextopic for topic modelling, potentially seed it then use llm to classify topics
+- Try other approaches with keyword extraction after preprocessing
 - Maybe change the nodes to all be an implementation of an abstract class for more consistency
 - Embeddings with entity descriptions
 - More database queries BM25, community clustering, etc

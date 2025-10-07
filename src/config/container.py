@@ -1,7 +1,7 @@
 """Simple dependency injection container"""
 
 from typing import Any, Dict, Callable
-from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider
+from src.providers import APIKeyManager, GoogleLLMProvider, MockLLMProvider, NLPProvider
 from src.workflows.workflow_factory import (
     IngestionWorkflowFactory,
     TranslationWorkflowFactory,
@@ -32,6 +32,8 @@ class Container:
             api_keys=config.llm.api_keys,
             max_usage_per_key=config.llm.max_requests_per_key,
         )
+
+        self._providers[NLPProvider] = lambda c: NLPProvider()
 
         self._providers[GoogleLLMProvider] = lambda c: GoogleLLMProvider(
             api_key_manager=c.get(APIKeyManager),
@@ -76,6 +78,7 @@ class Container:
             c.get(GoogleLLMProvider)
             if config.environment != "testing"
             else c.get(MockLLMProvider),
+            c.get(NLPProvider),
         )
 
         self._providers[NovelTranslator] = lambda c: NovelTranslator(

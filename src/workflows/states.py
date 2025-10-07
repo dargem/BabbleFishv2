@@ -15,7 +15,6 @@ class AnnotationState(TypedDict):
         text_database_tagged: Translation tagged text with translation tags inside
         header: A header for a chapter informing translation
     """
-
     text: str
     keyword_replaced_text: str
     text_database_tagged: str
@@ -24,19 +23,22 @@ class AnnotationState(TypedDict):
 
 class SetupState(TypedDict):
     """
-    State object for ingestion workflow
+    State object for setup workflow
 
     Attributes:
         text: The original text for classification
         language: Language of the text
         genres: List of genres of the text
         style_guide: Description of what a translators style should be
+        tags: List of content tags extracted from the text
+        all_chapters: List of all chapters for novel-level processing
     """
-
     text: str
     language: str
-    genres: List[Genre] = None
-    style_guide: str = None
+    genres: List[Genre]
+    style_guide: str
+    tags: List[str]
+    all_chapters: List[str]
 
 
 class IngestionState(TypedDict):
