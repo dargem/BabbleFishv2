@@ -75,7 +75,7 @@ class NovelTranslator:
             # This is a novel level requirement, needs full text
             # temp solution should change to something better later
             context.all_chapters = self.novel.all_chapter_text
-    
+
         # Execute using workflow registry
         result = await self.workflow_registry.execute_requirement(context)
 

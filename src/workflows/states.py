@@ -15,6 +15,7 @@ class AnnotationState(TypedDict):
         text_database_tagged: Translation tagged text with translation tags inside
         header: A header for a chapter informing translation
     """
+
     text: str
     keyword_replaced_text: str
     text_database_tagged: str
@@ -33,6 +34,7 @@ class SetupState(TypedDict):
         tags: List of content tags extracted from the text
         all_chapters: List of all chapters for novel-level processing
     """
+
     text: str
     language: LanguageType
     genres: List[Genre]

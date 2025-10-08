@@ -30,7 +30,6 @@ class SetupWorkflowFactory(AbstractWorkflowFactory):
         genre_detector = GenreDetector(self.llm_provider)
         tagger = Tagger(self.llm_provider, self.nlp_provider)
 
-
         # Add nodes
         workflow.add_node("language_detector", language_detector.detect_language)
         workflow.add_node("style_analyzer", style_analyzer.analyze_style)

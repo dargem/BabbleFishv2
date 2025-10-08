@@ -131,7 +131,7 @@ class WorkflowRegistry:
 
         workflow = self.get_workflow(WorkflowType.SETUP)
         state = SetupState(
-            text=context.chapter_text or "", 
+            text=context.chapter_text or "",
             all_chapters=context.all_chapters or [],
             language="",  # Will be detected by workflow
             genres=[],  # Will be detected by workflow

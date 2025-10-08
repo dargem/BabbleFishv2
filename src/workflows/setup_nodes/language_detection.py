@@ -43,11 +43,13 @@ class LanguageDetector:
             if lang_type.value == detected:
                 language_type = lang_type
                 break
-        
+
         if language_type is None:
-            logger.warning("Detected language %s not supported, defaulting to English", detected)
+            logger.warning(
+                "Detected language %s not supported, defaulting to English", detected
+            )
             language_type = LanguageType.ENGLISH
-        
+
         logger.info("Detected language: %s", language_type)
         return {"language": language_type}
 

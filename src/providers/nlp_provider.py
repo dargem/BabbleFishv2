@@ -17,20 +17,12 @@ class NLPProvider:
     Proviedes text preprocessing services
     Lazy loads models when needed
     """
-    
+
     def __init__(self):
         self._models: Dict[LanguageType, Language] = {}
-        self._lock = threading.Lock()
         logger.debug("NLPProvider initialized")
-    
-    def _load_model(self, language: LanguageType):
-        """
-        Called when the NLP Provider doesn't have a model for the needed language
 
-        Args:
-            language: Language enum that the provider needs a model for
-        """
-        LANGUAGE_CODE_MAP = {
+        self._LANGUAGE_CODE_MAP = {
             LanguageType.ENGLISH: "en",
             LanguageType.CHINESE: "zh",
             LanguageType.JAPANESE: "ja",
@@ -39,10 +31,18 @@ class NLPProvider:
             LanguageType.FRENCH: "fr",
         }
 
+    def _load_model(self, language: LanguageType):
+        """
+        Called when the NLP Provider doesn't have a model for the needed language
+
+        Args:
+            language: Language enum that the provider needs a model for
+        """
+
         # options are sm, md, lg and trf, some trf are missing dep on lang
         logging.info("Loading spacy model for lang %s", language)
-        model = "%s_core_web_%s" % (LANGUAGE_CODE_MAP[language], "sm")
-        
+        model = "%s_core_web_%s" % (self._LANGUAGE_CODE_MAP[language], "sm")
+
         try:
             nlp = spacy.load(model)
             logging.info("Spacy model for lang %s loaded", language)
@@ -55,8 +55,10 @@ class NLPProvider:
                 logging.info("Successfully downloaded and loaded model %s", model)
             except Exception as e:
                 logging.error("Failed to download model %s: %s", model, str(e))
-                raise RuntimeError(f"Could not load or download spaCy model '{model}' for language {language}")
-        
+                raise RuntimeError(
+                    f"Could not load or download spaCy model '{model}' for language {language}"
+                )
+
         self._models[language] = nlp
 
     def _get_model(self, language: LanguageType) -> Language:
@@ -65,7 +67,7 @@ class NLPProvider:
 
         Args:
             language: The language of the text to be processed
-        
+
         Returns:
             Spacy language processor
         """
@@ -73,7 +75,9 @@ class NLPProvider:
             self._load_model(language)
         return self._models[language]
 
-    def extract_lemma_nouns(self, text_list: List[str], language: LanguageType) -> List[str]:
+    def extract_lemma_nouns(
+        self, text_list: List[str], language: LanguageType
+    ) -> List[str]:
         """
         Lemmatises and extracts nouns from inputted list of str
 
@@ -100,18 +104,41 @@ class NLPProvider:
 
         # Process text with spaCy
         doc = nlp(text)
+        lemmatisation = True
+        pos_tagging = True
+        # Validate this spacy model has POS tagging + lemmatisation
+        if "tagger" not in nlp.pipe_names:
+            logging.error(
+                "NLP pipeline %s doesn't have POS tagger, major error skipping tagging",
+                nlp.meta["name"],
+            )
+            pos_tagging = False
+        if "lemmatizer" not in nlp.pipe_names:
+            logging.warning(
+                "NLP pipeline %s doesn't have lemmatiser, skipping lemmatisation",
+                nlp.meta["name"],
+            )
+            lemmatisation = False
 
         # Extract nouns (NOUN and PROPN tags)
         nouns = []
         for token in doc:
-            if (
-                token.pos_ in ["NOUN", "PROPN"]  # Only nouns and proper nouns
+            if not (
+                pos_tagging
+                and token.pos_ in ["NOUN", "PROPN"]  # Only nouns and proper nouns
                 and not token.is_stop  # Skip stop words
                 and not token.is_punct  # Skip punctuation
                 and not token.is_space  # Skip whitespace
                 and token.is_alpha  # Only alphabetic characters
-            ): 
-                # Use lemma (root form) to normalize plurals etc.
+            ):
+                continue  # early stopping
+
+            # Use lemma to normalize plurals etc.
+            if lemmatisation:
                 nouns.append(token.lemma_.lower())
+                continue  # early stopping
+
+            # Just append if no lemmatisation done
+            nouns.append(token.text)
 
         return " ".join(nouns)

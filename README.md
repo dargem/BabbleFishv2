@@ -29,8 +29,9 @@ Translation Phase:
 - **Fluency Editor**: Base text blind index based editing for fluency
 
 ## TODO
+- Possibly make a SQL database
+- Integrate a web scraper or make one myself
 - Novel factory, takes in text dicts to produce them, probably abstracts loading from epub, txt etc
-- Create nlp provider which does language configurable POS tagging, lemmatisation etc for preprocessing
 - Tagging using corextopic for topic modelling, potentially seed it then use llm to classify topics
 - Try other approaches with keyword extraction after preprocessing
 - Maybe change the nodes to all be an implementation of an abstract class for more consistency
@@ -44,10 +45,13 @@ Translation Phase:
 - Add metrics and monitoring
 - Implement different editorial personas, probably need to abstract nodes using a registry for this
 - Fix github workflow
+- Add tests
 - 2 fold triplet extraction, also for attribute based triplets (or tuples maybe is more accurate?)
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
+- Add custom Japanese + Korean lemmatiser spacy doesn't have, Chinese doesn't need it
 
 ## Ticked Off
+- Create nlp provider which does language configurable POS tagging, lemmatisation etc for preprocessing
 - Logging
 - Abstract class workflow factories inherit from
 - Entity replacer to substitute in Translation Memory Joshua -> Joshua \[Translation Memory 约书亚\]
@@ -58,7 +62,7 @@ Translation Phase:
 - Informative relation based triplet extraction
 - change architecture, 4 workflows,
     - setup (get language, style guide etc), 
-    - ingestion (get triplets into graphical database with localisations) status: Partially done
+    - ingestion (get triplets into graphical database with localisations)
     - annotation (annotate the base text with references like translations etc)
-    - translation (generic translation workflow with feedback loops etc) status: Partially done
+    - translation (generic translation workflow with feedback loops etc)
 - Registry for the translation orchestrator
