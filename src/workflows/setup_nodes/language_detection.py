@@ -18,10 +18,10 @@ class LanguageDetector:
     def __init__(self):
         logger.debug("Initializing language detector")
 
-        self.languages_mapped = {lang.value: lang.name for lang in LanguageType}
+        languages_mapped = {lang.value: lang.name for lang in LanguageType}
 
         self.detector = LanguageDetectorBuilder.from_languages(
-            *self.languages_mapped.keys()
+            *languages_mapped.keys()
         ).build()
 
     def detect_language(self, state: SetupState) -> dict:
@@ -36,7 +36,20 @@ class LanguageDetector:
         logger.debug("Detecting language for text of length %d", len(state["text"]))
 
         detected = self.detector.detect_language_of(state["text"])
-        return {"language": self.languages_mapped[detected]}
+
+        # Convert lingua.Language to LanguageType enum
+        language_type = None
+        for lang_type in LanguageType:
+            if lang_type.value == detected:
+                language_type = lang_type
+                break
+        
+        if language_type is None:
+            logger.warning("Detected language %s not supported, defaulting to English", detected)
+            language_type = LanguageType.ENGLISH
+        
+        logger.info("Detected language: %s", language_type)
+        return {"language": language_type}
 
 
 '''

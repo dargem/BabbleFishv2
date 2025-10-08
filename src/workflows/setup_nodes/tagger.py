@@ -11,6 +11,7 @@ from src.providers import LLMProvider, NLPProvider
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List, Dict
 from src.workflows.states import SetupState
+from src.core import LanguageType
 
 logger = logging.getLogger(__name__)
 
@@ -33,23 +34,24 @@ class Tagger:
         language: LanguageType = state["language"]
         logger.debug("Processing %d chapters for tagging", len(chapters))
         
-        documents_nouns_only = self.nlp_provider.extract_lemma_nouns(chapters)
-        logger.debug("Extracted nouns from chapters: %s", documents_nouns_only[:3])  # Show first 3 for debugging
+        documents_nouns_only = self.nlp_provider.extract_lemma_nouns(chapters, language)
+        logger.debug("Extracted nouns from chapters: %s...", documents_nouns_only[:3])  # Shows first 3 for debugging
         
-        # Check if we have any content after noun extraction
+        # Checks if empty, issuing a warning if true
         total_content = " ".join(documents_nouns_only).strip()
         if not total_content:
             logger.warning("No nouns extracted from chapters, returning empty tag list")
             return []
         
-        # Check if we have enough content for vectorization
+        # Check if there's enough content for vectorization
         non_empty_docs = [doc for doc in documents_nouns_only if doc.strip()]
         if len(non_empty_docs) < 2:
-            logger.warning("Not enough documents with content for topic modeling, returning basic tags")
+            logger.warning("Not enough documents with content for topic modeling")
             # Return simple word-based tags as fallback
+            #change this later
             words = total_content.split()
             unique_words = list(set(words))
-            return unique_words[:10]  # Return up to 10 most basic tags
+            return unique_words[:10]
         
         try:
             vectorizer = CountVectorizer(

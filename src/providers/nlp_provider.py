@@ -4,6 +4,7 @@ import threading
 import logging
 from typing import Dict
 import spacy
+import spacy.cli
 from src.core import LanguageType
 from spacy.language import Language
 from typing import List
@@ -29,7 +30,6 @@ class NLPProvider:
         Args:
             language: Language enum that the provider needs a model for
         """
-
         LANGUAGE_CODE_MAP = {
             LanguageType.ENGLISH: "en",
             LanguageType.CHINESE: "zh",
@@ -42,7 +42,21 @@ class NLPProvider:
         # options are sm, md, lg and trf, some trf are missing dep on lang
         logging.info("Loading spacy model for lang %s", language)
         model = "%s_core_web_%s" % (LANGUAGE_CODE_MAP[language], "sm")
-        nlp = spacy.load(model)
+        
+        try:
+            nlp = spacy.load(model)
+            logging.info("Spacy model for lang %s loaded", language)
+        except OSError:
+            logging.warning("Model %s not found, attempting to download...", model)
+            try:
+                # Download the model using spacy's download function
+                spacy.cli.download(model)
+                nlp = spacy.load(model)
+                logging.info("Successfully downloaded and loaded model %s", model)
+            except Exception as e:
+                logging.error("Failed to download model %s: %s", model, str(e))
+                raise RuntimeError(f"Could not load or download spaCy model '{model}' for language {language}")
+        
         self._models[language] = nlp
 
     def _get_model(self, language: LanguageType) -> Language:
