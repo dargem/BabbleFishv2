@@ -9,7 +9,7 @@ import corextopic.vis_topic as vt
 from collections import Counter
 from src.providers import LLMProvider, NLPProvider
 from sklearn.feature_extraction.text import CountVectorizer
-from typing import List
+from typing import List, Dict
 from src.workflows.states import SetupState
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class Tagger:
         self.nlp_provider = nlp_provider
         logger.debug("Tagger initialized with shared NLP provider")
 
-    def _tag_text(self, state: SetupState) -> List[str]:
+    def _tag_text(self, state: SetupState) -> Dict:
         """
         Args:
             state: Current setup state
@@ -30,9 +30,10 @@ class Tagger:
             List of tags (strings) from the text
         """
         chapters: List[str] = state["all_chapters"]
+        language: LanguageType = state["language"]
         logger.debug("Processing %d chapters for tagging", len(chapters))
         
-        documents_nouns_only = [self._extract_nouns_from_text(chapter) for chapter in chapters]
+        documents_nouns_only = self.nlp_provider.extract_lemma_nouns(chapters)
         logger.debug("Extracted nouns from chapters: %s", documents_nouns_only[:3])  # Show first 3 for debugging
         
         # Check if we have any content after noun extraction
@@ -148,36 +149,3 @@ class Tagger:
         tags = self._tag_text(state)
         logger.info("Added %d tags to setup state", len(tags))
         return {"tags": tags}
-
-    def _extract_nouns_from_text(self, text: str, max_length=15) -> str:
-        """
-        Extract only nouns from text using spaCy POS tagging
-
-        Args:
-            text: Input text string
-            max_length: Maximum word length to include
-
-        Returns:
-            String of space-separated nouns
-        """
-        # Get the spaCy model from the provider
-        nlp = self.nlp_provider.get_model("en_core_web_sm")
-        
-        # Process text with spaCy
-        doc = nlp(text)
-
-        # Extract nouns (NOUN and PROPN tags)
-        nouns = []
-        for token in doc:
-            if (
-                token.pos_ in ["NOUN", "PROPN"]  # Only nouns and proper nouns
-                and not token.is_stop  # Skip stop words
-                and not token.is_punct  # Skip punctuation
-                and not token.is_space  # Skip whitespace
-                and token.is_alpha  # Only alphabetic characters
-                and len(token.lemma_) <= max_length
-            ):  # Length filter
-                # Use lemma (root form) to normalize plurals etc.
-                nouns.append(token.lemma_.lower())
-
-        return " ".join(nouns)

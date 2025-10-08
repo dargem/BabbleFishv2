@@ -2,7 +2,7 @@
 # TODO short term memory after database is dealt with
 
 from typing import TypedDict, List
-from src.core import Entity, InputTriplet, Genre
+from src.core import Entity, InputTriplet, Genre, LanguageType
 
 
 class AnnotationState(TypedDict):
@@ -34,7 +34,7 @@ class SetupState(TypedDict):
         all_chapters: List of all chapters for novel-level processing
     """
     text: str
-    language: str
+    language: LanguageType
     genres: List[Genre]
     style_guide: str
     tags: List[str]

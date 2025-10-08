@@ -2,7 +2,7 @@
 
 import threading
 import logging
-from typing import Dict, Any
+from typing import Dict
 import spacy
 from src.core import LanguageType
 from spacy.language import Language
@@ -12,12 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class NLPProvider:
-    """Thread-safe provider for spaCy NLP models.
-    
-    Manages spaCy model lifecycle efficiently by:
-    - Loading models once and reusing them
-    - Thread-safe access to shared models
-    - Lazy loading of models only when needed
+    """
+    Proviedes text preprocessing services
+    Lazy loads models when needed
     """
     
     def __init__(self):
@@ -42,23 +39,29 @@ class NLPProvider:
             LanguageType.FRENCH: "fr",
         }
 
+        # options are sm, md, lg and trf, some trf are missing dep on lang
+        logging.info("Loading spacy model for lang %s", language)
+        model = "%s_core_web_%s" % (LANGUAGE_CODE_MAP[language], "sm")
+        nlp = spacy.load(model)
+        self._models[language] = nlp
 
-    def lemmatize_text(self, text_list: List[str], language: LanguageType) -> List[str]:
+    def _get_model(self, language: LanguageType) -> Language:
         """
-        Lemmatises inputted list of str
+        Helper method returns needed spacy model, loads a model if needed
 
         Args:
-            text_list: List of strings for processing
-            language: LanguageType enum to determine language for needed model
-
+            language: The language of the text to be processed
+        
         Returns:
-            List of lemmatised input strings
+            Spacy language processor
         """
-        pass
+        if language not in self._models:
+            self._load_model(language)
+        return self._models[language]
 
-    def extract_nouns(self, text_list: List[str], language: LanguageType) -> List[str]:
+    def extract_lemma_nouns(self, text_list: List[str], language: LanguageType) -> List[str]:
         """
-        Extracts only nouns from the inputted list of str
+        Lemmatises and extracts nouns from inputted list of str
 
         Args:
             text_list: List of strings for processing
@@ -67,83 +70,34 @@ class NLPProvider:
         Returns:
             List of only nouns from input strings
         """
-        pass
+        nlp = self._get_model(language)
+        return [self._extract_nouns_from_text(text, nlp) for text in text_list]
 
+    def _extract_nouns_from_text(self, text: str, nlp: Language) -> str:
+        """
+        Helper method for extract lemma nouns, doing it on a chapter based process
 
-
-
-    def get_model(self, language: LanguageType) -> Language:
-        """Get a spaCy model, loading it if necessary.
-        
         Args:
-            model_name: Name of the spaCy model to load
-            
+            text: A string of text for processing
+            nlp: Appropriate spacy model
         Returns:
-            Loaded spaCy Language model
-            
-        Raises:
-            OSError: If the model cannot be loaded
+            List of only nouns from input strings
         """
-        if language not in self._models:
-            with self._lock:
-                # Double-check pattern to avoid race conditions
-                if language not in self._models:
-                    logger.info(f"Loading spaCy model: {language}")
-                    try:
-                        self._models[language] = spacy.load(model_name)
-                        logger.debug(f"Successfully loaded spaCy model: {model_name}")
-                    except OSError as e:
-                        logger.error(f"Failed to load spaCy model {model_name}: {e}")
-                        raise
-        
-        return self._models[model_name]
-    
-    def is_model_loaded(self, model_name: str = "en_core_web_sm") -> bool:
-        """Check if a model is already loaded.
-        
-        Args:
-            model_name: Name of the spaCy model
-            
-        Returns:
-            True if model is loaded, False otherwise
-        """
-        return model_name in self._models
-    
-    def get_loaded_models(self) -> list[str]:
-        """Get list of currently loaded model names.
-        
-        Returns:
-            List of loaded model names
-        """
-        return list(self._models.keys())
-    
-    def clear_models(self) -> None:
-        """Clear all loaded models from memory.
-        
-        Useful for memory management in long-running applications.
-        """
-        with self._lock:
-            logger.info(f"Clearing {len(self._models)} loaded spaCy models")
-            self._models.clear()
 
+        # Process text with spaCy
+        doc = nlp(text)
 
-class ThreadLocalNLPProvider:
-    """Thread-local NLP provider for maximum isolation.
-    
-    Each thread gets its own copy of the spaCy model.
-    Use this if you need guaranteed thread isolation or if
-    you're modifying pipeline components at runtime.
-    """
-    
-    def __init__(self, model_name: str = "en_core_web_sm"):
-        self.model_name = model_name
-        self._local = threading.local()
-        logger.debug(f"ThreadLocalNLPProvider initialized for model: {model_name}")
-    
-    @property
-    def nlp(self) -> Language:
-        """Get thread-local spaCy model."""
-        if not hasattr(self._local, 'nlp'):
-            logger.debug(f"Loading thread-local spaCy model: {self.model_name}")
-            self._local.nlp = spacy.load(self.model_name)
-        return self._local.nlp
+        # Extract nouns (NOUN and PROPN tags)
+        nouns = []
+        for token in doc:
+            if (
+                token.pos_ in ["NOUN", "PROPN"]  # Only nouns and proper nouns
+                and not token.is_stop  # Skip stop words
+                and not token.is_punct  # Skip punctuation
+                and not token.is_space  # Skip whitespace
+                and token.is_alpha  # Only alphabetic characters
+            ): 
+                # Use lemma (root form) to normalize plurals etc.
+                nouns.append(token.lemma_.lower())
+
+        return " ".join(nouns)
