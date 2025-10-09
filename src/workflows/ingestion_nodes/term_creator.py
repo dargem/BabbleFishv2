@@ -216,7 +216,6 @@ class EntityCreator:
             A list of Entity objects, these are all unique from old_entities
         """
         old_entities: List[Entity] = self.kg_manager.get_all_entities()
-        # print(old_entities)
         # Build graph
         G = nx.Graph()
         mapping = _map_names([old_entities, new_entities])

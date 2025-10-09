@@ -74,7 +74,7 @@ class TranslationState(TypedDict):
     """
 
     text: str
-    language: str
+    language: LanguageType
     translation: str
     fluent_translation: str
     feedback: str

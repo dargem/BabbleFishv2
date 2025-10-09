@@ -104,7 +104,7 @@ class NovelTranslator:
             self.novel.genres = result["genres"]
             logger.info(self.novel.genres)
             self.novel.language = (
-                result["language"].strip() if result["language"] else None
+                result["language"] if result["language"] else None
             )
             logger.info(self.novel.language)
             return

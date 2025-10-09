@@ -33,9 +33,7 @@ class Tagger:
         chapters: List[str] = state["all_chapters"]
         language: LanguageType = state["language"]
         logger.debug("Processing %d chapters for tagging", len(chapters))
-        print(chapters)
         documents_nouns_only = self.nlp_provider.extract_lemma_nouns(chapters, language)
-        print(documents_nouns_only[:100])
         logger.debug(
             "Extracted nouns from chapters: %s...", documents_nouns_only[:3]
         )  # Shows first 3 for debugging
