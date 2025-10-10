@@ -54,10 +54,9 @@ class Translator:
                 input_variables=["text", "language", "feedback", "translation"],
                 template=template,
             )
-
             message = HumanMessage(
                 content=prompt.format(
-                    language=state["language"],
+                    language=state["language"].name.capitalize(),
                     text=state["text"],
                     feedback=state["feedback"],
                     translation=state["translation"],
@@ -74,7 +73,7 @@ class Translator:
 
             message = HumanMessage(
                 content=prompt.format(
-                    language=state["language"],
+                    language=state["language"].name.capitalize(),
                     text=state["text"],
                 )
             )

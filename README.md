@@ -49,6 +49,7 @@ Translation Phase:
 - 2 fold triplet extraction, also for attribute based triplets (or tuples maybe is more accurate?)
 - Funny entity resolution bug, A changed his name to B, B has coreference resolution with A so triplet reads as A changed to A
 - Add custom Japanese + Korean lemmatiser spacy doesn't have, Chinese doesn't need it
+- Fix styleguide prompt
 
 ## Ticked Off
 - Create nlp provider which does language configurable POS tagging, lemmatisation etc for preprocessing

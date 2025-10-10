@@ -11,7 +11,7 @@ from src.config import ConfigFactory, Container
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)    
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
