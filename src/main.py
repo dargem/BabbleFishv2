@@ -8,6 +8,7 @@ import asyncio
 import logging
 from pathlib import Path
 from src.config import ConfigFactory, Container
+from src.text_management import FanqieNovelDownloader, FanqieConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
@@ -18,8 +19,14 @@ DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 
 async def run_complete_translation():
-    """Simple loop: get requirement -> fulfill -> update -> repeat until done."""
+    """get requirement -> fulfill -> update -> repeat until done."""
+    downloader = FanqieNovelDownloader()
+    print(downloader.search_novels("袭击"))
+    config = FanqieConfig(novel_id="7520838736267971609", end_chapter=10)
+    logger.info(downloader.download_novel(config))
+    print(downloader.list_downloaded_novels())
 
+    exit()
     # Initialize container
     config = ConfigFactory.create_config(env="development")
     container = Container()

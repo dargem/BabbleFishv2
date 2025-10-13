@@ -301,7 +301,7 @@ class NovelTextLoader:
 
 def load_novel_from_fanqie_url(
     fanqie_url: str,
-    download_dir: str = "./data/raw",
+    download_dir: Optional[str] = None,
     chapter_limit: Optional[int] = None
 ) -> Novel:
     """
@@ -315,13 +315,17 @@ def load_novel_from_fanqie_url(
     Returns:
         Novel object with loaded chapters
     """
+    if download_dir is None:
+        repo_root = Path(__file__).resolve().parents[2]
+        download_dir = str(repo_root / "data" / "raw")
+
     loader = NovelTextLoader(download_dir)
     return loader.load_from_fanqie_url(fanqie_url, chapter_limit=chapter_limit)
 
 
 def load_novel_from_fanqie_id(
     novel_id: str,
-    download_dir: str = "./data/raw",
+    download_dir: Optional[str] = None,
     chapter_limit: Optional[int] = None
 ) -> Novel:
     """
@@ -335,13 +339,17 @@ def load_novel_from_fanqie_id(
     Returns:
         Novel object with loaded chapters
     """
+    if download_dir is None:
+        repo_root = Path(__file__).resolve().parents[2]
+        download_dir = str(repo_root / "data" / "raw")
+
     loader = NovelTextLoader(download_dir)
     return loader.load_from_fanqie_id(novel_id, chapter_limit=chapter_limit)
 
 
 def search_and_load_fanqie_novel(
     query: str,
-    download_dir: str = "./data/raw",
+    download_dir: Optional[str] = None,
     chapter_limit: int = 10,
     novel_index: int = 0
 ) -> Novel:
@@ -357,5 +365,9 @@ def search_and_load_fanqie_novel(
     Returns:
         Novel object with loaded chapters
     """
+    if download_dir is None:
+        repo_root = Path(__file__).resolve().parents[2]
+        download_dir = str(repo_root / "data" / "raw")
+
     loader = NovelTextLoader(download_dir)
     return loader.search_and_load_fanqie(query, chapter_limit=chapter_limit, novel_index=novel_index)

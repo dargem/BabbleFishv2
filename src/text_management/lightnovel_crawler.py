@@ -151,11 +151,18 @@ class FanqieNovelDownloader:
     def __init__(self, default_output_dir: Optional[str] = None):
         """
         Initialize the downloader interface
-        
+
         Args:
-            default_output_dir: Default directory for downloads
+            default_output_dir: Default directory for downloads. If None, will resolve
+                to the repository root's `data/raw` directory so downloads are
+                always placed outside `src/` regardless of cwd.
         """
-        self.default_output_dir = default_output_dir or "./data/raw"
+        # Resolve repository root (project root) based on this file's location:
+        repo_root = Path(__file__).resolve().parents[2]
+        default_data_dir = repo_root / "data" / "raw"
+
+        # Use provided path or repo-root data/raw
+        self.default_output_dir = str(Path(default_output_dir) if default_output_dir else default_data_dir)
         self.api = FanqieAPI()
         self._verify_installation()
     
@@ -348,13 +355,14 @@ class FanqieNovelDownloader:
         Returns:
             List of novel directory names
         """
-        target_dir = output_dir or self.default_output_dir
-        
+        # Resolve to a Path so relative vs absolute differences are normalized
+        target_dir = Path(output_dir) if output_dir else Path(self.default_output_dir)
+
         try:
-            if os.path.exists(target_dir):
+            if target_dir.exists():
                 return [
                     item for item in os.listdir(target_dir)
-                    if os.path.isdir(os.path.join(target_dir, item))
+                    if (target_dir / item).is_dir()
                 ]
             else:
                 return []
@@ -397,8 +405,13 @@ def download_fanqie_novel(
     Returns:
         Download results dictionary
     """
+    # Resolve output_dir to repo-root data/raw when not provided
+    if output_dir is None:
+        repo_root = Path(__file__).resolve().parents[2]
+        output_dir = str(repo_root / "data" / "raw")
+
     downloader = FanqieNovelDownloader(output_dir)
-    
+
     config = FanqieConfig(
         novel_id=novel_id,
         output_path=output_dir,
@@ -406,7 +419,7 @@ def download_fanqie_novel(
         start_chapter=chapter_range[0] if chapter_range else None,
         end_chapter=chapter_range[1] if chapter_range else None
     )
-    
+
     return downloader.download_novel(config)
 
 
@@ -426,6 +439,10 @@ def download_from_fanqie_url(
     Returns:
         Download results dictionary
     """
+    if output_dir is None:
+        repo_root = Path(__file__).resolve().parents[2]
+        output_dir = str(repo_root / "data" / "raw")
+
     downloader = FanqieNovelDownloader(output_dir)
     
     novel_id = downloader.extract_novel_id_from_url(url)
