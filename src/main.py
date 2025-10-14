@@ -1,50 +1,34 @@
 """Entry point for translator"""
 
-# type hints
-from __future__ import annotations
-
 # imports
 import asyncio
 import logging
 from pathlib import Path
 from src.config import ConfigFactory, Container
-from src.text_management import FanqieNovelDownloader, FanqieConfig
+from src.text_management import FanqieNovelDownloader, FanqieConfig, NovelTextLoader
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)    
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]  # go up from src/ to project root
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "lotm_files"
 
 
 async def run_complete_translation():
     """get requirement -> fulfill -> update -> repeat until done."""
-    downloader = FanqieNovelDownloader()
-    print(downloader.search_novels("袭击"))
-    config = FanqieConfig(novel_id="7520838736267971609", end_chapter=10)
-    logger.info(downloader.download_novel(config))
-    print(downloader.list_downloaded_novels())
 
-    exit()
+    loader = NovelTextLoader()
+    novel = loader.load_from_fanqie_id(novel_id="7550580137809431576", chapter_limit=10)
+
     # Initialize container
     config = ConfigFactory.create_config(env="development")
     container = Container()
     await container.set_config(config)
 
-    novel_processor = container.get_novel_translator()
-
-    # Load a chapter
-    file_path = DATA_DIR / "lotm1.txt"
-    if not file_path.exists():
-        logger.error("Test file not found at %s", file_path)
-        return
-
-    with open(file_path, "r", encoding="UTF-8") as f:
-        chapter_text = f.read()
-
-    # Add chapter to novel
-    novel_processor.add_chapters({1: chapter_text})
+    # loads novels
+    logger.info("Loaded Chapter")
+    novel_processor = container.get_novel_translator(novel=novel)
 
     logger.info("Starting Translation Process")
 
