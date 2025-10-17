@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Dict
 from src.core import Genre
 from src.providers import LLMProvider
@@ -7,11 +7,17 @@ from textwrap import dedent
 from langchain.schema import HumanMessage
 from langchain.prompts import PromptTemplate
 
-
 class GenreSchema(BaseModel):
     """Pydantic schema for a list of genres"""
 
-    genre_list: List[Genre] = Field(..., description="A list of genres for the book")
+    genre_list: List[Genre] = Field(..., description="A list of genres for choice, USE ONLY THESE NOTHING ELSE")
+    @field_validator("genre_list", mode="before")
+    @classmethod
+    def standardize_case(cls, value: List[str]) -> List[str]:
+        """Converts all incoming genre strings to uppercase before validation."""
+        if not isinstance(value, list):
+            return value  # Let Pydantic handle the wrong type error
+        return [g.title() for g in value if isinstance(g, str)]
 
 
 class GenreDetector:

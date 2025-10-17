@@ -36,7 +36,7 @@ class Genre(Enum):
     ROMANCE = "Romance"
     SCHOOL_LIFE = "School Life"
     SCI_FI = "Sci-Fi"
-    SLICE_OF_LIFE = "Slice of Life"
+    SLICE_OF_LIFE = "Slice Of Life"
     SPORTS = "Sports"
     SUPERNATURAL = "Supernatural"
     TRAGEDY = "Tragedy"
