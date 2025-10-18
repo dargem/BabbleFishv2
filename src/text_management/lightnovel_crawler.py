@@ -4,11 +4,13 @@ import subprocess
 import logging
 import json
 import os
+import re
 import requests
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Any
 from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
+from html import unescape
 
 
 logger = logging.getLogger(__name__)
@@ -286,7 +288,9 @@ class FanqieNovelDownloader:
                     continue
                 
                 content_data = content_response.get("data", {})
-                content = content_data.get("content", "")
+                content = self._format_chapter_content(content_data)
+                if not content:
+                    content = content_data.get("content", "")
                 
                 # Save chapter
                 if config.format_type == OutputFormat.TXT:
@@ -310,6 +314,101 @@ class FanqieNovelDownloader:
         except Exception as e:
             logger.error("Download failed: %s", e)
             return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def _format_chapter_content(content_data: Dict[str, Any]) -> str:
+        """Normalize chapter content to preserve paragraph structure."""
+
+        def _iter_candidates(data: Dict[str, Any]) -> List[str]:
+            keys = (
+                "content_paragraph",
+                "contentParagraph",
+                "content_paragraphs",
+                "paragraphs",
+                "content_list",
+                "contentList",
+            )
+            candidates: List[str] = []
+            for key in keys:
+                value = data.get(key)
+                if isinstance(value, list):
+                    candidates.extend(str(item) for item in value if item)
+            content_value = data.get("content")
+            if isinstance(content_value, list):
+                candidates.extend(str(item) for item in content_value if item)
+            elif isinstance(content_value, str):
+                candidates.append(content_value)
+            return candidates
+
+        def _strip_html(raw: str) -> str:
+            if not raw:
+                return ""
+            text = unescape(raw)
+            text = text.replace("\r\n", "\n").replace("\r", "\n")
+            text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+            text = re.sub(r"</p\s*>", "\n\n", text, flags=re.IGNORECASE)
+            text = re.sub(r"<(div|section)[^>]*>", "\n\n", text, flags=re.IGNORECASE)
+            text = re.sub(r"<[^>]+>", "", text)
+            text = text.replace("&nbsp;", " ")
+            return text
+
+        def _is_ascii_alnum(char: str) -> bool:
+            return bool(char and char.isascii() and char.isalnum())
+
+        def _join_wrapped_lines(lines: List[str]) -> str:
+            if not lines:
+                return ""
+            text = lines[0]
+            for line in lines[1:]:
+                if not line:
+                    continue
+                if not text:
+                    text = line
+                    continue
+                last_char = text[-1]
+                first_char = line[0]
+                if (
+                    _is_ascii_alnum(last_char) and _is_ascii_alnum(first_char)
+                ) or (
+                    last_char in {'.', '?', '!', ':', ';'} and _is_ascii_alnum(first_char)
+                ):
+                    text += " " + line
+                else:
+                    text += line
+            return text.strip()
+
+        def _to_paragraphs(cleaned_text: str) -> List[str]:
+            if not cleaned_text:
+                return []
+            lines = [line.strip() for line in cleaned_text.split("\n")]
+            paragraphs: List[str] = []
+            pending: List[str] = []
+            for line in lines:
+                if not line:
+                    if pending:
+                        paragraph = _join_wrapped_lines(pending)
+                        if paragraph:
+                            paragraphs.append(paragraph)
+                        pending = []
+                    continue
+                pending.append(line)
+            if pending:
+                paragraph = _join_wrapped_lines(pending)
+                if paragraph:
+                    paragraphs.append(paragraph)
+            return paragraphs
+
+        candidates = _iter_candidates(content_data)
+        paragraphs: List[str] = []
+        for candidate in candidates:
+            cleaned = _strip_html(candidate)
+            paragraphs.extend(_to_paragraphs(cleaned))
+
+        if not paragraphs:
+            fallback = _strip_html(str(content_data.get("content", "")))
+            paragraphs = _to_paragraphs(fallback)
+
+        return "\n\n".join(paragraphs).strip()
     
     def _sanitize_filename(self, filename: str) -> str:
         """
