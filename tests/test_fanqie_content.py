@@ -17,12 +17,7 @@ from src.text_management.lightnovel_crawler import FanqieNovelDownloader
             "Line one that wraps continues here\n\nAnother paragraph",
         ),
         (
-            {
-                "content_paragraphs": [
-                    "第一段第一行",
-                    "第二段"
-                ]
-            },
+            {"content_paragraphs": ["第一段第一行", "第二段"]},
             "第一段第一行\n\n第二段",
         ),
     ],

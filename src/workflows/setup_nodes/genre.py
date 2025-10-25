@@ -7,10 +7,14 @@ from textwrap import dedent
 from langchain.schema import HumanMessage
 from langchain.prompts import PromptTemplate
 
+
 class GenreSchema(BaseModel):
     """Pydantic schema for a list of genres"""
 
-    genre_list: List[Genre] = Field(..., description="A list of genres for choice, USE ONLY THESE NOTHING ELSE")
+    genre_list: List[Genre] = Field(
+        ..., description="A list of genres for choice, USE ONLY THESE NOTHING ELSE"
+    )
+
     @field_validator("genre_list", mode="before")
     @classmethod
     def standardize_case(cls, value: List[str]) -> List[str]:

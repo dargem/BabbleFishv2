@@ -16,7 +16,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_parse_tagged_content_multiple_tags(self):
-        """Test parsing multiple tagged content.""" 
+        """Test parsing multiple tagged content."""
         text = """
         <index 0>
         First paragraph
