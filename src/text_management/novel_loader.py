@@ -14,3 +14,13 @@ class NovelLoader:
         Returns:
             Novel object
         """
+
+    def get_sample_novel(self):
+        """
+        
+        Returns:
+            Sample novel object
+        """
+        with open("data/raw/novel_7550580137809431576", "r") as f:
+            file = f.read()
+

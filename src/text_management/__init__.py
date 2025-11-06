@@ -11,10 +11,7 @@ from .lightnovel_crawler import (
 )
 
 from .novel_loader import (
-    NovelTextLoader,
-    load_novel_from_fanqie_url,
-    load_novel_from_fanqie_id,
-    search_and_load_fanqie_novel,
+    NovelLoader
 )
 
 __all__ = [
@@ -26,9 +23,5 @@ __all__ = [
     "search_fanqie_novels",
     "download_fanqie_novel",
     "download_from_fanqie_url",
-    # High-level novel loading interface
-    "NovelTextLoader",
-    "load_novel_from_fanqie_url",
-    "load_novel_from_fanqie_id",
-    "search_and_load_fanqie_novel",
+    "NovelLoader"
 ]
